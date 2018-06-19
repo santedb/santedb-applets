@@ -10,7 +10,7 @@
     <projectUrl>http://santedb.org</projectUrl>
     <iconUrl>http://santedb.org/img/logo.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>The SanteDB core API encapsulates core functionality in the SanteDB CDR system</description>
+    <description>The SanteDB applets API provides functions for interacting with SanteDB PAK files (HTML5 + JavaScript applets)</description>
     <releaseNotes>Initial Version</releaseNotes>
     <copyright>Copyright 2015-2018, Mohawk College of Applied Arts and Technology</copyright>
     <tags>CDR SanteDB</tags>
