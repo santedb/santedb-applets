@@ -101,14 +101,35 @@
   <ItemGroup>
     <Content Include="Schema\AppletAssets.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="MARC.HI.EHRS.SVC.Auditing.Core" Version="2.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="SanteDB.Core.Api" Version="1.1.0" />
-    <PackageReference Include="SanteDB.Core.Model" Version="1.1.0" />
-    <PackageReference Include="SharpCompress" Version="0.18.2" />
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.0.1" />
-  </ItemGroup>
+
+  <Choose>
+    <When Condition="$(SolutionName.Contains('-ext'))">
+      <ItemGroup>
+        <PackageReference Include="MARC.HI.EHRS.SVC.Auditing.Core" Version="2.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+        <PackageReference Include="SharpCompress" Version="0.18.2" />
+        <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.0.1" />
+        <ProjectReference Include="..\..\santedb-model\SanteDB.Core.Model\SanteDB.Core.Model.csproj">
+          <Project>{F1A82A4F-4A57-47D7-AE76-444C8A4FF54A}</Project>
+          <Name>SanteDB.Core.Model</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\santedb-api\SanteDB.Core.Api\SanteDB.Core.Api.csproj">
+          <Project>{3A45F695-47A2-464C-ACE6-BDABBFA39FBC}</Project>
+          <Name>SanteDB.Core.Api</Name>
+        </ProjectReference>
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <PackageReference Include="MARC.HI.EHRS.SVC.Auditing.Core" Version="2.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+        <PackageReference Include="SanteDB.Core.Api" Version="1.1.0" />
+        <PackageReference Include="SanteDB.Core.Model" Version="1.1.0" />
+        <PackageReference Include="SharpCompress" Version="0.18.2" />
+        <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.0.1" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
