@@ -43,12 +43,27 @@ namespace SanteDB.Core.Applets.Model
         /// The widget should be placed on the facility home page
         /// </summary>
         [XmlEnum("place")]
-        Facility,
+        Place,
         /// <summary>
         /// The widget should be placed on the user settings page
         /// </summary>
         [XmlEnum("user")]
-        User
+        User,
+        /// <summary>
+        /// The widget should be placed on the configuration screen
+        /// </summary>
+        [XmlEnum("config")]
+        Configuration,
+        /// <summary>
+        /// The widget should appear on an Act
+        /// </summary>
+        [XmlEnum("act")]
+        Act,
+        /// <summary>
+        /// The widget should appear in the encounter 
+        /// </summary>
+        [XmlEnum("encounter")]
+        Encounter
     }
 
     /// <summary>
@@ -97,6 +112,13 @@ namespace SanteDB.Core.Applets.Model
         [XmlAttribute("name")]
         [JsonProperty("name")]
         public String Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the guard conditions for the applet. These are conditions on the scope which must be true in order for the panel to be enabled and visible.
+        /// </summary>
+        [XmlElement("guard")]
+        [JsonProperty("guard")]
+        public List<String> Guard { get; set; }
 
         /// <summary>
         /// Gets or sets the controller
