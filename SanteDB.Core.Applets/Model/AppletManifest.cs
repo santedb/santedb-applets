@@ -73,46 +73,22 @@ namespace SanteDB.Core.Applets.Model
         /// Create an unsigned package
         /// </summary>
         /// <returns>The package.</returns>
-        public AppletPackage CreatePackage(String compression = null)
+        public AppletPackage CreatePackage()
 		{
 			AppletPackage retVal = new AppletPackage () {
-				Meta = this.Info,
-                Compression = compression
+				Meta = this.Info
 			};
-            using (MemoryStream ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
-                Stream compressStream = null;
-                try {
-                    switch (compression)
-                    {
-                        case "lzma":
-                            compressStream = new LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress, leaveOpen: true);
-                            break;
-                        case "bzip2":
-                            compressStream = new BZip2Stream(ms, SharpCompress.Compressors.CompressionMode.Compress, leaveOpen: true);
-                            break;
-                        case "gzip":
-                            compressStream = new GZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress, leaveOpen: true);
-                            break;
-                        case "none":
-                            compressStream = ms;
-                            break;
-                        default:
-                            compressStream = new DeflateStream(ms, SharpCompress.Compressors.CompressionMode.Compress, leaveOpen: true);
-                            break;
-                    }
-                    XmlSerializer xsz = new XmlSerializer(typeof(AppletManifest));
-                    xsz.Serialize(compressStream, this);
-                }
-                finally
+                using (var ls = new LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress))
                 {
-                    compressStream.Dispose();
+
+                    XmlSerializer xsz = new XmlSerializer(typeof(AppletManifest));
+                    xsz.Serialize(ls, this);
                 }
                 retVal.Manifest = ms.ToArray();
-
             }
             return retVal;
-
 		}
 
         /// <summary>

@@ -97,12 +97,6 @@ namespace SanteDB.Core.Applets.Model
         public String Version { get; set; }
 
         /// <summary>
-        /// Compression algorithm
-        /// </summary>
-        [XmlAttribute("compress")]
-        public String Compression { get; set; }
-
-        /// <summary>
         /// Public signing certificate
         /// </summary>
         [XmlElement("certificate")]
@@ -113,28 +107,9 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         public AppletManifest Unpack()
         {
-            switch (this.Compression)
-            {
-                case "lzma":
-                    using (MemoryStream ms = new MemoryStream(this.Manifest))
-                    using (var dfs = new LZipStream(ms, SharpCompress.Compressors.CompressionMode.Decompress, true))
-                        return AppletManifest.Load(dfs);
-                case "bzip2":
-                    using (MemoryStream ms = new MemoryStream(this.Manifest))
-                    using (var dfs = new BZip2Stream(ms, SharpCompress.Compressors.CompressionMode.Decompress, true))
-                        return AppletManifest.Load(dfs);
-                case "gzip":
-                    using (MemoryStream ms = new MemoryStream(this.Manifest))
-                    using (GZipStream dfs = new GZipStream(ms, CompressionMode.Decompress))
-                        return AppletManifest.Load(dfs);
-                case "none":
-                    using (MemoryStream ms = new MemoryStream(this.Manifest))
-                        return AppletManifest.Load(ms);
-                default:
-                    using (MemoryStream ms = new MemoryStream(this.Manifest))
-                    using (DeflateStream dfs = new DeflateStream(ms, CompressionMode.Decompress))
-                        return AppletManifest.Load(dfs);
-            }
+            using (MemoryStream ms = new MemoryStream(this.Manifest))
+            using (LZipStream gs = new LZipStream(ms, CompressionMode.Decompress))
+                return AppletManifest.Load(ms);
         }
 
         /// <summary>

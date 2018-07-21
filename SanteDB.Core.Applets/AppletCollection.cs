@@ -550,8 +550,28 @@ namespace SanteDB.Core.Applets
 
             if (content is String) // Content is a string
                 return Encoding.UTF8.GetBytes(content as String);
-            else if (content is byte[]) // Content is a binary asset
-                return content as byte[];
+            else if (content is byte[]) // Content is a binary asset 
+            {
+                // is the content compressed? 
+                if (Encoding.UTF8.GetString(content as byte[], 0, 4) == "LZMA")
+                {
+                    using (var ms = new MemoryStream(content as byte[]))
+                    using (var ls = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Decompress))
+                    using (var oms = new MemoryStream())
+                    {
+                        byte[] buffer = new byte[2048];
+                        int br = 1;
+                        while (br > 0)
+                        {
+                            br = ls.Read(buffer, 0, 2048);
+                            oms.Write(buffer, 0, br);
+                        }
+                        return oms.ToArray();
+                    }
+                }
+                else
+                    return content as byte[];
+            }
             else if (content is XElement) // Content is XML
             {
                 using (MemoryStream ms = new MemoryStream())
@@ -652,109 +672,7 @@ namespace SanteDB.Core.Applets
                             break;
                     } // switch
 
-                    // Process data bindings
-                    var dataBindings = htmlContent.DescendantNodes().OfType<XElement>().Where(o => o.Name.LocalName == "select" && o.Attributes().Any(a => a.Name.Namespace == xs_binding));
-                    foreach (var db in dataBindings)
-                    {
-
-                        // Get the databinding data
-                        XAttribute source = db.Attributes(xs_binding + "source").FirstOrDefault(),
-                                    filter = db.Attributes(xs_binding + "filter").FirstOrDefault(),
-                                    key = db.Attributes(xs_binding + "key").FirstOrDefault(),
-                                    value = db.Attributes(xs_binding + "value").FirstOrDefault(),
-                                    orderByDescending = db.Attributes(xs_binding + "orderByDescending").FirstOrDefault(),
-                                    orderBy = db.Attributes(xs_binding + "orderBy").FirstOrDefault();
-
-                        var locale = preProcessLocalization;
-                        int i = 0;
-                        var valueSelector = value?.Value;
-                        while (i++ < 2)
-                        {
-                            try
-                            {
-                                // Fall back to english?
-                                if (value != null)
-                                    valueSelector = value.Value.Replace("{{ locale }}", locale);
-
-                                if (source == null || filter == null)
-                                    continue;
-
-                                // First we want to build the filter
-                                Type hdsiType = typeof(Patient).GetTypeInfo().Assembly.ExportedTypes.FirstOrDefault(o => o.GetTypeInfo().GetCustomAttribute<XmlRootAttribute>()?.ElementName == source.Value);
-                                if (hdsiType == null)
-                                    continue;
-
-                                var expressionBuilderMethod = typeof(QueryExpressionParser).GetGenericMethod(nameof(QueryExpressionParser.BuildLinqExpression), new Type[] { hdsiType }, new Type[] { typeof(NameValueCollection) });
-                                var filterList = NameValueCollection.ParseQueryString(filter.Value);
-                                var expr = expressionBuilderMethod.Invoke(null, new object[] { filterList });
-                                var filterMethod = typeof(IEntitySourceProvider).GetGenericMethod("Query", new Type[] { hdsiType }, new Type[] { expr.GetType() });
-                                var dataSource = (filterMethod.Invoke(EntitySource.Current.Provider, new object[] { expr }));
-
-                                // Sort expression
-                                if (orderBy != null || orderByDescending != null)
-                                {
-                                    var orderProperty = hdsiType.GetRuntimeProperties().FirstOrDefault(o => o.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName == (orderBy ?? orderByDescending).Value);
-                                    ParameterExpression orderExpr = Expression.Parameter(dataSource.GetType());
-                                    var orderBody = orderExpr.Sort(orderProperty.Name, orderBy == null ? SortOrderType.OrderByDescending : SortOrderType.OrderBy);
-                                    dataSource = Expression.Lambda(orderBody, orderExpr).Compile().DynamicInvoke(dataSource);
-                                }
-
-                                // Render expression
-                                Delegate keyExpression = null, valueExpression = null, dataExpression = null;
-                                ParameterExpression parameter = Expression.Parameter(hdsiType);
-                                if (key == null)
-                                    keyExpression = Expression.Lambda(Expression.MakeMemberAccess(parameter, hdsiType.GetRuntimeProperty(nameof(IIdentifiedEntity.Key))), parameter).Compile();
-                                else
-                                {
-                                    var rawExpr = new BindingExpressionVisitor().RewriteLambda(expressionBuilderMethod.Invoke(null, new object[] { NameValueCollection.ParseQueryString(key.Value + "=RemoveMe") }) as LambdaExpression);
-                                    keyExpression = Expression.Lambda(new BindingExpressionVisitor().Visit(rawExpr.Body), rawExpr.Parameters).Compile();
-                                }
-                                if (value == null)
-                                    valueExpression = Expression.Lambda(Expression.Call(parameter, hdsiType.GetRuntimeMethod("ToString", new Type[] { })), parameter).Compile();
-                                else
-                                {
-                                    var rawExpr = new BindingExpressionVisitor().RewriteLambda(expressionBuilderMethod.Invoke(null, new object[] { NameValueCollection.ParseQueryString(valueSelector + "=RemoveMe") }) as LambdaExpression);
-                                    valueExpression = Expression.Lambda(rawExpr.Body, rawExpr.Parameters).Compile();
-                                }
-
-                                // Creation of the options
-                                foreach (var itm in dataSource as IEnumerable)
-                                {
-                                    var optAtt = new XElement(xs_xhtml + "option");
-                                    var keyValue = keyExpression.DynamicInvoke(itm);
-                                    var valueValue = valueExpression.DynamicInvoke(itm)?.ToString();
-                                    if (String.IsNullOrEmpty(valueValue)) continue;
-                                    optAtt.Add(new XAttribute("value", keyValue), new XText(valueValue));
-
-                                    foreach (var dataBinding in db.Attributes().Where(c => c.Name.ToString().StartsWith((xs_binding + "data-").ToString())))
-                                    {
-                                        if (dataBinding != null)
-                                        {
-                                            dataExpression = Expression.Lambda(Expression.MakeMemberAccess(parameter, hdsiType.GetRuntimeProperty(dataBinding.Value)), parameter).Compile();
-                                            var dataValue = dataExpression?.DynamicInvoke(itm)?.ToString();
-
-                                            if (string.IsNullOrEmpty(dataValue))
-                                            {
-                                                continue;
-                                            }
-
-                                            optAtt.Add(new XAttribute(dataBinding.Name.LocalName, dataValue));
-                                        }
-                                    }
-
-                                    db.Add(optAtt);
-                                }
-                                break;
-                            }
-                            catch
-                            {
-                                if (locale == "en") throw; // We can't fallback
-                                locale = "en"; // fallback to english
-                            }
-                        }
-                    }
-
-
+                    
                     // Now process SSI directives - <!--#include virtual="XXXXXXX" -->
                     var includes = htmlContent.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
                     foreach (var inc in includes)
@@ -812,7 +730,6 @@ namespace SanteDB.Core.Applets
 
                 // Render out the content
                 using (StringWriter sw = new StringWriter())
-
                 using (XmlWriter xw = XmlWriter.Create(sw, new XmlWriterSettings() { OmitXmlDeclaration = true }))
                 {
                     htmlContent.WriteTo(xw);
