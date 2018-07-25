@@ -108,6 +108,13 @@ namespace SanteDB.Core.Applets.Model
         }
 
         /// <summary>
+        /// Gets or sets the locales in the applet
+        /// </summary>
+        [XmlArray("locales")]
+        [XmlArrayItem("locale")]
+        public List<AppletLocale> Locales { get; set; }
+
+        /// <summary>
         /// Instructs the host which asset can be used as a starting point
         /// </summary>
         [XmlElement("startupAsset")]
