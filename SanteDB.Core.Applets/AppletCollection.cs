@@ -225,6 +225,7 @@ namespace SanteDB.Core.Applets
             s_templateCache?.Clear();
             s_viewModelCache?.Clear();
             s_viewStateAssets = null;
+            s_widgetAssets = null;
         }
 
         /// <summary>
