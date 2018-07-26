@@ -126,6 +126,12 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("loginAsset")]
         public String LoginAsset { get; set; }
 
+        /// <summary>
+        /// Gets or sets applet subscription definitions
+        /// </summary>
+        [XmlArray("subscriptions")]
+        [XmlArrayItem("add")]
+        public List<AppletSubscriptionDefinition> SubscriptionDefinition { get; set; }
 
         /// <summary>
         /// Initial applet configuration

@@ -55,6 +55,7 @@
     <Compile Include="AppletCollection.cs" />
     <Compile Include="BindingExpressionVisitor.cs" />
     <Compile Include="Model\AppletLocale.cs" />
+    <Compile Include="Model\AppletSubscriptionDefinition.cs" />
     <Compile Include="Model\AppletWidget.cs" />
     <Compile Include="Model\AppletStrings.cs" />
     <Compile Include="Model\AppletTemplateDefinition.cs" />
