@@ -24,6 +24,7 @@ using SharpCompress.Compressors.LZMA;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -46,7 +47,8 @@ namespace SanteDB.Core.Applets.Model
         }
 
         // Serializer
-        private static XmlSerializer s_xsz = new XmlSerializer(typeof(AppletPackage));
+        private static XmlSerializer s_packageSerializer = new XmlSerializer(typeof(AppletPackage));
+        private static XmlSerializer s_solutionSerializer = new XmlSerializer(typeof(AppletSolution));
 
         /// <summary>
         /// Load the specified manifest name
@@ -64,8 +66,15 @@ namespace SanteDB.Core.Applets.Model
         {
             using (GZipStream gzs = new GZipStream(resourceStream, CompressionMode.Decompress))
             {
-                var amfst = s_xsz.Deserialize(gzs) as AppletPackage;
-                return amfst;
+                using (var xr = XmlReader.Create(gzs))
+                {
+                    AppletPackage retVal = null;
+                    if (s_packageSerializer.CanDeserialize(xr))
+                        retVal = s_packageSerializer.Deserialize(gzs) as AppletPackage;
+                    else if (s_solutionSerializer.CanDeserialize(xr))
+                        retVal = s_solutionSerializer.Deserialize(gzs) as AppletSolution;
+                    return retVal;
+                }
             }
         }
 
@@ -107,6 +116,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         public AppletManifest Unpack()
         {
+            if (this is AppletSolution) throw new InvalidOperationException($"Only applet packages can be unpacked");
             using (MemoryStream ms = new MemoryStream(this.Manifest))
             using (LZipStream gs = new LZipStream(ms, CompressionMode.Decompress))
                 return AppletManifest.Load(ms);
@@ -119,7 +129,10 @@ namespace SanteDB.Core.Applets.Model
         {
             using (GZipStream gzs = new GZipStream(stream, CompressionMode.Compress))
             {
-                s_xsz.Serialize(gzs, this);
+                if (this is AppletSolution)
+                    s_solutionSerializer.Serialize(gzs, this);
+                else
+                    s_packageSerializer.Serialize(gzs, this);
             }
         }
     }
