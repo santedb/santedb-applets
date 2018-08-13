@@ -47,7 +47,9 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         // Serializer
         private static XmlSerializer s_xsz = new XmlSerializer(typeof(ViewModelDescription));
 
-        // Lock object
+        /// <summary>
+        /// The lock object
+        /// </summary>
         protected object m_lockObject = new object();
 
         /// <summary>

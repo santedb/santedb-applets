@@ -29,10 +29,19 @@ namespace SanteDB.Core.Applets.ViewModel.Description
     [Flags]
     public enum SerializationBehaviorType
     {
+        /// <summary>
+        /// Use the default serialization behavior
+        /// </summary>
         [XmlEnum("default")]
         Default = 0,
+        /// <summary>
+        /// Always serialize the member
+        /// </summary>
         [XmlEnum("always")]
         Always = 1,
+        /// <summary>
+        /// Never serialize the member
+        /// </summary>
         [XmlEnum("never")]
         Never = 2
     }

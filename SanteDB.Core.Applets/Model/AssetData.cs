@@ -103,6 +103,7 @@ namespace SanteDB.Core.Applets.Model
     [XmlType(nameof(AssetDataObsolete), Namespace = "http://santedb.org/applet")]
     public class AssetDataObsolete : AssetDataActionBase
     {
+        /// <summary>
         /// Gets the action name
         /// </summary>
         public override string ActionName { get { return "Obsolete"; } }
@@ -115,6 +116,7 @@ namespace SanteDB.Core.Applets.Model
     [XmlType(nameof(AssetDataInsert), Namespace = "http://santedb.org/applet")]
     public class AssetDataInsert : AssetDataActionBase
     {
+        /// <summary>
         /// Gets the action name
         /// </summary>
         public override string ActionName { get { return "Insert"; } }

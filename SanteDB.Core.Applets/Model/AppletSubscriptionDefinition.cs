@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
+#pragma warning disable CS1591
 namespace SanteDB.Core.Applets.Model
 {
 
@@ -39,6 +40,7 @@ namespace SanteDB.Core.Applets.Model
         AllOrSubscription = 3
     }
 
+    /// <summary>
     /// Represents synchronization pull triggers
     /// </summary>
     [XmlType(nameof(AppletSynchronizationTriggerType), Namespace = "http://santedb.org/applet")]
@@ -110,3 +112,4 @@ namespace SanteDB.Core.Applets.Model
     }
 
 }
+#pragma warning restore CS1591

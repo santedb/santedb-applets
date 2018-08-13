@@ -140,7 +140,11 @@ namespace SanteDB.Core.Applets
         private AssetContentResolver m_resolver = null;
         private Regex m_localizationRegex = new Regex("{{\\s?:?:?'(.*?)'\\s?\\|\\s?i18n\\s?}}");
 
+        /// <summary>
+        /// Represetns the applet scheme
+        /// </summary>
         public const string APPLET_SCHEME = "app://";
+
         private string m_baseUrl = null;
         private bool m_cachePages = true;
 
@@ -233,7 +237,9 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public AppletManifest DefaultApplet { get; set; }
 
-        // Applet manifest
+        /// <summary>
+        /// Represents the applet manifests in this collection
+        /// </summary>
         protected IList<AppletManifest> m_appletManifest = new List<AppletManifest>();
 
         /// <summary>
