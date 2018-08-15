@@ -70,9 +70,9 @@ namespace SanteDB.Core.Applets.Model
                 {
                     AppletPackage retVal = null;
                     if (s_packageSerializer.CanDeserialize(xr))
-                        retVal = s_packageSerializer.Deserialize(gzs) as AppletPackage;
+                        retVal = s_packageSerializer.Deserialize(xr) as AppletPackage;
                     else if (s_solutionSerializer.CanDeserialize(xr))
-                        retVal = s_solutionSerializer.Deserialize(gzs) as AppletSolution;
+                        retVal = s_solutionSerializer.Deserialize(xr) as AppletSolution;
                     return retVal;
                 }
             }
@@ -118,8 +118,8 @@ namespace SanteDB.Core.Applets.Model
         {
             if (this is AppletSolution) throw new InvalidOperationException($"Only applet packages can be unpacked");
             using (MemoryStream ms = new MemoryStream(this.Manifest))
-            using (LZipStream gs = new LZipStream(ms, CompressionMode.Decompress))
-                return AppletManifest.Load(ms);
+            using (LZipStream gs = new LZipStream(ms, CompressionMode.Decompress, leaveOpen: true))
+                return AppletManifest.Load(gs);
         }
 
         /// <summary>

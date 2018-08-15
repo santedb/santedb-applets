@@ -465,17 +465,18 @@ namespace SanteDB.Core.Applets
                         viewModelDefinition.DefinitionContent = this.RenderAssetContent(this.ResolveAsset(viewModelDefinition.Definition));
 
                     // De-serialize
-                    using (MemoryStream ms = new MemoryStream(viewModelDefinition.DefinitionContent))
-                    {
-                        retVal = ViewModelDescription.Load(ms);
-                        foreach (var itm in retVal.Include)
-                            retVal.Model.AddRange(this.GetViewModelDescription(itm).Model);
+                    if(viewModelDefinition != null)
+                        using (MemoryStream ms = new MemoryStream(viewModelDefinition.DefinitionContent))
+                        {
+                            retVal = ViewModelDescription.Load(ms);
+                            foreach (var itm in retVal.Include)
+                                retVal.Model.AddRange(this.GetViewModelDescription(itm).Model);
 
-                        // caching 
-                        if (this.CachePages)
-                            if (!s_viewModelCache.ContainsKey(viewModelName))
-                                s_viewModelCache.Add(viewModelName, retVal);
-                    }
+                            // caching 
+                            if (this.CachePages)
+                                if (!s_viewModelCache.ContainsKey(viewModelName))
+                                    s_viewModelCache.Add(viewModelName, retVal);
+                        }
 
                 }
             return retVal;
@@ -560,10 +561,10 @@ namespace SanteDB.Core.Applets
             else if (content is byte[]) // Content is a binary asset 
             {
                 // is the content compressed? 
-                if (Encoding.UTF8.GetString(content as byte[], 0, 4) == "LZMA")
+                if (Encoding.UTF8.GetString(content as byte[], 0, 4) == "LZIP")
                 {
                     using (var ms = new MemoryStream(content as byte[]))
-                    using (var ls = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Decompress))
+                    using (var ls = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Decompress, leaveOpen: true))
                     using (var oms = new MemoryStream())
                     {
                         byte[] buffer = new byte[2048];
@@ -573,7 +574,12 @@ namespace SanteDB.Core.Applets
                             br = ls.Read(buffer, 0, 2048);
                             oms.Write(buffer, 0, br);
                         }
-                        return oms.ToArray();
+
+                        content = oms.ToArray();
+                        lock (s_cache)
+                            if (!s_cache.ContainsKey(assetPath))
+                                s_cache.Add(assetPath, content as byte[]);
+                        return content as byte[];
                     }
                 }
                 else
