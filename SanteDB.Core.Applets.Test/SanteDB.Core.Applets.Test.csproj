@@ -34,8 +34,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-
-
   <Choose>
     <When Condition="$(SolutionName.Contains('-ext'))">
       <ItemGroup>
@@ -51,21 +49,19 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="SanteDB.Core.Api" Version="1.1.0"/>
-        <PackageReference Include="SanteDB.Core.Model" Version="1.1.0"/>
+        <PackageReference Include="SanteDB.Core.Api" Version="1.1.0" />
+        <PackageReference Include="SanteDB.Core.Model" Version="1.1.0" />
       </ItemGroup>
     </Otherwise>
   </Choose>
-  
   <ItemGroup>
-    <PackageReference Include="MARC.HI.EHRS.SVC.Auditing.Core" Version="2.0.0"/>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2"/>
-    <PackageReference Include="SharpCompress" Version="0.18.2"/>
+    <PackageReference Include="MARC.HI.EHRS.SVC.Auditing.Core" Version="2.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="SharpCompress" Version="0.18.2" />
     <ProjectReference Include="..\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj">
       <Project>{39E61451-F4FE-493D-B754-5F06EB284AAC}</Project>
       <Name>SanteDB.Core.Applets</Name>
     </ProjectReference>
-
     <Reference Include="System" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
@@ -118,7 +114,6 @@
     <EmbeddedResource Include="SimpleBundle.json" />
     <EmbeddedResource Include="QuantityObservation.json" />
     <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DoesntInterpretSimpleArray.json" />
