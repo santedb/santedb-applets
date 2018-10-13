@@ -17,6 +17,7 @@
  * User: fyfej
  * Date: 2017-9-1
  */
+using Newtonsoft.Json;
 using SharpCompress.Compressors;
 using SharpCompress.Compressors.BZip2;
 using SharpCompress.Compressors.Deflate;
@@ -81,7 +82,7 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Applet reference metadata
         /// </summary>
-        [XmlElement("info")]
+        [XmlElement("info"), JsonProperty("info")]
         public AppletInfo Meta
         {
             get;
@@ -92,7 +93,7 @@ namespace SanteDB.Core.Applets.Model
         /// Gets or ses the manifest to be installed
         /// </summary>
         /// <value>The manifest.</value>
-        [XmlElement("manifest")]
+        [XmlElement("manifest"), JsonIgnore]
         public byte[] Manifest
         {
             get;
@@ -102,13 +103,13 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// The pak version
         /// </summary>
-        [XmlAttribute("pakVersion")]
+        [XmlAttribute("pakVersion"), JsonIgnore]
         public String Version { get; set; }
 
         /// <summary>
         /// Public signing certificate
         /// </summary>
-        [XmlElement("certificate")]
+        [XmlElement("certificate"), JsonIgnore]
         public byte[] PublicKey { get; set; }
 
         /// <summary>

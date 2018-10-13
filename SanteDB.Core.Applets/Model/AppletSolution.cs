@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,7 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets or sets the list of applets that are to be included in this package
         /// </summary>
-        [XmlElement("include")]
+        [XmlElement("include"), JsonProperty("include")]
         public List<AppletPackage> Include { get; set; }
 
     }

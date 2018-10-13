@@ -102,6 +102,7 @@ namespace SanteDB.Core.Applets.Model
 		/// Gets or sets the applet's dependencies
 		/// </summary>
 		[XmlElement("dependency")]
+        [JsonProperty("dependency")]
 		public List<AppletName> Dependencies {
 			get;
 			set;
@@ -114,6 +115,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         /// <value><c>true</c> if this instance hash; otherwise, <c>false</c>.</value>
         [XmlElement("hash")]
+        [JsonProperty("hash")]
         public byte[] Hash
         {
             get;

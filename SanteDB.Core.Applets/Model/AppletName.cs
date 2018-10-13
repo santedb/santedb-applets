@@ -75,6 +75,7 @@ namespace SanteDB.Core.Applets.Model
 		/// </summary>
 		/// <value>The signature.</value>
 		[XmlAttribute("publicKeyToken")]
+        [JsonProperty("publicKeyToken")]
 		public String PublicKeyToken {
 			get;
 			set;
@@ -84,6 +85,7 @@ namespace SanteDB.Core.Applets.Model
 		/// Gets or sets the signature which can be used to validate the file
 		/// </summary>
 		[XmlElement("signature")]
+        [JsonIgnore]
 		public byte[] Signature {
 			get;
 			set;
