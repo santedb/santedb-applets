@@ -83,6 +83,12 @@ namespace SanteDB.Core.Applets.Model
         public List<String> AllowComponent { get; set; }
 
         /// <summary>
+        /// Gets the guard condition for the template executed against the patient (allows for blocking of
+        /// templates based on patient conditions)
+        /// </summary>
+        [XmlElement("guard")]
+        public String Guard { get; set; }
+        /// <summary>
         /// The content loaded
         /// </summary>
         [XmlIgnore]
