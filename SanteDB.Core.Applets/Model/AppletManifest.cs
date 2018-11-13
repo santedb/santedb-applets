@@ -152,17 +152,7 @@ namespace SanteDB.Core.Applets.Model
             get;
             set;
         }
-
-        /// <summary>
-        /// Gets or sets the administration panel menus the applet is exposing
-        /// </summary>
-        [XmlElement("adminItem")]
-        public List<AppletMenu> AdminMenus
-        {
-            get;
-            set;
-        }
-
+        
         /// <summary>
         /// Gets or ets the templates for use in the applet
         /// </summary>

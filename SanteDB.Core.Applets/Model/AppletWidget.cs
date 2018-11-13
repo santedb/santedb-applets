@@ -31,8 +31,8 @@ namespace SanteDB.Core.Applets.Model
     /// <summary>
     /// Identifies the scope of the panel
     /// </summary>
-    [XmlType(nameof(AppletWidgetScope), Namespace = "http://santedb.org/applet")]
-    public enum AppletWidgetScope
+    [XmlType(nameof(AppletWidgetContext), Namespace = "http://santedb.org/applet")]
+    public enum AppletWidgetContext
     {
         /// <summary>
         /// The widget should be placed on the patient summary page
@@ -95,9 +95,9 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets or sets the scope where the widget can be used
         /// </summary>
-        [XmlAttribute("scope")]
-        [JsonProperty("scope")]
-        public AppletWidgetScope Scope { get; set; }
+        [XmlAttribute("context")]
+        [JsonProperty("context")]
+        public AppletWidgetContext Context { get; set; }
 
         /// <summary>
         /// Gets or sets the type of widget
@@ -105,7 +105,7 @@ namespace SanteDB.Core.Applets.Model
         [XmlAttribute("type")]
         [JsonProperty("type")]
         public AppletWidgetType Type { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the name of the widget
         /// </summary>
@@ -133,7 +133,6 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("description")]
         [JsonProperty("description")]
         public List<LocaleString> Description { get; set; }
-
 
         /// <summary>
         /// Gets or sets the icon file reference

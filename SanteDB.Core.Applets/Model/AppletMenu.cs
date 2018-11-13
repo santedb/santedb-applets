@@ -45,6 +45,12 @@ namespace SanteDB.Core.Applets.Model
         }
 
         /// <summary>
+        /// Gets or sets the menu context (the menu sub-object)
+        /// </summary>
+        [XmlAttribute("context")]
+        public String Context { get; set; }
+
+        /// <summary>
         /// Gets or sets the order
         /// </summary>
         [XmlAttribute("order")]
