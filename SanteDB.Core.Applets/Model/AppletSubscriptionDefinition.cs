@@ -93,6 +93,12 @@ namespace SanteDB.Core.Applets.Model
         public ApplicationSubscriptionMode Mode { get; set; }
 
         /// <summary>
+        /// Ignore modified on
+        /// </summary>
+        [XmlAttribute("ignoreModifiedOn"), JsonProperty("ignoreModifiedOn")]
+        public bool IgnoreModifiedOn { get; set; }
+
+        /// <summary>
         /// The triggers on which the subscription is triggerd
         /// </summary>
         [XmlAttribute("trigger"), JsonProperty("trigger")]
