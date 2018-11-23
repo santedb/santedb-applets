@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="AppletCollection.cs" />
     <Compile Include="BindingExpressionVisitor.cs" />
+    <Compile Include="Model\AppletErrorAssetDefinition.cs" />
     <Compile Include="Model\AppletLocale.cs" />
     <Compile Include="Model\AppletSolution.cs" />
     <Compile Include="Model\AppletSubscriptionDefinition.cs" />

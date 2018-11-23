@@ -158,17 +158,6 @@ namespace SanteDB.Core.Applets
         public virtual Boolean CachePages { get { return this.m_cachePages; } set { this.m_cachePages = value; } }
 
         /// <summary>
-        /// Get authentication assets
-        /// </summary>
-        public IEnumerable<String> AuthenticationAssets
-        {
-            get
-            {
-                return this.m_appletManifest.Where(o => o.LoginAsset != null).Select(o => o.LoginAsset);
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the base url
         /// </summary>
         public virtual String BaseUrl

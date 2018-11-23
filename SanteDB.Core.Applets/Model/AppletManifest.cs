@@ -123,8 +123,8 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Instructs the host which asset can be used as a starting point
         /// </summary>
-        [XmlElement("loginAsset")]
-        public String LoginAsset { get; set; }
+        [XmlArray("errors"), XmlArrayItem("add")]
+        public List<AppletErrorAssetDefinition> ErrorAssets { get; set; }
 
         /// <summary>
         /// Gets or sets applet subscription definitions
