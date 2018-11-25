@@ -20,9 +20,6 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -105,7 +102,7 @@ namespace SanteDB.Core.Applets.Model
         [XmlAttribute("type")]
         [JsonProperty("type")]
         public AppletWidgetType Type { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the widget
         /// </summary>

@@ -17,15 +17,15 @@
  * User: justin
  * Date: 2018-6-21
  */
+using SanteDB.Core.Model;
+using SanteDB.Core.Model.Attributes;
+using SanteDB.Core.Model.EntityLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using SanteDB.Core.Model.Attributes;
-using SanteDB.Core.Model;
-using System.Reflection;
-using SanteDB.Core.Model.EntityLoader;
-using System.Linq.Expressions;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SanteDB.Core.Applets.ViewModel.Json
 {
@@ -81,7 +81,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 data.CopyTo(copy, 0);
             }
 
-            foreach(var itm in copy)
+            foreach (var itm in copy)
             {
                 var classifier = this.GetClassifierObj(itm, this.m_classifierAttribute);
                 String classKey = classifier?.ToString() ?? "$other";
@@ -137,11 +137,11 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 }
 
                 // Now set the classifiers
-                foreach(var inst in itm.Value as IList ?? new List<Object>() { itm.Value })
+                foreach (var inst in itm.Value as IList ?? new List<Object>() { itm.Value })
                 {
                     if (inst == null) continue;
 
-                    if(itm.Key != "$other" )
+                    if (itm.Key != "$other")
                         classifierProperty.SetValue(inst, itmClassifier);
                     retVal.Add(inst);
                 }
@@ -166,7 +166,8 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             }
 
             Object retVal = null;
-            if(!classValue.TryGetValue(classifierValue, out retVal)) { 
+            if (!classValue.TryGetValue(classifierValue, out retVal))
+            {
                 var funcType = typeof(Func<,>).MakeGenericType(type, typeof(bool));
                 var exprType = typeof(Expression<>).MakeGenericType(funcType);
                 var mi = typeof(IEntitySourceProvider).GetGenericMethod(nameof(IEntitySourceProvider.Query), new Type[] { type }, new Type[] { exprType });

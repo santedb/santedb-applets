@@ -24,8 +24,8 @@ namespace SanteDB.Core.Applets.Model
     /// <summary>
     /// Applet error definitions
     /// </summary>
-    [XmlType(nameof(AppletErrorAssetDefinition), Namespace ="http://santedb.org/applet")]
-    public class AppletErrorAssetDefinition 
+    [XmlType(nameof(AppletErrorAssetDefinition), Namespace = "http://santedb.org/applet")]
+    public class AppletErrorAssetDefinition
     {
 
         /// <summary>

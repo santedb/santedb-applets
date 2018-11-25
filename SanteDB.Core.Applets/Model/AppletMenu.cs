@@ -18,18 +18,17 @@
  * Date: 2018-6-21
  */
 using System;
-using System.Xml.Serialization;
-using System.Xml.Linq;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
 {
-	/// <summary>
-	/// Applet tile
-	/// </summary>
-	[XmlType(nameof(AppletMenu), Namespace = "http://santedb.org/applet")]
-	public class AppletMenu
-	{
+    /// <summary>
+    /// Applet tile
+    /// </summary>
+    [XmlType(nameof(AppletMenu), Namespace = "http://santedb.org/applet")]
+    public class AppletMenu
+    {
 
         /// <summary>
         /// Initialize
@@ -41,7 +40,7 @@ namespace SanteDB.Core.Applets.Model
             if (this.Menus != null)
                 foreach (var itm in this.Menus)
                     itm.Initialize(host);
-            
+
         }
 
         /// <summary>
@@ -60,10 +59,11 @@ namespace SanteDB.Core.Applets.Model
         /// Gets or sets the icon file reference
         /// </summary>
         [XmlElement("icon")]
-		public String Icon {
-			get;
-			set;
-		}
+        public String Icon
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the applet asset that this item should launch
@@ -87,22 +87,23 @@ namespace SanteDB.Core.Applets.Model
         /// Gets the specified name
         /// </summary>
         public String GetText(String language, bool returnNuetralIfNotFound = true)
-		{
-			var str = this.Text?.Find(o=>o.Language == language);
-			if(str == null && returnNuetralIfNotFound)
-				str = this.Text?.Find(o=>o.Language == null);
-			return str?.Value;
-		}
+        {
+            var str = this.Text?.Find(o => o.Language == language);
+            if (str == null && returnNuetralIfNotFound)
+                str = this.Text?.Find(o => o.Language == null);
+            return str?.Value;
+        }
 
-		/// <summary>
-		/// Gets or sets the name of the applet info
-		/// </summary>
-		/// <value>The name.</value>
-		[XmlElement("text")]
-		public List<LocaleString> Text {
-			get;
-			set;
-		}
+        /// <summary>
+        /// Gets or sets the name of the applet info
+        /// </summary>
+        /// <value>The name.</value>
+        [XmlElement("text")]
+        public List<LocaleString> Text
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// One or more menu items

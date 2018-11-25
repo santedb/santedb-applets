@@ -36,6 +36,6 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         /// <summary>
         /// Null context
         /// </summary>
-        public NullViewModelSerializer NullContext {  get { return this.Context as NullViewModelSerializer; } }
+        public NullViewModelSerializer NullContext { get { return this.Context as NullViewModelSerializer; } }
     }
 }

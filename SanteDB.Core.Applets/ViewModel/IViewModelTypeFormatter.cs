@@ -18,10 +18,6 @@
  * Date: 2018-6-21
  */
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.Core.Applets.ViewModel
 {
@@ -35,6 +31,6 @@ namespace SanteDB.Core.Applets.ViewModel
         /// Gets or sets the type that the serializer handles
         /// </summary>
         Type HandlesType { get; }
-        
+
     }
 }

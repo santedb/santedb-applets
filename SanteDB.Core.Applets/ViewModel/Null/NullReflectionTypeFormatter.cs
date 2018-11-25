@@ -17,18 +17,13 @@
  * User: justin
  * Date: 2018-6-21
  */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SanteDB.Core.Model;
-using System.Reflection;
-using System.Collections;
-using SanteDB.Core.Model.Attributes;
-using SanteDB.Core.Model.Interfaces;
-using SanteDB.Core.Services;
 using Newtonsoft.Json;
+using SanteDB.Core.Model;
+using SanteDB.Core.Model.Attributes;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace SanteDB.Core.Applets.ViewModel.Null
 {
@@ -141,7 +136,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 // Null ,do we want to force load?
                 if (value == null || (value as IList)?.Count == 0)
                 {
-                    var tkey = o.Key.HasValue ? o.Key.Value : Guid.NewGuid();  
+                    var tkey = o.Key.HasValue ? o.Key.Value : Guid.NewGuid();
                     if (context.ShouldForceLoad(propertyName, tkey))
                     {
                         if (o.Key.HasValue && value is IList && !propertyInfo.PropertyType.IsArray)
@@ -176,7 +171,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 context.NullContext.WritePropertyUtil(propertyName, value, context);
 
             }
-            
+
+        }
     }
-}
 }

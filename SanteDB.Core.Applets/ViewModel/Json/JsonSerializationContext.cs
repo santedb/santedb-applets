@@ -17,13 +17,7 @@
  * User: justin
  * Date: 2018-6-21
  */
-using SanteDB.Core.Applets.ViewModel.Description;
-using SanteDB.Core.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.Core.Applets.ViewModel.Json
 {
@@ -55,8 +49,8 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// <summary>
         /// Gets the JSON parent context
         /// </summary>
-        public JsonSerializationContext JsonParent {  get { return base.Parent as JsonSerializationContext; } }
+        public JsonSerializationContext JsonParent { get { return base.Parent as JsonSerializationContext; } }
 
-       
+
     }
 }

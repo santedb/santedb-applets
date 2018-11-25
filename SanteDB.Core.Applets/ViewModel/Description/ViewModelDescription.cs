@@ -23,8 +23,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.ViewModel.Description
@@ -94,7 +92,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         /// </summary>
         public void Initialize()
         {
-            if(!this.m_isInitialized)
+            if (!this.m_isInitialized)
                 foreach (var itm in this.Model)
                     itm.Initialize();
         }

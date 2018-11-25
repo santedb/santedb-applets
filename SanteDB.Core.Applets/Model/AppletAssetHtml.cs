@@ -18,8 +18,8 @@
  * Date: 2018-6-21
  */
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -124,6 +124,6 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlAttribute("static")]
         public bool Static { get; set; }
-        
+
     }
 }

@@ -20,8 +20,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.ViewModel.Description
@@ -49,7 +47,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
             this.Properties = new List<PropertyModelDescription>();
         }
 
-        
+
         /// <summary>
         /// Property container description
         /// </summary>
@@ -80,7 +78,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         public PropertyModelDescription FindProperty(String name)
         {
             PropertyModelDescription model = null;
-            if(!this.m_properties.TryGetValue(name, out model))
+            if (!this.m_properties.TryGetValue(name, out model))
             {
                 model = this.Properties.FirstOrDefault(o => o.Name == name);
                 lock (this.m_properties)

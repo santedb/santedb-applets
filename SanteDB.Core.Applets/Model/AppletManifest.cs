@@ -17,25 +17,21 @@
  * User: justin
  * Date: 2018-6-21
  */
+using SharpCompress.Compressors.LZMA;
 using System;
-using System.Xml.Serialization;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
-using SharpCompress.Compressors.LZMA;
-using SharpCompress.Compressors.Deflate;
-using SharpCompress.Compressors.BZip2;
+using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
 {
-	/// <summary>
-	/// The applet manifest is responsible for storing data related to a JavaScript applet
-	/// </summary>
-	[XmlType(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
-	[XmlRoot(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
-	public class AppletManifest : IEquatable<AppletManifest>
-	{
+    /// <summary>
+    /// The applet manifest is responsible for storing data related to a JavaScript applet
+    /// </summary>
+    [XmlType(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
+    [XmlRoot(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
+    public class AppletManifest : IEquatable<AppletManifest>
+    {
 
         private static XmlSerializer x_xsz = new XmlSerializer(typeof(AppletManifest));
 
@@ -43,12 +39,12 @@ namespace SanteDB.Core.Applets.Model
         /// Load the specified manifest name
         /// </summary>
         public static AppletManifest Load(Stream resourceStream)
-		{
-			
-			var amfst = x_xsz.Deserialize (resourceStream) as AppletManifest;
+        {
+
+            var amfst = x_xsz.Deserialize(resourceStream) as AppletManifest;
             amfst.Initialize();
             return amfst;
-		}
+        }
 
         /// <summary>
         /// Save this applet manifest to the stream
@@ -74,10 +70,11 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         /// <returns>The package.</returns>
         public AppletPackage CreatePackage()
-		{
-			AppletPackage retVal = new AppletPackage () {
-				Meta = this.Info
-			};
+        {
+            AppletPackage retVal = new AppletPackage()
+            {
+                Meta = this.Info
+            };
             using (var ms = new MemoryStream())
             {
                 using (var ls = new LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress))
@@ -89,7 +86,7 @@ namespace SanteDB.Core.Applets.Model
                 retVal.Manifest = ms.ToArray();
             }
             return retVal;
-		}
+        }
 
         /// <summary>
         /// Gets or sets the data operations to be performed
@@ -138,10 +135,11 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         /// <value>The configuration.</value>
         [XmlElement("configuration")]
-		public AppletInitialConfiguration Configuration {
-			get;
-			set;
-		}
+        public AppletInitialConfiguration Configuration
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the tile sizes the applet can have
@@ -152,7 +150,7 @@ namespace SanteDB.Core.Applets.Model
             get;
             set;
         }
-        
+
         /// <summary>
         /// Gets or ets the templates for use in the applet
         /// </summary>
@@ -169,10 +167,11 @@ namespace SanteDB.Core.Applets.Model
         /// Gets or sets the assets which are to be used in the applet
         /// </summary>
         [XmlElement("asset")]
-		public List<AppletAsset> Assets {
-			get;
-			set;
-		}
+        public List<AppletAsset> Assets
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the applet strings
@@ -180,24 +179,24 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("strings")]
         public List<AppletStrings> Strings { get; set; }
 
-		/// <summary>
-		/// Indicates whether the current object is equal to another object of the same type.
-		/// </summary>
-		/// <param name="other">An object to compare with this object.</param>
-		/// <returns>true if the current object is equal to the <paramref name="other" /> parameter; otherwise, false.</returns>
-		public bool Equals(AppletManifest other)
-		{
-			if (other == null)
-			{
-				return false;
-			}
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>true if the current object is equal to the <paramref name="other" /> parameter; otherwise, false.</returns>
+        public bool Equals(AppletManifest other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
 
-			if (this.Info == null && other.Info == null)
-			{
-				return true;
-			}
+            if (this.Info == null && other.Info == null)
+            {
+                return true;
+            }
 
-			return this.Info?.Id == other.Info?.Id;
-		}
-	}
+            return this.Info?.Id == other.Info?.Id;
+        }
+    }
 }

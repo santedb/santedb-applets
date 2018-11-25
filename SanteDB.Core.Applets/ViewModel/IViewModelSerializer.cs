@@ -20,14 +20,10 @@
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Interfaces;
-using SanteDB.Core.Model.Query;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.Core.Applets.ViewModel
 {
@@ -51,7 +47,7 @@ namespace SanteDB.Core.Applets.ViewModel
         /// Serializes the object <paramref name="data"/> onto stream <paramref name="s"/>
         /// </summary>
         void Serialize(Stream s, IdentifiedData data);
-        
+
         /// <summary>
         /// Serializes the object <paramref name="data"/> onto stream <paramref name="s"/>
         /// </summary>
@@ -76,6 +72,6 @@ namespace SanteDB.Core.Applets.ViewModel
         /// Loads the specified related object
         /// </summary>
         TRelated LoadRelated<TRelated>(Guid? objectKey) where TRelated : IdentifiedData, new();
-        
+
     }
 }

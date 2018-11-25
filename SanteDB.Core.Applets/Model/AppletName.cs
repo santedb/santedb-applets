@@ -17,90 +17,92 @@
  * User: justin
  * Date: 2018-6-21
  */
+using Newtonsoft.Json;
 using System;
 using System.Xml.Serialization;
-using System.Xml.Linq;
-using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace SanteDB.Core.Applets.Model
 {
-	/// <summary>
-	/// Applet reference
-	/// </summary>
-	[XmlType(nameof(AppletName), Namespace = "http://santedb.org/applet"), JsonObject]
-	public class AppletName
-	{
+    /// <summary>
+    /// Applet reference
+    /// </summary>
+    [XmlType(nameof(AppletName), Namespace = "http://santedb.org/applet"), JsonObject]
+    public class AppletName
+    {
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SanteDB.Core.Applets.Model.AppletName"/> class.
-		/// </summary>
-		public AppletName ()
-		{
-			
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SanteDB.Core.Applets.Model.AppletName"/> class.
+        /// </summary>
+        public AppletName()
+        {
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SanteDB.Core.Applets.Model.AppletName"/> class.
-		/// </summary>
-		public AppletName (String id, String version, String publicKeyToken)
-		{
-			this.Id = id;
-			this.Version = version;
-			this.PublicKeyToken = publicKeyToken;
-		}
+        }
 
-		/// <summary>
-		/// The identifier of the applet
-		/// </summary>
-		[XmlAttribute("id")]
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SanteDB.Core.Applets.Model.AppletName"/> class.
+        /// </summary>
+        public AppletName(String id, String version, String publicKeyToken)
+        {
+            this.Id = id;
+            this.Version = version;
+            this.PublicKeyToken = publicKeyToken;
+        }
+
+        /// <summary>
+        /// The identifier of the applet
+        /// </summary>
+        [XmlAttribute("id")]
         [JsonProperty("id")]
-		public String Id {
-			get;
-			set;
-		}
+        public String Id
+        {
+            get;
+            set;
+        }
 
-		/// <summary>
-		/// The version of the applet
-		/// </summary>
-		[XmlAttribute("version")]
+        /// <summary>
+        /// The version of the applet
+        /// </summary>
+        [XmlAttribute("version")]
         [JsonProperty("version")]
-		public String Version {
-			get;
-			set;
-		}
+        public String Version
+        {
+            get;
+            set;
+        }
 
-		/// <summary>
-		/// The signature of the applet (not used for verification, rather lookup)
-		/// </summary>
-		/// <value>The signature.</value>
-		[XmlAttribute("publicKeyToken")]
+        /// <summary>
+        /// The signature of the applet (not used for verification, rather lookup)
+        /// </summary>
+        /// <value>The signature.</value>
+        [XmlAttribute("publicKeyToken")]
         [JsonProperty("publicKeyToken")]
-		public String PublicKeyToken {
-			get;
-			set;
-		}
+        public String PublicKeyToken
+        {
+            get;
+            set;
+        }
 
-		/// <summary>
-		/// Gets or sets the signature which can be used to validate the file
-		/// </summary>
-		[XmlElement("signature")]
+        /// <summary>
+        /// Gets or sets the signature which can be used to validate the file
+        /// </summary>
+        [XmlElement("signature")]
         [JsonIgnore]
-		public byte[] Signature {
-			get;
-			set;
-		}
+        public byte[] Signature
+        {
+            get;
+            set;
+        }
 
-		/// <summary>
-		/// Returns a string that represents the current object.
-		/// </summary>
-		/// <returns>A string that represents the current object.</returns>
-		/// <filterpriority>2</filterpriority>
-		public override string ToString ()
-		{
-			return string.Format ("Id={0}, Version={1}, PublicKeyToken={2}", Id, Version, PublicKeyToken);
-		}
-	}
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
+        /// <filterpriority>2</filterpriority>
+        public override string ToString()
+        {
+            return string.Format("Id={0}, Version={1}, PublicKeyToken={2}", Id, Version, PublicKeyToken);
+        }
+    }
 
 
 }
