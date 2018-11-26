@@ -65,7 +65,7 @@ namespace SanteDB.Core.Applets
     public abstract class BundleContent
     {
 
-		// Namespace 
+        // Namespace 
         protected readonly XNamespace xs_xhtml = "http://www.w3.org/1999/xhtml";
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace SanteDB.Core.Applets
     /// </summary>
     public class MobileMetaBundleContent : BundleContent
     {
-        
+
         /// <summary>
         /// Render the specified elements
         /// </summary>
@@ -124,7 +124,7 @@ namespace SanteDB.Core.Applets
             }
         }
     }
-    
+
     /// <summary>
     /// Style bundle content
     /// </summary>

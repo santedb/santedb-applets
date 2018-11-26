@@ -102,7 +102,7 @@ namespace SanteDB.Core.Applets.Model
         [XmlAttribute("type")]
         [JsonProperty("type")]
         public AppletWidgetType Type { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the widget
         /// </summary>

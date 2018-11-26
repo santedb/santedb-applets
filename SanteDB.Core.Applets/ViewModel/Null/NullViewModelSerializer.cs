@@ -57,7 +57,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         private Dictionary<Guid, IEnumerable> m_loadedAssociations = new Dictionary<Guid, IEnumerable>();
 
         // Formatters
-        private  Dictionary<Type, INullTypeFormatter> m_formatters = new Dictionary<Type, INullTypeFormatter>();
+        private Dictionary<Type, INullTypeFormatter> m_formatters = new Dictionary<Type, INullTypeFormatter>();
 
 
         /// <summary>
@@ -206,7 +206,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
             }
             return retVal;
         }
-        
+
         /// <summary>
         /// Write property utility
         /// </summary>

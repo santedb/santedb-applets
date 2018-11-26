@@ -31,6 +31,6 @@ namespace SanteDB.Core.Applets.ViewModel
         /// Gets or sets the type that the serializer handles
         /// </summary>
         Type HandlesType { get; }
-        
+
     }
 }

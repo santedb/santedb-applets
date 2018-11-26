@@ -25,7 +25,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
     /// <summary>
     /// Property model description
     /// </summary>
-    [XmlType(nameof(PropertyModelDescription) ,Namespace = "http://santedb.org/model/view")]
+    [XmlType(nameof(PropertyModelDescription), Namespace = "http://santedb.org/model/view")]
     public class PropertyModelDescription : PropertyContainerDescription
     {
 

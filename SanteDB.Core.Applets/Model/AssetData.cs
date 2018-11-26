@@ -86,7 +86,7 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets the action name
         /// </summary>
-        public override string ActionName {  get { return "Update"; } }
+        public override string ActionName { get { return "Update"; } }
 
         /// <summary>
         /// Insert if not exists

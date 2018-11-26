@@ -34,7 +34,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         /// </summary>
         public void Initialize()
         {
-            for(int i = 0; i < this.Properties?.Count; i++)
+            for (int i = 0; i < this.Properties?.Count; i++)
                 this.Properties[i]?.Initialize(this);
         }
 

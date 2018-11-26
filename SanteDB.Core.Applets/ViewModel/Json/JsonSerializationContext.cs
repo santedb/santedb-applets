@@ -49,8 +49,8 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// <summary>
         /// Gets the JSON parent context
         /// </summary>
-        public JsonSerializationContext JsonParent {  get { return base.Parent as JsonSerializationContext; } }
+        public JsonSerializationContext JsonParent { get { return base.Parent as JsonSerializationContext; } }
 
-       
+
     }
 }

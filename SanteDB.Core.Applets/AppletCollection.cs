@@ -257,16 +257,17 @@ namespace SanteDB.Core.Applets
             get
             {
                 if (s_widgetAssets == null)
-                    s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(o=>o.MimeType =="text/html").Select(a =>
-                    {
-                        var content = ((a.Content == null && this.Resolver != null ? this.Resolver(a) : a.Content) as AppletWidget);
-                        if (content != null) {
-                            content.Controller = this.ResolveAsset(content.Controller, a)?.ToString();
-                            content.Style = content.Style.Select(s => this.ResolveAsset(s, a)?.ToString()).ToList();
-                            content.Icon = this.ResolveAsset(content.Icon, a)?.ToString();
-                        }
-                        return content;
-                    }).Where(o=>o != null).ToList();
+                    s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(o => o.MimeType == "text/html").Select(a =>
+                       {
+                           var content = ((a.Content == null && this.Resolver != null ? this.Resolver(a) : a.Content) as AppletWidget);
+                           if (content != null)
+                           {
+                               content.Controller = this.ResolveAsset(content.Controller, a)?.ToString();
+                               content.Style = content.Style.Select(s => this.ResolveAsset(s, a)?.ToString()).ToList();
+                               content.Icon = this.ResolveAsset(content.Icon, a)?.ToString();
+                           }
+                           return content;
+                       }).Where(o => o != null).ToList();
                 return s_widgetAssets;
             }
         }
@@ -443,7 +444,7 @@ namespace SanteDB.Core.Applets
                         viewModelDefinition.DefinitionContent = this.RenderAssetContent(this.ResolveAsset(viewModelDefinition.Definition));
 
                     // De-serialize
-                    if(viewModelDefinition != null)
+                    if (viewModelDefinition != null)
                         using (MemoryStream ms = new MemoryStream(viewModelDefinition.DefinitionContent))
                         {
                             retVal = ViewModelDescription.Load(ms);
@@ -663,7 +664,7 @@ namespace SanteDB.Core.Applets
                             break;
                     } // switch
 
-                    
+
                     // Now process SSI directives - <!--#include virtual="XXXXXXX" -->
                     var includes = htmlContent.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
                     foreach (var inc in includes)
@@ -823,7 +824,7 @@ namespace SanteDB.Core.Applets
             if (isUiContainer) // IS A UI CONTAINER = ANGULAR UI REQUIRES ALL CONTROLLERS BE LOADED
                 return this.ViewStateAssets.SelectMany(o => this.GetInjectionHeaders(o, false)).Distinct(new XElementEquityComparer()).ToList();
             else
-                foreach (var itm in htmlAsset.Script.Where(o=>o.IsStatic != false))
+                foreach (var itm in htmlAsset.Script.Where(o => o.IsStatic != false))
                 {
                     var incAsset = this.ResolveAsset(itm.Reference, asset);
                     if (incAsset != null)
@@ -873,7 +874,7 @@ namespace SanteDB.Core.Applets
             foreach (var itm in applet.Dependencies)
             {
                 var depItm = this.m_appletManifest.FirstOrDefault(o => o.Info.Id == itm.Id && (o.Info.PublicKeyToken == itm.PublicKeyToken || String.IsNullOrEmpty(itm.PublicKeyToken)));
-                if(depItm == null)
+                if (depItm == null)
                 {
                     var asm = System.Reflection.Assembly.Load(new AssemblyName($"{itm.Id}, Version={itm.Version}"));
                     verified &= asm != null;

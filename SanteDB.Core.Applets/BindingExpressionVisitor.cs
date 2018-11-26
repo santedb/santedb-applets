@@ -46,7 +46,7 @@ namespace SanteDB.Core.Applets
         {
             if (node == null) return node;
 
-            switch(node.NodeType)
+            switch (node.NodeType)
             {
                 case ExpressionType.Equal:
                     {

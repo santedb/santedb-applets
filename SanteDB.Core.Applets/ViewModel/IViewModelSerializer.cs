@@ -47,7 +47,7 @@ namespace SanteDB.Core.Applets.ViewModel
         /// Serializes the object <paramref name="data"/> onto stream <paramref name="s"/>
         /// </summary>
         void Serialize(Stream s, IdentifiedData data);
-        
+
         /// <summary>
         /// Serializes the object <paramref name="data"/> onto stream <paramref name="s"/>
         /// </summary>
@@ -72,6 +72,6 @@ namespace SanteDB.Core.Applets.ViewModel
         /// Loads the specified related object
         /// </summary>
         TRelated LoadRelated<TRelated>(Guid? objectKey) where TRelated : IdentifiedData, new();
-        
+
     }
 }

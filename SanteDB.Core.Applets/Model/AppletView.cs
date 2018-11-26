@@ -28,7 +28,7 @@ namespace SanteDB.Core.Applets.Model
     [XmlType(nameof(AppletView), Namespace = "http://santedb.org/applet")]
     public class AppletView : AppletViewState
     {
-        
+
         /// <summary>
         /// Gets or sets the list of titles 
         /// </summary>
@@ -40,6 +40,6 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlElement("controller")]
         public string Controller { get; set; }
-        
+
     }
 }

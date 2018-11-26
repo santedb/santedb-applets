@@ -136,7 +136,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 // Null ,do we want to force load?
                 if (value == null || (value as IList)?.Count == 0)
                 {
-                    var tkey = o.Key.HasValue ? o.Key.Value : Guid.NewGuid();  
+                    var tkey = o.Key.HasValue ? o.Key.Value : Guid.NewGuid();
                     if (context.ShouldForceLoad(propertyName, tkey))
                     {
                         if (o.Key.HasValue && value is IList && !propertyInfo.PropertyType.IsArray)
@@ -171,7 +171,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 context.NullContext.WritePropertyUtil(propertyName, value, context);
 
             }
-            
+
+        }
     }
-}
 }

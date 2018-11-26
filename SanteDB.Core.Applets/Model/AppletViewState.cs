@@ -35,7 +35,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlAttribute("name")]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the list of routes associated with the applet view
         /// </summary>

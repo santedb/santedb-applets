@@ -62,12 +62,13 @@ namespace SanteDB.Core.Applets.ViewModel
         /// <summary>
         /// Get the debug view
         /// </summary>
-        public string DebugView {
+        public string DebugView
+        {
             get
             {
                 var c = this;
                 String retVal = String.Empty;
-                while(c != null)
+                while (c != null)
                 {
                     retVal = "." + c.ToString() + retVal;
                     c = c.Parent;
@@ -89,7 +90,8 @@ namespace SanteDB.Core.Applets.ViewModel
         /// <summary>
         /// Gets or sets the view model description of the current element
         /// </summary>
-        public PropertyContainerDescription ElementDescription {
+        public PropertyContainerDescription ElementDescription
+        {
             get
             {
                 if (this.m_elementDescription == null)
@@ -104,7 +106,7 @@ namespace SanteDB.Core.Applets.ViewModel
                 return this.m_elementDescription;
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the root view model description
         /// </summary>
@@ -123,7 +125,8 @@ namespace SanteDB.Core.Applets.ViewModel
         /// <summary>
         /// Gets the root context
         /// </summary>
-        public SerializationContext Root {
+        public SerializationContext Root
+        {
             get
             {
                 var idx = this;
@@ -139,7 +142,7 @@ namespace SanteDB.Core.Applets.ViewModel
         public bool ShouldForceLoad(string childProperty, Guid key)
         {
             var propertyDescription = this.ElementDescription?.FindProperty(childProperty) as PropertyModelDescription;
-            if(propertyDescription?.Action != SerializationBehaviorType.Always)
+            if (propertyDescription?.Action != SerializationBehaviorType.Always)
                 return false;
 
             // Known miss targets
@@ -172,7 +175,7 @@ namespace SanteDB.Core.Applets.ViewModel
         /// <summary>
         /// Gets the current object identifier (from a JSON property perspective
         /// </summary>
-        public int ObjectId {  get { return this.m_objectId; } }
+        public int ObjectId { get { return this.m_objectId; } }
 
 
         /// <summary>
@@ -187,7 +190,7 @@ namespace SanteDB.Core.Applets.ViewModel
         {
 
             var idx = this;
-            while(idx != null)
+            while (idx != null)
             {
                 if ((idx.Instance as IdentifiedData)?.Key.HasValue == true &&
                     data.Key.HasValue &&
