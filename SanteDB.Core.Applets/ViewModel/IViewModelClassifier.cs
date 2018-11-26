@@ -17,7 +17,6 @@
  * User: justin
  * Date: 2018-6-21
  */
-using SanteDB.Core.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;

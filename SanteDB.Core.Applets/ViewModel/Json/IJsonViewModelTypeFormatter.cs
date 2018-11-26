@@ -20,8 +20,6 @@
 using Newtonsoft.Json;
 using SanteDB.Core.Model;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace SanteDB.Core.Applets.ViewModel.Json
 {

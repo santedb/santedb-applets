@@ -20,14 +20,10 @@
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Interfaces;
-using SanteDB.Core.Model.Query;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.Core.Applets.ViewModel
 {

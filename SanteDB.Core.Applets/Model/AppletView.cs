@@ -17,7 +17,6 @@
  * User: justin
  * Date: 2018-6-21
  */
-using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 

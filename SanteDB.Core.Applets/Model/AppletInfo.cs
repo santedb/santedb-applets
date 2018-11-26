@@ -17,18 +17,17 @@
  * User: justin
  * Date: 2018-6-21
  */
-using System;
-using System.Xml.Serialization;
-using System.Xml.Linq;
-using System.Collections.Generic;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
 {
-	/// <summary>
-	/// Represents applet information
-	/// </summary>
-	[XmlType(nameof(AppletInfo), Namespace = "http://santedb.org/applet")]
+    /// <summary>
+    /// Represents applet information
+    /// </summary>
+    [XmlType(nameof(AppletInfo), Namespace = "http://santedb.org/applet")]
     [JsonObject]
 	public class AppletInfo : AppletName
 	{

@@ -19,7 +19,6 @@
  */
 using Newtonsoft.Json;
 using SharpCompress.Compressors;
-using SharpCompress.Compressors.BZip2;
 using SharpCompress.Compressors.Deflate;
 using SharpCompress.Compressors.LZMA;
 using System;

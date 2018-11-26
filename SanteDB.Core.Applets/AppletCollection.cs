@@ -18,28 +18,17 @@
  * Date: 2018-6-21
  */
 using SanteDB.Core.Applets.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
-using System.Xml.Linq;
-using System.IO;
-using System.Xml;
-using System.Text.RegularExpressions;
-using SanteDB.Core.Model.Query;
-using SanteDB.Core.Model.Roles;
-using System.Reflection;
-using System.Xml.Serialization;
-using SanteDB.Core.Model.EntityLoader;
-using SanteDB.Core.Model.Interfaces;
-using SanteDB.Core.Model.Map;
-using System.Linq.Expressions;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
-using SanteDB.Core.Model;
 using SanteDB.Core.Applets.ViewModel.Description;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace SanteDB.Core.Applets
 {

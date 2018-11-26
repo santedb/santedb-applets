@@ -17,13 +17,7 @@
  * User: justin
  * Date: 2018-6-21
  */
-using SanteDB.Core.Applets.ViewModel.Description;
-using SanteDB.Core.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.Core.Applets.ViewModel.Json
 {

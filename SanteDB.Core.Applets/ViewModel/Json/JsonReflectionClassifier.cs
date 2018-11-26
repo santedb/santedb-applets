@@ -17,15 +17,15 @@
  * User: justin
  * Date: 2018-6-21
  */
+using SanteDB.Core.Model;
+using SanteDB.Core.Model.Attributes;
+using SanteDB.Core.Model.EntityLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using SanteDB.Core.Model.Attributes;
-using SanteDB.Core.Model;
-using System.Reflection;
-using SanteDB.Core.Model.EntityLoader;
-using System.Linq.Expressions;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SanteDB.Core.Applets.ViewModel.Json
 {

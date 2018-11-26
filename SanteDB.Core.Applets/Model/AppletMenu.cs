@@ -18,16 +18,15 @@
  * Date: 2018-6-21
  */
 using System;
-using System.Xml.Serialization;
-using System.Xml.Linq;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
 {
-	/// <summary>
-	/// Applet tile
-	/// </summary>
-	[XmlType(nameof(AppletMenu), Namespace = "http://santedb.org/applet")]
+    /// <summary>
+    /// Applet tile
+    /// </summary>
+    [XmlType(nameof(AppletMenu), Namespace = "http://santedb.org/applet")]
 	public class AppletMenu
 	{
 

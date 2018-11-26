@@ -17,18 +17,16 @@
  * User: justin
  * Date: 2018-6-21
  */
+using Newtonsoft.Json;
 using System;
 using System.Xml.Serialization;
-using System.Xml.Linq;
-using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace SanteDB.Core.Applets.Model
 {
-	/// <summary>
-	/// Applet localized string
-	/// </summary>
-	[XmlType(nameof(LocaleString), Namespace = "http://santedb.org/applet")]
+    /// <summary>
+    /// Applet localized string
+    /// </summary>
+    [XmlType(nameof(LocaleString), Namespace = "http://santedb.org/applet")]
     [JsonObject]
 	public class LocaleString
 	{

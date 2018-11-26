@@ -17,22 +17,18 @@
  * User: justin
  * Date: 2018-6-21
  */
+using SharpCompress.Compressors.LZMA;
 using System;
-using System.Xml.Serialization;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
-using SharpCompress.Compressors.LZMA;
-using SharpCompress.Compressors.Deflate;
-using SharpCompress.Compressors.BZip2;
+using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
 {
-	/// <summary>
-	/// The applet manifest is responsible for storing data related to a JavaScript applet
-	/// </summary>
-	[XmlType(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
+    /// <summary>
+    /// The applet manifest is responsible for storing data related to a JavaScript applet
+    /// </summary>
+    [XmlType(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
 	[XmlRoot(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
 	public class AppletManifest : IEquatable<AppletManifest>
 	{

@@ -17,18 +17,13 @@
  * User: justin
  * Date: 2018-6-21
  */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SanteDB.Core.Model;
-using System.Reflection;
-using System.Collections;
-using SanteDB.Core.Model.Attributes;
-using SanteDB.Core.Model.Interfaces;
-using SanteDB.Core.Services;
 using Newtonsoft.Json;
+using SanteDB.Core.Model;
+using SanteDB.Core.Model.Attributes;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace SanteDB.Core.Applets.ViewModel.Null
 {

@@ -17,21 +17,18 @@
  * User: justin
  * Date: 2018-6-21
  */
+using Newtonsoft.Json;
+using SanteDB.Core.Extensions;
+using SanteDB.Core.Model;
+using SanteDB.Core.Model.Attributes;
+using SanteDB.Core.Model.Interfaces;
+using SanteDB.Core.Model.Serialization;
+using SanteDB.Core.Services;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using SanteDB.Core.Model;
 using System.Reflection;
-using SanteDB.Core.Model.Attributes;
-using SanteDB.Core.Applets.ViewModel.Description;
-using System.Collections;
-using SanteDB.Core.Model.Serialization;
-using SanteDB.Core.Extensions;
-using SanteDB.Core.Model.Interfaces;
-using SanteDB.Core.Services;
 
 namespace SanteDB.Core.Applets.ViewModel.Json
 {
