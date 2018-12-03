@@ -18,6 +18,7 @@
  * Date: 2018-6-21
  */
 using Newtonsoft.Json;
+using SanteDB.Core.Model.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
@@ -92,14 +93,14 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets or sets the scope where the widget can be used
         /// </summary>
-        [XmlAttribute("context")]
+        [XmlAttribute("context"), QueryParameter("context")]
         [JsonProperty("context")]
         public AppletWidgetContext Context { get; set; }
 
         /// <summary>
         /// Gets or sets the type of widget
         /// </summary>
-        [XmlAttribute("type")]
+        [XmlAttribute("type"), QueryParameter("type")]
         [JsonProperty("type")]
         public AppletWidgetType Type { get; set; }
 

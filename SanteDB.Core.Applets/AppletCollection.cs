@@ -122,7 +122,7 @@ namespace SanteDB.Core.Applets
         private static Dictionary<String, AppletTemplateDefinition> s_templateCache = new Dictionary<string, AppletTemplateDefinition>();
         private static Dictionary<String, ViewModelDescription> s_viewModelCache = new Dictionary<string, ViewModelDescription>();
         private static List<AppletAsset> s_viewStateAssets = null;
-        private static List<AppletWidget> s_widgetAssets = null;
+        private static List<AppletAsset> s_widgetAssets = null;
 
         private static Object s_syncLock = new object();
 
@@ -252,22 +252,12 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Gets a list of all widgets for all loaded applets
         /// </summary>
-        public List<AppletWidget> WidgetAssets
+        public List<AppletAsset> WidgetAssets
         {
             get
             {
                 if (s_widgetAssets == null)
-                    s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(o => o.MimeType == "text/html").Select(a =>
-                       {
-                           var content = ((a.Content == null && this.Resolver != null ? this.Resolver(a) : a.Content) as AppletWidget);
-                           if (content != null)
-                           {
-                               content.Controller = this.ResolveAsset(content.Controller, a)?.ToString();
-                               content.Style = content.Style.Select(s => this.ResolveAsset(s, a)?.ToString()).ToList();
-                               content.Icon = this.ResolveAsset(content.Icon, a)?.ToString();
-                           }
-                           return content;
-                       }).Where(o => o != null).ToList();
+                    s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(o => o.MimeType == "text/html" && (o.Content == null && this.Resolver != null ? this.Resolver(o) : o.Content) is AppletWidget).ToList();
                 return s_widgetAssets;
             }
         }
