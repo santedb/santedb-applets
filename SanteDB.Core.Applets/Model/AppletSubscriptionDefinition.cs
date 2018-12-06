@@ -91,7 +91,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlAttribute("mode"), JsonProperty("mode")]
         public ApplicationSubscriptionMode Mode { get; set; }
-
+        
         /// <summary>
         /// Ignore modified on
         /// </summary>
