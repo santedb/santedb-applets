@@ -61,7 +61,12 @@ namespace SanteDB.Core.Applets.Model
         /// The widget should appear in the encounter 
         /// </summary>
         [XmlEnum("encounter")]
-        Encounter
+        Encounter,
+        /// <summary>
+        /// Widget should appear in administrative panel
+        /// </summary>
+        [XmlEnum("admin")]
+        Admin
     }
 
     /// <summary>
