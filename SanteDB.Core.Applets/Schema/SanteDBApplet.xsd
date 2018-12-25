@@ -16,7 +16,7 @@
  - the License.
  - 
  - User: justin
- - Date: 2018-6-21
+ - Date: 2018-6-22
  -->
 <xs:schema xmlns:tns="http://santedb.org/applet" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:q1="http://santedb.org/model" xmlns:q2="http://santedb.org/model" xmlns:q3="http://santedb.org/model" xmlns:q4="http://santedb.org/model" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:q5="http://santedb.org/model" xmlns:q6="http://santedb.org/model" xmlns:q7="http://santedb.org/model" xmlns:q8="http://santedb.org/model" xmlns:q9="http://santedb.org/model" targetNamespace="http://santedb.org/applet" elementFormDefault="qualified">
 	<xs:import namespace="http://santedb.org/model" schemaLocation="SanteDBModel.xsd"/>
