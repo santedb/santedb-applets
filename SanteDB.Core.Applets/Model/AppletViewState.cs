@@ -29,7 +29,7 @@ namespace SanteDB.Core.Applets.Model
     [XmlType(nameof(AppletViewState), Namespace = "http://santedb.org/applet")]
     public class AppletViewState
     {
-
+        
         /// <summary>
         /// Gets or sets the name of the view state
         /// </summary>

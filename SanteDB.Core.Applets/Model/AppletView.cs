@@ -30,12 +30,6 @@ namespace SanteDB.Core.Applets.Model
     {
 
         /// <summary>
-        /// Gets or sets the list of titles 
-        /// </summary>
-        [XmlElement("title")]
-        public List<LocaleString> Title { get; set; }
-
-        /// <summary>
         /// Gets or sets the controller for the object
         /// </summary>
         [XmlElement("controller")]
