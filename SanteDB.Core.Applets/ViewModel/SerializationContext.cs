@@ -192,7 +192,8 @@ namespace SanteDB.Core.Applets.ViewModel
             var idx = this;
             while (idx != null)
             {
-                if ((idx.Instance as IdentifiedData)?.Key.HasValue == true &&
+                if (idx.Instance.GetType() == data.GetType() &&
+                    (idx.Instance as IdentifiedData)?.Key.HasValue == true &&
                     data.Key.HasValue &&
                     (idx.Instance as IdentifiedData)?.Key.Value == data.Key.Value ||
                     idx.Instance == data)
