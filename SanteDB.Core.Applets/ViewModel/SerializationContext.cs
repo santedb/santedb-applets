@@ -21,6 +21,9 @@ using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.ViewModel
 {
@@ -32,6 +35,7 @@ namespace SanteDB.Core.Applets.ViewModel
         // Object identifier
         private int m_objectId = 0;
         private int m_masterObjectId = 0;
+        private Dictionary<String, MethodInfo> m_serializationCheck;
 
         // Element description
         private PropertyContainerDescription m_elementDescription;
@@ -47,6 +51,10 @@ namespace SanteDB.Core.Applets.ViewModel
             this.Context = context;
             this.ViewModelDescription = this.Context.ViewModel;
             this.LoadedProperties = new Dictionary<Guid, HashSet<string>>();
+            this.m_serializationCheck = instance.GetType().GetRuntimeProperties()
+                .Select(p => new { MethodInfo = p.DeclaringType.GetRuntimeMethod($"ShouldSerialize{p.Name}", new Type[0]), SerializationName = p.GetCustomAttributes<XmlElementAttribute>().FirstOrDefault()?.ElementName })
+                .Where(o => o.MethodInfo != null && !String.IsNullOrEmpty(o.SerializationName))
+                .ToDictionary(o => o.SerializationName, o => o.MethodInfo);
         }
 
         /// <summary>
@@ -208,16 +216,22 @@ namespace SanteDB.Core.Applets.ViewModel
         /// </summary>
         public bool ShouldSerialize(String childProperty)
         {
-            if (childProperty == "id") return true;
+            var retVal = true;
+            if (childProperty == "id") return retVal;
             var propertyDescription = this.ElementDescription?.FindProperty(childProperty) as PropertyModelDescription;
             if (propertyDescription?.Action == SerializationBehaviorType.Never || // Never serialize
                 this.ElementDescription == null ||
                 (!this.ElementDescription.All && propertyDescription == null))
             {
                 // Parent is not set to all and does not explicitly call this property out
-                return (this.ElementDescription == null && this.Parent?.ElementDescription?.All == true);
+                retVal &= (this.ElementDescription == null && this.Parent?.ElementDescription?.All == true);
             }
-            return true;
+
+            // Get the member
+            MethodInfo serializationCheck = null;
+            if (this.m_serializationCheck.TryGetValue(childProperty, out serializationCheck))
+                retVal &= (bool)serializationCheck.Invoke(this.Instance, new object[0]);
+            return retVal;
         }
 
         /// <summary>
