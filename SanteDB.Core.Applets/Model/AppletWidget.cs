@@ -26,49 +26,7 @@ using System.Xml.Serialization;
 namespace SanteDB.Core.Applets.Model
 {
 
-    /// <summary>
-    /// Identifies the scope of the panel
-    /// </summary>
-    [XmlType(nameof(AppletWidgetContext), Namespace = "http://santedb.org/applet")]
-    public enum AppletWidgetContext
-    {
-        /// <summary>
-        /// The widget should be placed on the patient summary page
-        /// </summary>
-        [XmlEnum("patient")]
-        Patient,
-        /// <summary>
-        /// The widget should be placed on the facility home page
-        /// </summary>
-        [XmlEnum("place")]
-        Place,
-        /// <summary>
-        /// The widget should be placed on the user settings page
-        /// </summary>
-        [XmlEnum("user")]
-        User,
-        /// <summary>
-        /// The widget should be placed on the configuration screen
-        /// </summary>
-        [XmlEnum("config")]
-        Configuration,
-        /// <summary>
-        /// The widget should appear on an Act
-        /// </summary>
-        [XmlEnum("act")]
-        Act,
-        /// <summary>
-        /// The widget should appear in the encounter 
-        /// </summary>
-        [XmlEnum("encounter")]
-        Encounter,
-        /// <summary>
-        /// Widget should appear in administrative panel
-        /// </summary>
-        [XmlEnum("admin")]
-        Admin
-    }
-
+   
     /// <summary>
     /// Identifies the type which the widget is
     /// </summary>
@@ -100,7 +58,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlAttribute("context"), QueryParameter("context")]
         [JsonProperty("context")]
-        public AppletWidgetContext Context { get; set; }
+        public String Context { get; set; }
 
         /// <summary>
         /// Gets or sets the type of widget
