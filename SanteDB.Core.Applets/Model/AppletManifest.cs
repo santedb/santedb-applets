@@ -124,13 +124,6 @@ namespace SanteDB.Core.Applets.Model
         public List<AppletErrorAssetDefinition> ErrorAssets { get; set; }
 
         /// <summary>
-        /// Gets or sets applet subscription definitions
-        /// </summary>
-        [XmlArray("subscriptions")]
-        [XmlArrayItem("add")]
-        public List<AppletSubscriptionDefinition> SubscriptionDefinition { get; set; }
-
-        /// <summary>
         /// Initial applet configuration
         /// </summary>
         /// <value>The configuration.</value>

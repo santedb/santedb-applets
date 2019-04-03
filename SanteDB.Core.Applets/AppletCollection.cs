@@ -22,6 +22,7 @@ using SanteDB.Core.Applets.ViewModel.Description;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -44,6 +45,10 @@ namespace SanteDB.Core.Applets
     public class ReadonlyAppletCollection : AppletCollection
     {
 
+        /// <summary>
+        /// Fired when the collection has changed
+        /// </summary>
+        public override event NotifyCollectionChangedEventHandler CollectionChanged;
 
         /// <summary>
         /// Wrapper for the readonly applet collection
@@ -51,6 +56,7 @@ namespace SanteDB.Core.Applets
         internal ReadonlyAppletCollection(AppletCollection wrap)
         {
             this.m_appletManifest = wrap;
+            wrap.CollectionChanged += (o, e) => this.CollectionChanged?.Invoke(o, e);
         }
 
         /// <summary>
@@ -113,7 +119,7 @@ namespace SanteDB.Core.Applets
     /// <summary>
     /// Represents a collection of applets
     /// </summary>
-    public class AppletCollection : IList<AppletManifest>
+    public class AppletCollection : IList<AppletManifest>, INotifyCollectionChanged
     {
 
         // A cache of rendered assets
@@ -221,9 +227,21 @@ namespace SanteDB.Core.Applets
         protected IList<AppletManifest> m_appletManifest = new List<AppletManifest>();
 
         /// <summary>
+        /// Fired when the collection has changed
+        /// </summary>
+        public virtual event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        /// <summary>
         /// Gets or sets the item at the specified element
         /// </summary>
-        public AppletManifest this[int index] { get { return this.m_appletManifest[index]; } set { this.m_appletManifest[index] = value; } }
+        public AppletManifest this[int index] {
+            get { return this.m_appletManifest[index]; }
+            set {
+                this.m_appletManifest[index] = value;
+                this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, index));
+
+            }
+        }
 
         /// <summary>
         /// Return the count of applets in the collection
@@ -285,6 +303,7 @@ namespace SanteDB.Core.Applets
             s_stringCache.Clear();
 
             this.m_appletManifest.Add(item);
+            this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
         }
 
         /// <summary>
@@ -294,7 +313,9 @@ namespace SanteDB.Core.Applets
         {
             if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
 
+            this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, this.m_appletManifest));
             this.m_appletManifest.Clear();
+
         }
 
         /// <summary>
@@ -336,6 +357,8 @@ namespace SanteDB.Core.Applets
         {
             if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
             this.m_appletManifest.Insert(index, item);
+            this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+
         }
 
         /// <summary>
@@ -345,7 +368,9 @@ namespace SanteDB.Core.Applets
         {
             if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
 
-            return this.m_appletManifest.Remove(item);
+            var retVal = this.m_appletManifest.Remove(item);
+            if(retVal) this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            return retVal;
         }
 
         /// <summary>
@@ -355,7 +380,10 @@ namespace SanteDB.Core.Applets
         {
             if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
 
+            var item = this.m_appletManifest[index];
             this.m_appletManifest.RemoveAt(index);
+            this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+
         }
 
         /// <summary>
