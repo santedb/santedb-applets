@@ -51,7 +51,7 @@ namespace SanteDB.Core.Applets.ViewModel
             this.Context = context;
             this.ViewModelDescription = this.Context.ViewModel;
             this.LoadedProperties = new Dictionary<Guid, HashSet<string>>();
-            this.m_serializationCheck = instance.GetType().GetRuntimeProperties()
+            this.m_serializationCheck = instance?.GetType().GetRuntimeProperties()
                 .Select(p => new { MethodInfo = p.DeclaringType.GetRuntimeMethod($"ShouldSerialize{p.Name}", new Type[0]), SerializationName = p.GetCustomAttributes<XmlElementAttribute>().FirstOrDefault()?.ElementName })
                 .Where(o => o.MethodInfo != null && !String.IsNullOrEmpty(o.SerializationName))
                 .ToDictionary(o => o.SerializationName, o => o.MethodInfo);
