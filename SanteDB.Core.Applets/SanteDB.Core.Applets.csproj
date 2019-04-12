@@ -41,6 +41,7 @@
       <Link>SanteDB.licenseheader</Link>
     </None>
     <None Include="app.config" />
+    <EmbeddedResource Include="Publisher\appca.santesuite.net.cer" />
     <None Include="SanteDB.Core.Applets.nuspec" />
     <None Include="Schema\SanteDBApplet.xsd">
       <SubType>Designer</SubType>
