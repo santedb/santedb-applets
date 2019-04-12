@@ -125,12 +125,12 @@ namespace SanteDB.Core.Applets.Model
             get;
             set;
         }
-        
+
         /// <summary>
-        /// Represents the time that the package was created
+        /// Represents the timestamp of the object
         /// </summary>
-        [XmlAttribute("ts"), JsonProperty("ts")]
-        public DateTime TimeStamp { get; set; }
+        [XmlElement("ts"), JsonProperty("ts")]
+        public DateTime? TimeStamp { get; set; }
 
         /// <summary>
         /// Return this applet reference
