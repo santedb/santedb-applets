@@ -116,7 +116,6 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         public AppletManifest Unpack()
         {
-            if (this is AppletSolution) throw new InvalidOperationException($"Only applet packages can be unpacked");
             using (MemoryStream ms = new MemoryStream(this.Manifest))
             using (LZipStream gs = new LZipStream(ms, CompressionMode.Decompress, leaveOpen: true))
                 return AppletManifest.Load(gs);
