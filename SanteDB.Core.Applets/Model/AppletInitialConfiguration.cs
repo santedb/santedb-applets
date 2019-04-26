@@ -43,7 +43,7 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Applet configuration entry
         /// </summary>
-        [XmlElement("appSetting")]
+        [XmlArray("appSettings"), XmlArrayItem("add")]
         public List<AppletConfigurationEntry> AppSettings
         {
             get;
