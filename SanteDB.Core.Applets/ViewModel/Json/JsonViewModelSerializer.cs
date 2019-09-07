@@ -383,7 +383,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 IJsonViewModelTypeFormatter typeFormatter = this.GetFormatter(instance.GetType());
 
                 var simpleValue = typeFormatter.GetSimpleValue(instance);
-                if (simpleValue != null && propertyName != "$other") // Special case for $other
+                if (simpleValue != null && propertyName != "$other" && context != null) // Special case for $other
                     w.WriteValue(simpleValue);
                 else
                 {
