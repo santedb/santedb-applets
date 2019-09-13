@@ -19,6 +19,7 @@
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.ViewModel.Description;
+using SharpCompress.IO;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -561,7 +562,7 @@ namespace SanteDB.Core.Applets
                 if (Encoding.UTF8.GetString(content as byte[], 0, 4) == "LZIP")
                 {
                     using (var ms = new MemoryStream(content as byte[]))
-                    using (var ls = new SharpCompress.Compressors.LZMA.LZipStream(ms, SharpCompress.Compressors.CompressionMode.Decompress, leaveOpen: true))
+                    using (var ls = new SharpCompress.Compressors.LZMA.LZipStream(new NonDisposingStream(ms), SharpCompress.Compressors.CompressionMode.Decompress))
                     using (var oms = new MemoryStream())
                     {
                         byte[] buffer = new byte[2048];

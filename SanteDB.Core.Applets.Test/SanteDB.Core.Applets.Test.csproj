@@ -56,7 +56,7 @@
   </Choose>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="SharpCompress" Version="0.18.2" />
+    <PackageReference Include="SharpCompress" Version="0.24.0" />
     <ProjectReference Include="..\SanteDB.Core.Applets\SanteDB.Core.Applets.csproj">
       <Project>{39E61451-F4FE-493D-B754-5F06EB284AAC}</Project>
       <Name>SanteDB.Core.Applets</Name>

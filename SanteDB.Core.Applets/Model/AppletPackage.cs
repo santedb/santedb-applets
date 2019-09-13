@@ -21,6 +21,7 @@ using Newtonsoft.Json;
 using SharpCompress.Compressors;
 using SharpCompress.Compressors.Deflate;
 using SharpCompress.Compressors.LZMA;
+using SharpCompress.IO;
 using System;
 using System.IO;
 using System.Reflection;
@@ -117,7 +118,7 @@ namespace SanteDB.Core.Applets.Model
         public AppletManifest Unpack()
         {
             using (MemoryStream ms = new MemoryStream(this.Manifest))
-            using (LZipStream gs = new LZipStream(ms, CompressionMode.Decompress, leaveOpen: true))
+            using (LZipStream gs = new LZipStream(new NonDisposingStream(ms), CompressionMode.Decompress))
                 return AppletManifest.Load(gs);
         }
 
