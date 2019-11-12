@@ -65,7 +65,9 @@ namespace SanteDB.Core.Applets
     public abstract class BundleContent
     {
 
-        // Namespace 
+        /// <summary>
+        /// Namespace for XHTML
+        /// </summary>
         protected readonly XNamespace xs_xhtml = "http://www.w3.org/1999/xhtml";
 
         /// <summary>
