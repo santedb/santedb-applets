@@ -899,7 +899,7 @@ namespace SanteDB.Core.Applets
                     verified &= asm != null;
                 }
                 else
-                    verified &= depItm != null && new Version(depItm?.Info.Version) >= new Version(itm.Version);
+                    verified &= depItm != null && new Version(depItm?.Info.Version) >= new Version(itm.Version ?? "0.0.0.0");
             }
             return verified;
         }
