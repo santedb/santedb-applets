@@ -19,6 +19,7 @@
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.ViewModel.Description;
+using SanteDB.Core.Diagnostics;
 using SharpCompress.IO;
 using System;
 using System.Collections;
@@ -135,6 +136,7 @@ namespace SanteDB.Core.Applets
 
         private AssetContentResolver m_resolver = null;
         private Regex m_localizationRegex = new Regex("{{\\s?:?:?'(.*?)'\\s?\\|\\s?i18n\\s?}}");
+        private Tracer m_tracer = Tracer.GetTracer(typeof(AppletCollection));
 
         /// <summary>
         /// Represetns the applet scheme
@@ -895,8 +897,7 @@ namespace SanteDB.Core.Applets
                 var depItm = this.m_appletManifest.FirstOrDefault(o => o.Info.Id == itm.Id && (o.Info.PublicKeyToken == itm.PublicKeyToken || String.IsNullOrEmpty(itm.PublicKeyToken)));
                 if (depItm == null)
                 {
-                    var asm = System.Reflection.Assembly.Load(new AssemblyName($"{itm.Id}, Version={itm.Version}"));
-                    verified &= asm != null;
+                    return false;
                 }
                 else
                     verified &= depItm != null && new Version(depItm?.Info.Version) >= new Version(itm.Version ?? "0.0.0.0");
