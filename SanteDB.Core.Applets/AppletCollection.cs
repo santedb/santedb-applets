@@ -136,6 +136,8 @@ namespace SanteDB.Core.Applets
 
         private AssetContentResolver m_resolver = null;
         private Regex m_localizationRegex = new Regex("{{\\s?:?:?'(.*?)'\\s?\\|\\s?i18n\\s?}}");
+        private Regex m_bindingRegex = new Regex("{{\\s?\\$([A-Za-z0-9_]*?)\\s?}}");
+
         private Tracer m_tracer = Tracer.GetTracer(typeof(AppletCollection));
 
         /// <summary>
@@ -542,7 +544,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Render asset content
         /// </summary>
-        public byte[] RenderAssetContent(AppletAsset asset, string preProcessLocalization = null, bool staticScriptRefs = true)
+        public byte[] RenderAssetContent(AppletAsset asset, string preProcessLocalization = null, bool staticScriptRefs = true, IDictionary<String, String> bindingParameters = null)
         {
 
             // First, is there an object already
@@ -662,7 +664,7 @@ namespace SanteDB.Core.Applets
                                     if (layoutAsset == null)
                                         throw new FileNotFoundException(String.Format("Layout asset {0} not found", htmlAsset.Layout));
 
-                                    using (MemoryStream ms = new MemoryStream(this.RenderAssetContent(layoutAsset, preProcessLocalization)))
+                                    using (MemoryStream ms = new MemoryStream(this.RenderAssetContent(layoutAsset, preProcessLocalization, bindingParameters: bindingParameters)))
                                         htmlContent = XDocument.Load(ms).FirstNode as XElement;
 
 
@@ -702,7 +704,7 @@ namespace SanteDB.Core.Applets
                             inc.Remove();
                         }
                         else
-                            using (MemoryStream ms = new MemoryStream(this.RenderAssetContent(includeAsset, preProcessLocalization)))
+                            using (MemoryStream ms = new MemoryStream(this.RenderAssetContent(includeAsset, preProcessLocalization, bindingParameters: bindingParameters)))
                             {
                                 try
                                 {
@@ -755,6 +757,11 @@ namespace SanteDB.Core.Applets
                         retVal = this.m_localizationRegex.Replace(retVal, (m) => assetString.FirstOrDefault(o => o.Key == m.Groups[1].Value).Value ?? m.Groups[1].Value);
                     }
 
+                    // Binding objects
+                    if (bindingParameters != null)
+                    {
+                        retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : null);
+                    }
                     var byteData = Encoding.UTF8.GetBytes(retVal);
                     // Add to cache
                     lock (s_syncLock)
