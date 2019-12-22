@@ -29,6 +29,11 @@ namespace SanteDB.Core.Applets.Services
     {
 
         /// <summary>
+        /// Fired when an applet has been created/changed
+        /// </summary>
+        event EventHandler Changed;
+
+        /// <summary>
         /// Gets the loaded applets from the manager
         /// </summary>
         ReadonlyAppletCollection Applets { get; }

@@ -142,60 +142,59 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.Starting?.Invoke(this, EventArgs.Empty);
 
             this.m_subscriptionDefinitions = new List<SubscriptionDefinition>();
-            var appletMgr = ApplicationServiceContext.Current.GetService<IAppletManagerService>().Applets;
             // Subscribe to the applet manager
-            System.Collections.Specialized.NotifyCollectionChangedEventHandler loaderFn = (o, e) =>
+            EventHandler loaderFn = (o, e) =>
             {
-                // Find and load all sub defn's
-                foreach (AppletManifest am in (e.NewItems ?? new AppletManifest[0]).OfType<AppletManifest>().Union(e.OldItems?.OfType<AppletManifest>() ?? new AppletManifest[0]))
-                {
-                    var definitions = am.Assets.Where(a => a.Name.StartsWith("subscription/")).Select<AppletAsset, SubscriptionDefinition>(a =>
-                    {
-                        using (var ms = new MemoryStream(appletMgr.RenderAssetContent(a)))
-                        {
-                            this.m_tracer.TraceInfo("Attempting load of {0}", a.Name);
-                            try
-                            {
-                                return SubscriptionDefinition.Load(ms);
-                            }
-                            catch (Exception ex)
-                            {
-                                this.m_tracer.TraceError("Error loading {0} : {1}", a.Name, ex);
-                                return null;
-                            }
-                        }
-                    }).OfType<SubscriptionDefinition>();
 
-                    // Perform tasks
-                    lock (this.m_lockObject)
-                    {
-                        switch (e.Action)
-                        {
-                            case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                            case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
-                            case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
-                                this.m_subscriptionDefinitions.RemoveAll(s => definitions.Any(d => d.Key == s.Key));
-                                this.m_subscriptionDefinitions.AddRange(definitions);
-                                break;
-                            case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
-                            case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                                // Unload 
-                                this.m_subscriptionDefinitions.RemoveAll(s => definitions.Any(d => d.Key == s.Key));
-                                break;
+                var retVal = new List<SubscriptionDefinition>(this.m_subscriptionDefinitions?.Count ?? 10);
+                var slns = ApplicationServiceContext.Current.GetService<IAppletSolutionManagerService>().Solutions.ToList();
+                slns.Add(new AppletSolution() { Meta = new AppletInfo() { Id = String.Empty } });
 
-                        }
+                foreach (var s in slns) {
+                    var slnMgr = ApplicationServiceContext.Current.GetService<IAppletSolutionManagerService>().GetApplets(s.Meta.Id);
+                    // Find and load all sub defn's
+                    foreach (var am in slnMgr)
+                    {
+
+                        var definitions = am.Assets.Where(a => a.Name.StartsWith("subscription/")).Select<AppletAsset, SubscriptionDefinition>(a =>
+                        {
+                            using (var ms = new MemoryStream(slnMgr.RenderAssetContent(a)))
+                            {
+                                this.m_tracer.TraceInfo("Attempting load of {0}", a.Name);
+                                try
+                                {
+                                    return SubscriptionDefinition.Load(ms);
+                                }
+                                catch (Exception ex)
+                                {
+                                    this.m_tracer.TraceError("Error loading {0} : {1}", a.Name, ex);
+                                    return null;
+                                }
+                            }
+                        }).OfType<SubscriptionDefinition>();
+
+                        retVal.AddRange(definitions.Where(n => !retVal.Any(a => a.Key == n.Key)));
                     }
+                }
+
+                this.m_tracer.TraceInfo("Registering applet subscriptions");
+
+                lock (m_lockObject)
+                {
+                    this.m_subscriptionDefinitions.Clear();
+                    this.m_subscriptionDefinitions.AddRange(retVal);
                 }
                 
             };
 
-            // Get the current applets
-            loaderFn(this, new System.Collections.Specialized.NotifyCollectionChangedEventArgs(System.Collections.Specialized.NotifyCollectionChangedAction.Add, appletMgr.OfType<AppletManifest>().ToList()));
 
-            // Collection changed handler
-            appletMgr.CollectionChanged += loaderFn;
-
-            this.Started?.Invoke(this, EventArgs.Empty);
+            ApplicationServiceContext.Current.Started += (o, e) =>
+            {
+                // Collection changed handler
+                this.m_tracer.TraceInfo("Binding to change events");
+                ApplicationServiceContext.Current.GetService<IAppletManagerService>().Changed += loaderFn;
+                loaderFn(this, EventArgs.Empty);
+            };
             return true;
         }
 
