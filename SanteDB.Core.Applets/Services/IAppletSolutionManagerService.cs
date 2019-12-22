@@ -34,6 +34,13 @@ namespace SanteDB.Core.Applets.Services
         IEnumerable<AppletSolution> Solutions { get; }
 
         /// <summary>
+        /// Get only applets in the specified solution
+        /// </summary>
+        /// <param name="solutionId"></param>
+        /// <returns></returns>
+        ReadonlyAppletCollection GetApplets(String solutionId);
+
+        /// <summary>
         /// Uninstall a package
         /// </summary>
         bool UnInstall(String solutionId);
@@ -42,6 +49,16 @@ namespace SanteDB.Core.Applets.Services
         /// Installs or upgrades an existing applet collection via package
         /// </summary>
         bool Install(AppletSolution solution, bool isUpgrade = false);
+
+        /// <summary>
+        /// Get the specified applet manifest
+        /// </summary>
+        AppletManifest GetApplet(String solutionId, String appletId);
+
+        /// <summary>
+        /// Gets the installed applet package source for the specified applet
+        /// </summary>
+        byte[] GetPackage(String solutionId, String appletId);
 
     }
 }
