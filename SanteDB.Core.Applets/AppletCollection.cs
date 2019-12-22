@@ -566,7 +566,7 @@ namespace SanteDB.Core.Applets
                 {
                     var retVal = content as String;
                     if (bindingParameters != null)
-                        retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : null);
+                        retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
                     cacheObject = Encoding.UTF8.GetBytes(retVal);
                     lock (s_syncLock)
                         if (!s_cache.ContainsKey(assetPath))
@@ -776,7 +776,7 @@ namespace SanteDB.Core.Applets
                     // Binding objects
                     if (bindingParameters != null)
                     {
-                        retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : null);
+                        retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
                     }
                     var byteData = Encoding.UTF8.GetBytes(retVal);
                     // Add to cache
