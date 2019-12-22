@@ -559,7 +559,23 @@ namespace SanteDB.Core.Applets
                 content = this.Resolver(asset);
 
             if (content is String) // Content is a string
-                return Encoding.UTF8.GetBytes(content as String);
+            {
+
+                // Inject CSP 
+                if(asset.MimeType == "text/javascript")
+                {
+                    var retVal = content as String;
+                    if (bindingParameters != null)
+                        retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : null);
+                    cacheObject = Encoding.UTF8.GetBytes(retVal);
+                    lock (s_syncLock)
+                        if (!s_cache.ContainsKey(assetPath))
+                            s_cache.Add(assetPath, cacheObject);
+                    return cacheObject;
+                }
+                else
+                    return Encoding.UTF8.GetBytes(content as String);
+            }
             else if (content is byte[]) // Content is a binary asset 
             {
                 // is the content compressed? 

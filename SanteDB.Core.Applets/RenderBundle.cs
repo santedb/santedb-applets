@@ -122,7 +122,7 @@ namespace SanteDB.Core.Applets
         {
             get
             {
-                return new XElement[] { new XElement(xs_xhtml + "script", new XAttribute("src", this.m_href), new XAttribute("type", "text/javascript"), new XText("// Script Reference")) };
+                return new XElement[] { new XElement(xs_xhtml + "script", new XAttribute("src", this.m_href), new XAttribute("type", "text/javascript"), new XAttribute("nonce","{{ $csp_nonce }}"), new XText("// Script Reference")) };
             }
         }
     }
