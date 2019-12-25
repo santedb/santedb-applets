@@ -150,7 +150,8 @@ namespace SanteDB.Core.Applets.Services.Impl
                 var slns = ApplicationServiceContext.Current.GetService<IAppletSolutionManagerService>().Solutions.ToList();
                 slns.Add(new AppletSolution() { Meta = new AppletInfo() { Id = String.Empty } });
 
-                foreach (var s in slns) {
+                foreach (var s in slns)
+                {
                     var slnMgr = ApplicationServiceContext.Current.GetService<IAppletSolutionManagerService>().GetApplets(s.Meta.Id);
                     // Find and load all sub defn's
                     foreach (var am in slnMgr)
@@ -184,7 +185,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     this.m_subscriptionDefinitions.Clear();
                     this.m_subscriptionDefinitions.AddRange(retVal);
                 }
-                
+
             };
 
 
@@ -193,7 +194,11 @@ namespace SanteDB.Core.Applets.Services.Impl
                 // Collection changed handler
                 this.m_tracer.TraceInfo("Binding to change events");
                 ApplicationServiceContext.Current.GetService<IAppletManagerService>().Changed += loaderFn;
-                loaderFn(this, EventArgs.Empty);
+
+                if ((ApplicationServiceContext.Current.GetService<IAppletManagerService>() as IDaemonService)?.IsRunning == false)
+                    (ApplicationServiceContext.Current.GetService<IAppletManagerService>() as IDaemonService).Started += loaderFn;
+                else
+                    loaderFn(this, EventArgs.Empty);
             };
             return true;
         }
