@@ -544,13 +544,13 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Render asset content
         /// </summary>
-        public byte[] RenderAssetContent(AppletAsset asset, string preProcessLocalization = null, bool staticScriptRefs = true, IDictionary<String, String> bindingParameters = null)
+        public byte[] RenderAssetContent(AppletAsset asset, string preProcessLocalization = null, bool staticScriptRefs = true, bool allowCache = true,  IDictionary<String, String> bindingParameters = null)
         {
 
             // First, is there an object already
             byte[] cacheObject = null;
             string assetPath = String.Format("{0}?lang={1}", asset.ToString(), preProcessLocalization);
-            if (this.CachePages && s_cache.TryGetValue(assetPath, out cacheObject))
+            if (allowCache && this.CachePages && s_cache.TryGetValue(assetPath, out cacheObject))
                 return cacheObject;
 
             // Resolve content
@@ -569,7 +569,7 @@ namespace SanteDB.Core.Applets
                         retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
                     cacheObject = Encoding.UTF8.GetBytes(retVal);
                     lock (s_syncLock)
-                        if (!s_cache.ContainsKey(assetPath))
+                        if (allowCache && !s_cache.ContainsKey(assetPath))
                             s_cache.Add(assetPath, cacheObject);
                     return cacheObject;
                 }
@@ -781,7 +781,7 @@ namespace SanteDB.Core.Applets
                     var byteData = Encoding.UTF8.GetBytes(retVal);
                     // Add to cache
                     lock (s_syncLock)
-                        if (!s_cache.ContainsKey(assetPath))
+                        if (allowCache && !s_cache.ContainsKey(assetPath))
                             s_cache.Add(assetPath, byteData);
 
                     return byteData;
