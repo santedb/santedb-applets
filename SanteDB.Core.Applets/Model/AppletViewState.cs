@@ -37,6 +37,12 @@ namespace SanteDB.Core.Applets.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// The priority of this applet (for overridding default assets)
+        /// </summary>
+        [XmlAttribute("priority")]
+        public int Priority { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of routes associated with the applet view
         /// </summary>
         [XmlElement("route")]
