@@ -80,9 +80,7 @@ namespace SanteDB.Core.Applets.Model
             {
                 using (var ls = new LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress))
                 {
-
-                    XmlSerializer xsz = new XmlSerializer(typeof(AppletManifest));
-                    xsz.Serialize(ls, this);
+                    x_xsz.Serialize(ls, this);
                 }
                 retVal.Manifest = ms.ToArray();
             }

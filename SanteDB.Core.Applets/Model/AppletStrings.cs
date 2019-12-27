@@ -59,6 +59,12 @@ namespace SanteDB.Core.Applets.Model
         public string Key { get; set; }
 
         /// <summary>
+        /// Priority of the string
+        /// </summary>
+        [XmlAttribute("priority"), JsonProperty("priority")]
+        public int Priority { get; set; }
+
+        /// <summary>
         /// Gets or sets the value of the property
         /// </summary>
         [XmlText, JsonProperty("value")]
