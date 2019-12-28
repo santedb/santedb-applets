@@ -45,14 +45,18 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         // Type
         private Type m_type;
 
+        // The serializer that owns this serializer
+        private IViewModelSerializer m_serializer;
+
         /// <summary>
         /// Creates a new reflection based classifier
         /// </summary>
-        public JsonReflectionClassifier(Type type)
+        public JsonReflectionClassifier(Type type, IViewModelSerializer owner)
         {
             this.m_type = type;
             var classifierAtt = type.StripGeneric().GetTypeInfo().GetCustomAttribute<ClassifierAttribute>();
             this.m_classifierAttribute = classifierAtt;
+            this.m_serializer = owner;
         }
 
         /// <summary>
@@ -210,10 +214,17 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     return null;
                 var keyPropertyValue = o.GetType().GetRuntimeProperty(keyPropertyName).GetValue(o);
 
-                // Now we want to force load!!!!
-                var getValueMethod = typeof(EntitySource).GetGenericMethod("Get", new Type[] { classProperty.PropertyType }, new Type[] { typeof(Guid?) });
-                classifierObj = getValueMethod.Invoke(EntitySource.Current, new object[] { keyPropertyValue });
-                classProperty.SetValue(o, classifierObj);
+                // Does the owner serializer already load this?
+                classifierObj = this.m_serializer.GetLoadedObject((Guid)keyPropertyValue);
+                if (classifierObj == null)
+                {
+                    // Now we want to force load!!!!
+                    var getValueMethod = typeof(EntitySource).GetGenericMethod("Get", new Type[] { classProperty.PropertyType }, new Type[] { typeof(Guid?) });
+                    classifierObj = getValueMethod.Invoke(EntitySource.Current, new object[] { keyPropertyValue });
+                    classProperty.SetValue(o, classifierObj);
+                    this.m_serializer.AddLoadedObject((Guid)keyPropertyValue, (IdentifiedData)classifierObj);
+
+                }
             }
 
             if (classifierObj != null)

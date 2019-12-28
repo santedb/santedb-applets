@@ -55,6 +55,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         // Reloated load association
         private static Dictionary<Type, MethodInfo> m_relatedLoadAssociations = new Dictionary<Type, MethodInfo>();
         private Dictionary<Guid, IEnumerable> m_loadedAssociations = new Dictionary<Guid, IEnumerable>();
+        private Dictionary<Guid, IdentifiedData> m_loadedObjects = new Dictionary<Guid, IdentifiedData>();
 
         // Formatters
         private Dictionary<Type, INullTypeFormatter> m_formatters = new Dictionary<Type, INullTypeFormatter>();
@@ -154,8 +155,15 @@ namespace SanteDB.Core.Applets.ViewModel.Null
 #if DEBUG
             this.m_tracer.TraceVerbose("Delay loading related object : {0}", objectKey);
 #endif
-            if (objectKey.HasValue)
-                return EntitySource.Current.Provider.Get<TRelated>(objectKey);
+            IdentifiedData value = null;
+            if (objectKey.HasValue && !this.m_loadedObjects.TryGetValue(objectKey.Value, out value))
+            {
+                value = EntitySource.Current.Provider.Get<TRelated>(objectKey);
+                this.m_loadedObjects.Add(objectKey.Value, value);
+                return (TRelated)value;
+            }
+            else if (value != default(TRelated))
+                return (TRelated)value;
             else
                 return default(TRelated);
         }
@@ -199,7 +207,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
             {
                 var classifierAtt = type.StripGeneric().GetTypeInfo().GetCustomAttribute<ClassifierAttribute>();
                 if (classifierAtt != null)
-                    retVal = new Json.JsonReflectionClassifier(type);
+                    retVal = new Json.JsonReflectionClassifier(type, this);
                 lock (m_classifiers)
                     if (!m_classifiers.ContainsKey(type))
                         m_classifiers.Add(type, retVal);
@@ -300,6 +308,24 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         {
             this.Serialize((TextWriter)null, data);
             return String.Empty;
+        }
+
+        /// <summary>
+        /// Attempts to get the loaded object
+        /// </summary>
+        public object GetLoadedObject(Guid key)
+        {
+            this.m_loadedObjects.TryGetValue(key, out IdentifiedData value);
+            return value;
+        }
+
+        /// <summary>
+        /// Add a loaded object
+        /// </summary>
+        public void AddLoadedObject(Guid key, IdentifiedData classifierObj)
+        {
+            if (!this.m_loadedObjects.ContainsKey(key))
+                this.m_loadedObjects.Add(key, classifierObj);
         }
     }
 }

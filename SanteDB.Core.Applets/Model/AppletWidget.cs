@@ -107,6 +107,18 @@ namespace SanteDB.Core.Applets.Model
         }
 
         /// <summary>
+        /// Gets or sets the order preference 
+        /// </summary>
+        [XmlAttribute("priority"), JsonProperty("priority")]
+        public int Priority { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order preference 
+        /// </summary>
+        [XmlAttribute("order"), JsonProperty("order")]
+        public int Order { get; set; }
+
+        /// <summary>
         /// Gets the specified decription
         /// </summary>
         public String GetDescription(String language, bool returnNuetralIfNotFound = true)

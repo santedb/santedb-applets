@@ -135,7 +135,7 @@ namespace SanteDB.Core.Applets
         private static Object s_syncLock = new object();
 
         private AssetContentResolver m_resolver = null;
-        private Regex m_localizationRegex = new Regex("{{\\s?:?:?'(.*?)'\\s?\\|\\s?i18n\\s?}}");
+        private Regex m_localizationRegex = new Regex("{{\\s?:?:?'([A-Za-z0-9\\._\\-]*?)'\\s?\\|\\s?i18n\\s?}}");
         private Regex m_bindingRegex = new Regex("{{\\s?\\$([A-Za-z0-9_]*?)\\s?}}");
 
         private Tracer m_tracer = Tracer.GetTracer(typeof(AppletCollection));
@@ -280,7 +280,9 @@ namespace SanteDB.Core.Applets
             get
             {
                 if (s_widgetAssets == null)
-                    s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(o => o.MimeType == "text/html" && (o.Content == null && this.Resolver != null ? this.Resolver(o) : o.Content) is AppletWidget).ToList();
+                    s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets)
+                        .Where(o => o.MimeType == "text/html" && (o.Content == null && this.Resolver != null ? this.Resolver(o) : o.Content) is AppletWidget)
+                        .ToList();
                 return s_widgetAssets;
             }
         }

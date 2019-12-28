@@ -59,6 +59,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         // Reloated load association
         private Dictionary<Type, MethodInfo> m_relatedLoadAssociations = new Dictionary<Type, MethodInfo>();
         private Dictionary<Guid, IEnumerable> m_loadedAssociations = new Dictionary<Guid, IEnumerable>();
+        private Dictionary<Guid, IdentifiedData> m_loadedObjects = new Dictionary<Guid, IdentifiedData>();
 
         /// <summary>
         /// Creates a json view model serializer
@@ -279,6 +280,15 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         }
 
         /// <summary>
+        /// Attempts to get the loaded object
+        /// </summary>
+        public object GetLoadedObject(Guid key)
+        {
+            this.m_loadedObjects.TryGetValue(key, out IdentifiedData value);
+            return value;
+        }
+
+        /// <summary>
         /// Load related object
         /// </summary>
         internal object LoadRelated(Type propertyType, Guid key)
@@ -349,8 +359,15 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 #if DEBUG
             this.m_tracer.TraceVerbose("Delay loading related object : {0}", objectKey);
 #endif
-            if (objectKey.HasValue)
-                return EntitySource.Current.Provider.Get<TRelated>(objectKey);
+            IdentifiedData value = null;
+            if (objectKey.HasValue && !this.m_loadedObjects.TryGetValue(objectKey.Value, out value))
+            {
+                value = EntitySource.Current.Provider.Get<TRelated>(objectKey);
+                this.m_loadedObjects.Add(objectKey.Value, value);
+                return (TRelated)value;
+            }
+            else if (value != default(TRelated))
+                return (TRelated)value;
             else
                 return default(TRelated);
         }
@@ -448,7 +465,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             {
                 var classifierAtt = type.StripGeneric().GetTypeInfo().GetCustomAttribute<ClassifierAttribute>();
                 if (classifierAtt != null)
-                    retVal = new JsonReflectionClassifier(type);
+                    retVal = new JsonReflectionClassifier(type, this);
                 lock (this.m_syncLock)
                     if (!this.m_classifiers.ContainsKey(type))
                         this.m_classifiers.Add(type, retVal);
@@ -564,6 +581,15 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 this.m_tracer.TraceVerbose("PERF >>> SERIALIZED {0} IN {1} ms", data, sw.ElapsedMilliseconds);
 #endif
             }
+        }
+
+        /// <summary>
+        /// Add a loaded object
+        /// </summary>
+        public void AddLoadedObject(Guid key, IdentifiedData classifierObj)
+        {
+            if (!this.m_loadedObjects.ContainsKey(key))
+                this.m_loadedObjects.Add(key, classifierObj);
         }
     }
 }

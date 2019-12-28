@@ -17,6 +17,7 @@
  * User: Justin Fyfe
  * Date: 2019-8-8
  */
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets or sets the title of the applet asset
         /// </summary>
-        [XmlElement("title")]
+        [XmlElement("title"), JsonProperty("title")]
         public List<LocaleString> Titles { get; set; }
 
 
@@ -68,32 +69,32 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets or sets the master asset for this asset
         /// </summary>
-        [XmlElement("layout")]
+        [XmlElement("layout"), JsonIgnore]
         public string Layout { get; set; }
 
         /// <summary>
         /// Gets or sets the references for the assets
         /// </summary>
-        [XmlElement("bundle")]
+        [XmlElement("bundle"), JsonIgnore]
         public List<String> Bundle { get; set; }
 
         /// <summary>
         /// Gets or sets the script
         /// </summary>
-        [XmlElement("script")]
+        [XmlElement("script"), JsonIgnore]
         public List<AssetScriptReference> Script { get; set; }
 
         /// <summary>
         /// Gets or sets the script
         /// </summary>
-        [XmlElement("style")]
+        [XmlElement("style"), JsonIgnore]
         public List<String> Style { get; set; }
 
 
         /// <summary>
         /// Gets one or more routes
         /// </summary>
-        [XmlElement("view")]
+        [XmlElement("view"), JsonIgnore]
         public AppletViewState ViewState { get; set; }
 
         /// <summary>
@@ -102,7 +103,7 @@ namespace SanteDB.Core.Applets.Model
         //[XmlAnyElement("body", Namespace = "http://www.w3.org/1999/xhtml")]
         //[XmlAnyElement("html", Namespace = "http://www.w3.org/1999/xhtml")]
         //[XmlAnyElement("div", Namespace = "http://www.w3.org/1999/xhtml")]
-        [XmlElement("content")]
+        [XmlElement("content"), JsonIgnore]
         public XElement Html
         {
             get
@@ -122,7 +123,7 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Identifies whether the asset is static
         /// </summary>
-        [XmlAttribute("static")]
+        [XmlAttribute("static"), JsonIgnore]
         public bool Static { get; set; }
 
     }
