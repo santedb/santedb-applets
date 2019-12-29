@@ -147,7 +147,7 @@ namespace SanteDB.Core.Applets.ViewModel
         /// <summary>
         /// Returns true when child property information should be force loaded
         /// </summary>
-        public bool ShouldForceLoad(string childProperty, Guid key)
+        public bool ShouldForceLoad(string childProperty, Guid? key)
         {
             var propertyDescription = this.ElementDescription?.FindProperty(childProperty) as PropertyModelDescription;
             if (propertyDescription?.Action != SerializationBehaviorType.Always)
@@ -155,13 +155,14 @@ namespace SanteDB.Core.Applets.ViewModel
 
             // Known miss targets
             HashSet<String> missProp = null;
-            if (this.LoadedProperties.TryGetValue(key, out missProp))
-            {
-                if (missProp.Contains(childProperty))
-                    return false;
-            }
-            else
-                this.LoadedProperties.Add(key, new HashSet<string>() { });
+            if(key.HasValue)
+                if (this.LoadedProperties.TryGetValue(key.Value, out missProp))
+                {
+                    if (missProp.Contains(childProperty))
+                        return false;
+                }
+                else
+                    this.LoadedProperties.Add(key.Value, new HashSet<string>() { });
             return true;
         }
 

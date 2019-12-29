@@ -46,6 +46,40 @@ namespace SanteDB.Core.Applets.Model
     }
 
     /// <summary>
+    /// Identifies the size of the widget
+    /// </summary>
+    [XmlType(nameof(AppletWidgetSize), Namespace = "http://santedb.org/applet")]
+    public enum AppletWidgetSize
+    {
+        [XmlEnum("l")]
+        Large,
+        [XmlEnum("m")]
+        Medium,
+        [XmlEnum("s")]
+        Small
+    }
+
+    /// <summary>
+    /// Identifies the size of the widget
+    /// </summary>
+    [XmlType(nameof(AppletWidgetView), Namespace = "http://santedb.org/applet")]
+    public enum AppletWidgetView
+    {
+        [XmlEnum("none")]
+        None,
+        /// <summary>
+        /// Widget button is to edit the widget
+        /// </summary>
+        [XmlEnum("edit")]
+        Edit,
+        /// <summary>
+        /// Widget button is to reload the widget
+        /// </summary>
+        [XmlEnum("setting")]
+        Settings
+    }
+
+    /// <summary>
     /// Represents a widget. A widget is a special pointer which has a title and content which can be rendered
     /// in a container 
     /// </summary>
@@ -66,6 +100,19 @@ namespace SanteDB.Core.Applets.Model
         [XmlAttribute("type"), QueryParameter("type")]
         [JsonProperty("type")]
         public AppletWidgetType Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of widget
+        /// </summary>
+        [XmlAttribute("size"), QueryParameter("size")]
+        [JsonProperty("size")]
+        public AppletWidgetSize Size { get; set; }
+
+        /// <summary>
+        /// Gets or sets the action button to apply to the panel header
+        /// </summary>
+        [XmlAttribute("altViews"), QueryParameter("altViews"), JsonProperty("altViews")]
+        public AppletWidgetView View { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the widget
@@ -117,6 +164,12 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlAttribute("order"), JsonProperty("order")]
         public int Order { get; set; }
+
+        /// <summary>
+        /// Color class
+        /// </summary>
+        [XmlAttribute("headerClass"), JsonProperty("headerClass")]
+        public string ColorClass { get; set; }
 
         /// <summary>
         /// Gets the specified decription
