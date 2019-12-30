@@ -162,6 +162,12 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets or sets the order preference 
         /// </summary>
+        [XmlAttribute("maxStack"), JsonProperty("maxStack")]
+        public int MaxStack { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order preference 
+        /// </summary>
         [XmlAttribute("order"), JsonProperty("order")]
         public int Order { get; set; }
 
