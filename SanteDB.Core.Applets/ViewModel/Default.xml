@@ -21,7 +21,7 @@
 <ViewModel xmlns="http://santedb.org/model/view">
 
   <!-- Base types -->
-  <type type="EntityRelationship" all="false">
+  <type type="EntityRelationship" all="true">
     <property name="source" all="true"/>
     <property name="effectiveVersionSequence" behavior="always" all="true" />
     <property name="target" all="true"/>
@@ -29,7 +29,7 @@
     <property name="quantity" all="true"/>
     <property name="relationshipType" behavior="always" all="true"/>
   </type>
-  <type type="ActRelationship" all="false">
+  <type type="ActRelationship" all="true">
     <property name="source" all="true"/>
     <property name="target" all="true"/>
     <property name="id" all="true"/>
