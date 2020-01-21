@@ -78,6 +78,12 @@ namespace SanteDB.Core.Applets.Model
         public String Asset { get; set; }
 
         /// <summary>
+        /// Gets or sets the ordering of this object in the menu hierarchy
+        /// </summary>
+        [XmlAttribute("order")]
+        public int Order { get; set; }
+
+        /// <summary>
         /// Applet manifest
         /// </summary>
         [XmlIgnore]
