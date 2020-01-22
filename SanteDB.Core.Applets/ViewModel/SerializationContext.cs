@@ -20,6 +20,7 @@
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -32,6 +33,9 @@ namespace SanteDB.Core.Applets.ViewModel
     /// </summary>
     public abstract class SerializationContext
     {
+        // Serialization checks already created
+        private static ConcurrentDictionary<Type, Object> m_cachedSerializationChecks = new ConcurrentDictionary<Type, object>();
+
         // Object identifier
         private int m_objectId = 0;
         private int m_masterObjectId = 0;
@@ -51,10 +55,20 @@ namespace SanteDB.Core.Applets.ViewModel
             this.Context = context;
             this.ViewModelDescription = this.Context.ViewModel;
             this.LoadedProperties = new Dictionary<Guid, HashSet<string>>();
-            this.m_serializationCheck = instance?.GetType().GetRuntimeProperties()
-                .Select(p => new { MethodInfo = p.DeclaringType.GetRuntimeMethod($"ShouldSerialize{p.Name}", new Type[0]), SerializationName = p.GetCustomAttributes<XmlElementAttribute>().FirstOrDefault()?.ElementName })
-                .Where(o => o.MethodInfo != null && !String.IsNullOrEmpty(o.SerializationName))
-                .ToDictionary(o => o.SerializationName, o => o.MethodInfo);
+
+            // Attempt to load from cache
+            object check = null;
+            if (instance != null && !m_cachedSerializationChecks.TryGetValue(instance.GetType(), out check))
+            {
+                this.m_serializationCheck = instance?.GetType().GetRuntimeProperties()
+                    .Select(p => new { MethodInfo = p.DeclaringType.GetRuntimeMethod($"ShouldSerialize{p.Name}", new Type[0]), SerializationName = p.GetCustomAttributes<XmlElementAttribute>().FirstOrDefault()?.ElementName })
+                    .Where(o => o.MethodInfo != null && !String.IsNullOrEmpty(o.SerializationName))
+                    .ToDictionary(o => o.SerializationName, o => o.MethodInfo);
+                m_cachedSerializationChecks.TryAdd(instance.GetType(), this.m_serializationCheck);
+            }
+            else if (check != null)
+                this.m_serializationCheck = (Dictionary<String, MethodInfo>)check;
+
         }
 
         /// <summary>
