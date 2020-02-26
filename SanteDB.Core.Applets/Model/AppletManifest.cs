@@ -17,6 +17,7 @@
  * User: Justin Fyfe
  * Date: 2019-8-8
  */
+using SanteDB.Core.Model.Serialization;
 using SharpCompress.Compressors.LZMA;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ namespace SanteDB.Core.Applets.Model
 	public class AppletManifest : IEquatable<AppletManifest>
 	{
 
-        private static XmlSerializer x_xsz = new XmlSerializer(typeof(AppletManifest));
+        private static XmlSerializer x_xsz = XmlModelSerializerFactory.Current.CreateSerializer(typeof(AppletManifest));
 
         /// <summary>
         /// Load the specified manifest name

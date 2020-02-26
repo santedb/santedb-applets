@@ -18,6 +18,7 @@
  * Date: 2019-8-8
  */
 using Newtonsoft.Json;
+using SanteDB.Core.Model.Serialization;
 using SharpCompress.Compressors;
 using SharpCompress.Compressors.Deflate;
 using SharpCompress.Compressors.LZMA;
@@ -48,8 +49,8 @@ namespace SanteDB.Core.Applets.Model
         }
 
         // Serializer
-        private static XmlSerializer s_packageSerializer = new XmlSerializer(typeof(AppletPackage));
-        private static XmlSerializer s_solutionSerializer = new XmlSerializer(typeof(AppletSolution));
+        private static XmlSerializer s_packageSerializer = XmlModelSerializerFactory.Current.CreateSerializer(typeof(AppletPackage));
+        private static XmlSerializer s_solutionSerializer = XmlModelSerializerFactory.Current.CreateSerializer(typeof(AppletSolution));
 
         /// <summary>
         /// Load the specified manifest name

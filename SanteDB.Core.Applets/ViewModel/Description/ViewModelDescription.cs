@@ -18,6 +18,7 @@
  * Date: 2019-8-8
  */
 using SanteDB.Core.Model;
+using SanteDB.Core.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,7 +44,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         // Root type names
         private static Dictionary<Type, String> m_rootTypeNames = new Dictionary<Type, string>();
         // Serializer
-        private static XmlSerializer s_xsz = new XmlSerializer(typeof(ViewModelDescription));
+        private static XmlSerializer s_xsz = XmlModelSerializerFactory.Current.CreateSerializer(typeof(ViewModelDescription));
 
         /// <summary>
         /// The lock object
