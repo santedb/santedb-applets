@@ -513,7 +513,6 @@ namespace SanteDB.Core.Applets
                 // Is the host specified?
                 if (path.IsAbsoluteUri && !String.IsNullOrEmpty(path.Host))
                 {
-
                     resolvedManifest = this.FirstOrDefault(o => o.Info.Id == path.Host);
                 }
                 else
@@ -789,6 +788,23 @@ namespace SanteDB.Core.Applets
 
                     return byteData;
                 }
+            }
+            else if (content is AppletAssetVirtual virtualContent) // Virtual asset 
+            {
+                if(!s_cache.TryGetValue(assetPath, out byte[] data))
+                {
+                    // TODO: Find a better way to do this
+                    data = virtualContent.Include.SelectMany(includePath =>
+                    {
+                        var regExp = new Regex(includePath);
+                        return asset.Manifest.Assets.Where(o => regExp.IsMatch(o.Name)).SelectMany(inclAsset => this.RenderAssetContent(inclAsset, preProcessLocalization, staticScriptRefs, allowCache, bindingParameters));
+                    }).ToArray();
+
+                    lock (s_syncLock)
+                        if (allowCache && !s_cache.ContainsKey(assetPath))
+                            s_cache.Add(assetPath, data);
+                }
+                return data;
             }
             else
                 return null;

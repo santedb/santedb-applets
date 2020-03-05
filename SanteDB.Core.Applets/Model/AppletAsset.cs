@@ -95,6 +95,7 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("contentXml", Type = typeof(XElement))]
         [XmlElement("contentHtml", Type = typeof(AppletAssetHtml))]
         [XmlElement("widgetHtml", Type = typeof(AppletWidget))]
+        [XmlElement("virtual", Type = typeof(AppletAssetVirtual))]
         public Object Content
         {
             get;
