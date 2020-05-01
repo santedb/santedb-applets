@@ -23,6 +23,7 @@
   <!-- Base types -->
   <type type="EntityRelationship" all="true">
     <property name="source" all="true"/>
+    <property name="holder" all="true"/>
     <property name="effectiveVersionSequence" behavior="always" all="true" />
     <property name="target" all="true"/>
     <property name="id" all="true"/>
