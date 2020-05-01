@@ -336,16 +336,10 @@ namespace SanteDB.Core.Applets.Test
         {
             var act = new Act
             {
-                ClassConcept = new Concept
-                {
-                    Key = ActClassKeys.Encounter
-                },
+                ClassConceptKey = ActClassKeys.Encounter,
                 CreationTime = DateTimeOffset.Now,
                 Key = Guid.NewGuid(),
-                MoodConcept = new Concept
-                {
-                    Key = ActMoodKeys.Eventoccurrence
-                },
+                MoodConceptKey = ActMoodKeys.Eventoccurrence,
                 Relationships = new List<ActRelationship>
                 {
                     new ActRelationship
@@ -439,7 +433,9 @@ namespace SanteDB.Core.Applets.Test
             var serializer = new JsonViewModelSerializer();
             serializer.ViewModel = vmd;
             var actual = serializer.Serialize(act);
-            Assert.IsFalse(actual.Contains("\"id\""));
+            // Must always contain ID even if model doesn't specify it (for ref integrity)
+            Assert.IsTrue(actual.Contains(act.Key.ToString()));
+            // Must not have fulfills
             Assert.IsFalse(actual.Contains("\"Fulfills\""));
 
             Assert.IsTrue(actual.Contains(ActMoodKeys.Eventoccurrence.ToString()));

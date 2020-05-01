@@ -64,7 +64,7 @@
   
   <type type="Bundle" all="true">
     <property name="id"/>
-    <property name="item" all="true"/>
+    <property name="resource" all="true"/>
   </type>
 
   <!-- Concepts -->
@@ -262,12 +262,14 @@
         <property name="target" />
         <property name="quantity" />
         <property name="relationshipType"/>
+        <property name="targetModel"/>
       </property>
     </property>
     <property name="participation" all="false" behavior="always">
       <property name="*" all="false">
         <property name="player"/>
         <property name="act"/>
+        <property name="playerModel"/>
         <property name="quantity"/>
         <property name="participationRole"/>
       </property>

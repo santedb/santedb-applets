@@ -77,7 +77,7 @@ namespace SanteDB.Core.Applets.Test
 
             public IEnumerable<TObject> GetRelations<TObject>(Guid? sourceKey) where TObject : IdentifiedData, ISimpleAssociation, new()
             {
-                throw new NotImplementedException();
+                return new List<TObject>();
 
             }
             /// <summary>
@@ -133,21 +133,7 @@ namespace SanteDB.Core.Applets.Test
             }
         }
 
-        /// <summary>
-        /// Test binding of elements
-        /// </summary>
-        [TestMethod]
-        public void TestBinding()
-        {
-            EntitySource currentEs = EntitySource.Current;
-            EntitySource.Current = new EntitySource(new TestEntitySource());
-            var asset = this.m_appletCollection.ResolveAsset("app://org.santedb.sample.helloworld/bindingTest");
-            Assert.IsNotNull(asset);
-            var html = System.Text.Encoding.UTF8.GetString(this.m_appletCollection.RenderAssetContent(asset));
-            Assert.IsTrue(html.Contains("Male"));
-            EntitySource.Current = currentEs;
-        }
-
+      
         [TestMethod]
         public void TestCreatePackage()
         {

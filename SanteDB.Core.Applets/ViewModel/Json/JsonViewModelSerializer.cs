@@ -383,13 +383,11 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             // first write the property
             if (!String.IsNullOrEmpty(propertyName))  // In an array so don't emit the property name
             {
-                w.WritePropertyName(propertyName);
                 // Are we to never serialize this?
                 if (context?.ShouldSerialize(propertyName) == false && !noSubContext)
-                {
-                    w.WriteNull();
                     return;
-                }
+                else w.WritePropertyName(propertyName);
+
             }
 
             if (instance is IdentifiedData)

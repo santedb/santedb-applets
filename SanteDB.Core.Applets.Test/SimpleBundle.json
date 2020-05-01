@@ -1,6 +1,6 @@
 ﻿{
   "$type": "Bundle",
-  "item": [
+  "resource": [
     {
       "$type": "Patient",
       "genderConcept": "094941e9-a3db-48b5-862c-bc289bd7f86c",
