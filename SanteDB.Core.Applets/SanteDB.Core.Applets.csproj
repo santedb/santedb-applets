@@ -25,7 +25,7 @@
     <PackageId>SanteDB.Core.Applets</PackageId>
     <Title>SanteDB.Core.Applets</Title>
     <Version>2.0.0</Version>
-    <Description>SanteDB Applets</Description>
+    <Description>SanteDB core applets API for packaging, rendering, and extracting data from applet PAK files</Description>
     <Authors>SanteSuite Contributors</Authors>
     <PackageTags>SanteDB</PackageTags>
     <RepositoryUrl>https://github.com/santedb/santedb-applets</RepositoryUrl>
@@ -38,6 +38,8 @@
 	    <Product>SanteDB</Product>
     <Copyright>Copyright (C) 2015-2020 SanteSuite Contributors (See: NOTICES)</Copyright>
     <Company>SanteSuite Contributors</Company>
+    <PackageIconUrl>http://santesuite.org/assets/img/logo.png</PackageIconUrl>
+    <PackageProjectUrl>http://santesuite.org</PackageProjectUrl>
   </PropertyGroup>  
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
