@@ -33,7 +33,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <IncludeSymbols>true</IncludeSymbols>
-    <PackageLicenseFile>..\LICENSE</PackageLicenseFile>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 	    <Product>SanteDB</Product>
     <Copyright>Copyright (C) 2015-2020 SanteSuite Contributors (See: NOTICES)</Copyright>
@@ -128,9 +128,6 @@
   </ItemGroup>-->
   <ItemGroup>
     <EmbeddedResource Include="ViewModel\Default.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Schema\AppletAssets.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
