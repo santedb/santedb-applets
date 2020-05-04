@@ -193,6 +193,11 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 // Collection changed handler
                 this.m_tracer.TraceInfo("Binding to change events");
+                var appletService = ApplicationServiceContext.Current.GetService<IAppletManagerService>();
+
+                if (appletService == null)
+                    throw new InvalidOperationException("No applet manager service has been loaded!!!!");
+
                 ApplicationServiceContext.Current.GetService<IAppletManagerService>().Changed += loaderFn;
 
                 if ((ApplicationServiceContext.Current.GetService<IAppletManagerService>() as IDaemonService)?.IsRunning == false)
