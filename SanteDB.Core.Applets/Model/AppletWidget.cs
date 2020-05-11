@@ -63,20 +63,25 @@ namespace SanteDB.Core.Applets.Model
     /// Identifies the size of the widget
     /// </summary>
     [XmlType(nameof(AppletWidgetView), Namespace = "http://santedb.org/applet")]
-    public enum AppletWidgetView
+    public enum AppletWidgetView : short
     {
         [XmlEnum("none")]
-        None,
+        None = 0x0,
+        /// <summary>
+        /// Widget button is to edit the widget
+        /// </summary>
+        [XmlEnum("create")]
+        Create = 0x1,
         /// <summary>
         /// Widget button is to edit the widget
         /// </summary>
         [XmlEnum("edit")]
-        Edit,
+        Edit = 0x2,
         /// <summary>
         /// Widget button is to reload the widget
         /// </summary>
         [XmlEnum("setting")]
-        Settings
+        Settings = 0x4
     }
 
     /// <summary>
