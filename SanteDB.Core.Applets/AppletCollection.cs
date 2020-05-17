@@ -653,6 +653,14 @@ namespace SanteDB.Core.Applets
 
                                 head.Add(headerInjection.Where(o => !head.Elements(o.Name).Any(e => (e.Attributes("src") != null && (e.Attributes("src") == o.Attributes("src"))) || (e.Attributes("href") != null && (e.Attributes("href") == o.Attributes("href"))))));
 
+                                // Inject any business rules as static refs
+                                var body = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "body");
+                                if(body != null)
+                                {
+                                    body.Add(
+                                        this.SelectMany(o => o.Assets.Where(a => a.Name.StartsWith("rules/"))).Select(o => new XElement(xs_xhtml + "script", new XAttribute("src", $"/{o.Manifest.Info.Id}/{o.Name}"), new XAttribute("type", "text/javascript"), new XAttribute("nonce", bindingParameters.TryGetValue("csp_nonce", out string nonce) ? nonce : null), new XText("// Script reference")))
+                                    );
+                                }
                                 //                            head.Add(headerInjection);
                                 break;
                             }
