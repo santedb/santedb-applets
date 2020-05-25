@@ -85,6 +85,7 @@
     <property name="id"/>
     <property name="classConceptModel" behavior="never"/>
     <property name="previousVersionModel" behavior="never"/>
+    <property name="determinerConcept" behavior="always"/>
     <property name="determinerConceptModel" behavior="never"/>
     <property name="typeConceptModel" behavior="always" ref="Concept"/>
     <property name="name" all="true" ref="EntityName" behavior="always"/>
@@ -112,7 +113,8 @@
     <property name="classConceptModel" behavior="never"/>
     <property name="classConcept" behavior="never"/>
     <property name="determinerConceptModel" behavior="never"/>
-    <property name="determinerConcept" behavior="never"/>
+    <property name="determinerConcept" behavior="always"/>
+
     <property name="genderConceptModel" all="true" behavior="always"/>
     <property name="name" all="true" ref="EntityName" behavior="always"/>
     <property name="address" all="true" ref="EntityAddress" behavior="always"/>
@@ -138,7 +140,8 @@
     <property name="classConceptModel" behavior="never"/>
     <property name="classConcept" behavior="never"/>
     <property name="determinerConceptModel" behavior="never"/>
-    <property name="determinerConcept" behavior="never"/>
+    <property name="determinerConcept" behavior="always"/>
+
     <property name="statusConceptModel" behavior="never"/>
     <property name="typeConceptModel" behavior="always"/>
     <property name="name" all="true" ref="EntityName" behavior="always"/>
@@ -167,7 +170,8 @@
     <property name="classConceptModel" behavior="never"/>
     <property name="classConcept" behavior="never"/>
     <property name="determinerConceptModel" behavior="never"/>
-    <property name="determinerConcept" behavior="never"/>
+    <property name="determinerConcept" behavior="always"/>
+
     <property name="statusConceptModel" behavior="never"/>
     <property name="name" all="true" ref="EntityName" behavior="always"/>
     <property name="identifier" all="true" ref="EntityIdentifier" behavior="always"/>
@@ -196,7 +200,8 @@
     <property name="classConceptModel" behavior="never"/>
     <property name="classConcept" behavior="never"/>
     <property name="determinerConceptModel" behavior="never"/>
-    <property name="determinerConcept" behavior="never"/>
+    <property name="determinerConcept" behavior="always"/>
+
     <property name="typeConceptModel" behavior="always"/>
     <property name="name" all="true" ref="EntityName" behavior="always"/>
     <property name="address" all="true" ref="EntityAddress" behavior="always"/>
