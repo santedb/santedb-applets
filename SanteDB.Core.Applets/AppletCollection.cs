@@ -908,8 +908,7 @@ namespace SanteDB.Core.Applets
                 var incAsset = this.ResolveAsset(itm, asset);
                 if (incAsset != null)
                     headerInjection.AddRange(new StyleBundleContent(itm).HeaderElement);
-                else
-                    throw new FileNotFoundException(String.Format("Asset {0} not found", itm));
+                
             }
 
             // Content - SSI
