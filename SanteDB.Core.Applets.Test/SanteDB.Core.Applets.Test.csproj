@@ -49,8 +49,13 @@
     </When>
     <Otherwise>
       <ItemGroup>
+<<<<<<< HEAD
         <PackageReference Include="SanteDB.Core.Api" Version="2.0.25.0" />
         <PackageReference Include="SanteDB.Core.Model" Version="2.0.25.0" />
+=======
+        <PackageReference Include="SanteDB.Core.Api" Version="2.0.24.0" />
+        <PackageReference Include="SanteDB.Core.Model" Version="2.0.24.0" />
+>>>>>>> f247575092327a8b4a2232c9e73519e5e061d2b5
       </ItemGroup>
     </Otherwise>
   </Choose>
