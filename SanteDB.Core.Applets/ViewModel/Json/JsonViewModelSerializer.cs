@@ -589,5 +589,18 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             if (!this.m_loadedObjects.ContainsKey(key))
                 this.m_loadedObjects.Add(key, classifierObj);
         }
+
+        /// <summary>
+        /// Dispose of the specified object
+        /// </summary>
+        public void Dispose()
+        {
+            this.m_loadedObjects.Clear();
+            this.m_relatedLoadMethods.Clear();
+            this.m_relatedLoadAssociations.Clear();
+            this.m_loadedObjects = null;
+            this.m_relatedLoadAssociations = null;
+            this.m_relatedLoadMethods = null;
+        }
     }
 }

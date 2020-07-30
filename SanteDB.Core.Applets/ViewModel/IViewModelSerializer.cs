@@ -30,7 +30,7 @@ namespace SanteDB.Core.Applets.ViewModel
     /// <summary>
     /// Represents a view model serializer instance
     /// </summary>
-    public interface IViewModelSerializer
+    public interface IViewModelSerializer : IDisposable
     {
 
         /// <summary>
