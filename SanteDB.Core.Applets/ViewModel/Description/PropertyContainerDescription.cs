@@ -34,6 +34,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         // Property models by name
         private Dictionary<String, PropertyModelDescription> m_properties = new Dictionary<string, PropertyModelDescription>();
 
+
         /// <summary>
         /// Gets the name of the object
         /// </summary>
@@ -80,7 +81,8 @@ namespace SanteDB.Core.Applets.ViewModel.Description
             PropertyModelDescription model = null;
             if (!this.m_properties.TryGetValue(name, out model))
             {
-                model = this.Properties.FirstOrDefault(o => o.Name == name);
+                var arrSearch = this.Properties.ToArray();
+                model = arrSearch.FirstOrDefault(o => o.Name == name);
                 lock (this.m_properties)
                     if (!this.m_properties.ContainsKey(name))
                         this.m_properties.Add(name, model);
