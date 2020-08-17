@@ -213,10 +213,12 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public static void ClearCaches()
         {
-            s_cache?.Clear();
-            s_stringCache?.Clear();
-            s_templateCache?.Clear();
-            s_viewModelCache?.Clear();
+            s_stringCache.Clear();
+            s_viewStateAssets.Clear();
+            s_widgetAssets.Clear();
+            s_viewModelCache.Clear();
+            s_templateCache.Clear();
+            s_cache.Clear();
             s_viewStateAssets = null;
             s_widgetAssets = null;
         }
@@ -306,11 +308,9 @@ namespace SanteDB.Core.Applets
         public void Add(AppletManifest item)
         {
             if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
-
-            s_stringCache.Clear();
-
             this.m_appletManifest.Add(item);
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+            AppletCollection.ClearCaches();
         }
 
         /// <summary>
