@@ -552,8 +552,12 @@ namespace SanteDB.Core.Applets
             // First, is there an object already
             byte[] cacheObject = null;
             string assetPath = String.Format("{0}?lang={1}", asset.ToString(), preProcessLocalization);
-            if (allowCache && this.CachePages && s_cache.TryGetValue(assetPath, out cacheObject))
+
+            var cacheKey = $"{assetPath};{String.Join(";", bindingParameters?.Select(o => $"{o.Key}={o.Value}") ?? new string[0] { })}";
+            if (allowCache && this.CachePages && s_cache.TryGetValue(cacheKey, out cacheObject))
+            {
                 return cacheObject;
+            }
 
             // Resolve content
             var content = asset.Content;
@@ -571,8 +575,8 @@ namespace SanteDB.Core.Applets
                         retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
                     cacheObject = Encoding.UTF8.GetBytes(retVal);
                     lock (s_syncLock)
-                        if (allowCache && !s_cache.ContainsKey(assetPath))
-                            s_cache.Add(assetPath, cacheObject);
+                        if (allowCache && !s_cache.ContainsKey(cacheKey))
+                            s_cache.Add(cacheKey, cacheObject);
                     return cacheObject;
                 }
                 else
@@ -597,8 +601,8 @@ namespace SanteDB.Core.Applets
 
                         content = oms.ToArray();
                         lock (s_cache)
-                            if (!s_cache.ContainsKey(assetPath))
-                                s_cache.Add(assetPath, content as byte[]);
+                            if (!s_cache.ContainsKey(cacheKey))
+                                s_cache.Add(cacheKey, content as byte[]);
                         return content as byte[];
                     }
                 }
@@ -791,8 +795,8 @@ namespace SanteDB.Core.Applets
                     var byteData = Encoding.UTF8.GetBytes(retVal);
                     // Add to cache
                     lock (s_syncLock)
-                        if (allowCache && !s_cache.ContainsKey(assetPath))
-                            s_cache.Add(assetPath, byteData);
+                        if (allowCache && !s_cache.ContainsKey(cacheKey))
+                            s_cache.Add(cacheKey, byteData);
 
                     return byteData;
                 }
@@ -809,8 +813,8 @@ namespace SanteDB.Core.Applets
                     }).ToArray();
 
                     lock (s_syncLock)
-                        if (allowCache && !s_cache.ContainsKey(assetPath))
-                            s_cache.Add(assetPath, data);
+                        if (allowCache && !s_cache.ContainsKey(cacheKey))
+                            s_cache.Add(cacheKey, data);
                 }
                 return data;
             }
