@@ -213,12 +213,12 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public static void ClearCaches()
         {
-            s_stringCache.Clear();
-            s_viewStateAssets.Clear();
-            s_widgetAssets.Clear();
-            s_viewModelCache.Clear();
-            s_templateCache.Clear();
-            s_cache.Clear();
+            s_stringCache?.Clear();
+            s_viewStateAssets?.Clear();
+            s_widgetAssets?.Clear();
+            s_viewModelCache?.Clear();
+            s_templateCache?.Clear();
+            s_cache?.Clear();
             s_viewStateAssets = null;
             s_widgetAssets = null;
         }
