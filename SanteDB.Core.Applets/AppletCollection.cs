@@ -19,7 +19,9 @@
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.ViewModel.Description;
+using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
+using SanteDB.Core.Model;
 using SharpCompress.IO;
 using System;
 using System.Collections;
@@ -116,6 +118,7 @@ namespace SanteDB.Core.Applets
                 throw new InvalidOperationException("Collection is readonly");
             }
         }
+
     }
 
     /// <summary>
@@ -283,7 +286,11 @@ namespace SanteDB.Core.Applets
             {
                 if (s_widgetAssets == null)
                     s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets)
-                        .Where(o => o.MimeType == "text/html" && (o.Content == null && this.Resolver != null ? this.Resolver(o) : o.Content) is AppletWidget)
+                        .Where(o => o.MimeType == "text/html")
+                        .Select(o=> new { asset = o, content = (o.Content == null && this.Resolver != null ? this.Resolver(o) : o.Content) as AppletWidget })
+                        .Where(o=>o.content != null)
+                        .GroupBy(o=>o.content.Name)
+                        .Select(o=>o.OrderByDescending(d=>d.content.Priority).First().asset)
                         .ToList();
                 return s_widgetAssets;
             }
@@ -446,8 +453,6 @@ namespace SanteDB.Core.Applets
                 {
                     retVal = this.m_appletManifest.SelectMany(o => o.Templates).
                         FirstOrDefault(o => o.Mnemonic.ToLowerInvariant() == templateMnemonic);
-                    if (retVal != null)
-                        retVal.DefinitionContent = this.RenderAssetContent(this.ResolveAsset(retVal.Definition));
                     s_templateCache.Add(templateMnemonic, retVal);
                 }
             return retVal;
@@ -568,7 +573,7 @@ namespace SanteDB.Core.Applets
             {
 
                 // Inject CSP 
-                if(asset.MimeType == "text/javascript")
+                if(asset.MimeType == "text/javascript" || asset.MimeType == "text/json")
                 {
                     var retVal = content as String;
                     if (bindingParameters != null)
@@ -1014,5 +1019,31 @@ namespace SanteDB.Core.Applets
                 return obj.Attribute("src")?.Value.GetHashCode() ?? obj.Attribute("href")?.Value.GetHashCode() ?? obj.GetHashCode();
             }
         }
+
+        /// <summary>
+        /// Get the template instance with the specified parameters
+        /// </summary>
+        /// <param name="templateId">The identifier of the template to fetch</param>
+        /// <param name="parameters">The parameters to use</param>
+        public IdentifiedData GetTemplateInstance(string templateId, IDictionary<String, String> parameters)
+        {
+            var definition = this.GetTemplateDefinition(templateId);
+            if (definition == null)
+                throw new FileNotFoundException($"Template {templateId} not found");
+
+            var definitionAsset = this.ResolveAsset(definition.Definition);
+            if (definitionAsset == null)
+                throw new FileNotFoundException($"Template content {definition.Definition} not found");
+
+            parameters.Add("today", DateTime.Now.Date.ToString("yyyy-MM-dd"));
+            parameters.Add("now", DateTime.Now.Date.ToString("o"));
+
+            using (var ms = new MemoryStream(this.RenderAssetContent(definitionAsset, bindingParameters: parameters)))
+            using (var json = new JsonViewModelSerializer())
+            {
+                return json.DeSerialize<IdentifiedData>(ms);
+            }
+        }
+
     }
 }
