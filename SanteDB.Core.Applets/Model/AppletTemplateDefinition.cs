@@ -17,6 +17,8 @@
  * User: fyfej (Justin Fyfe)
  * Date: 2019-11-27
  */
+using Newtonsoft.Json;
+using SanteDB.Core.Model.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
@@ -34,61 +36,64 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Public
         /// </summary>
-        [XmlAttribute("public")]
+        [XmlAttribute("public"), JsonProperty("public"), QueryParameter("public")]
         public bool Public { get; set; }
 
         /// <summary>
         /// Gets or sets the mnemonic
         /// </summary>
-        [XmlAttribute("mnemonic")]
+        [XmlAttribute("mnemonic"), JsonProperty("mnemonic"), QueryParameter("mnemonic")]
         public String Mnemonic { get; set; }
 
         /// <summary>
         /// Gets or sets the form
         /// </summary>
-        [XmlElement("form")]
+        [XmlElement("form"),JsonProperty("form")]
         public String Form { get; set; }
 
         /// <summary>
         /// Gets or sets the form
         /// </summary>
-        [XmlElement("view")]
+        [XmlElement("view"), JsonProperty("view")]
         public String View { get; set; }
 
         /// <summary>
         /// Gets or sets the definition
         /// </summary>
-        [XmlElement("definition")]
+        [XmlElement("definition"), JsonProperty("definition")]
         public String Definition { get; set; }
 
         /// <summary>
         /// Gets or sets the definition
         /// </summary>
-        [XmlElement("description")]
+        [XmlElement("description"), JsonProperty("description")]
         public String Description { get; set; }
 
         /// <summary>
         /// Gets or sets the definition
         /// </summary>
-        [XmlElement("oid")]
+        [XmlElement("oid"), JsonProperty("oid")]
         public String Oid { get; set; }
 
         /// <summary>
         /// Identifies allowed content (templates) which can be embedded in this template
         /// </summary>
-        [XmlElement("allowComponent")]
+        [XmlElement("allowComponent"), JsonProperty("allowComponent")]
         public List<String> AllowComponent { get; set; }
 
         /// <summary>
         /// Gets the guard condition for the template executed against the patient (allows for blocking of
         /// templates based on patient conditions)
         /// </summary>
-        [XmlElement("guard")]
+        [XmlElement("guard"), JsonProperty("guard")]
         public String Guard { get; set; }
+
         /// <summary>
-        /// The content loaded
+        /// Gets the guard condition for the template executed against the patient (allows for blocking of
+        /// templates based on patient conditions)
         /// </summary>
-        [XmlIgnore]
-        public byte[] DefinitionContent { get; internal set; }
+        [XmlElement("scope"), JsonProperty("scope")]
+        public String Scope { get; set; }
+
     }
 }
