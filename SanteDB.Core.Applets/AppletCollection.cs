@@ -573,7 +573,7 @@ namespace SanteDB.Core.Applets
             {
 
                 // Inject CSP 
-                if(asset.MimeType == "text/javascript" || asset.MimeType == "text/json")
+                if(asset.MimeType == "text/javascript" || asset.MimeType == "application/json" )
                 {
                     var retVal = content as String;
                     if (bindingParameters != null)
@@ -1038,7 +1038,7 @@ namespace SanteDB.Core.Applets
             parameters.Add("today", DateTime.Now.Date.ToString("yyyy-MM-dd"));
             parameters.Add("now", DateTime.Now.Date.ToString("o"));
 
-            using (var ms = new MemoryStream(this.RenderAssetContent(definitionAsset, bindingParameters: parameters)))
+            using (var ms = new MemoryStream(this.RenderAssetContent(definitionAsset, bindingParameters: parameters, allowCache: false)))
             using (var json = new JsonViewModelSerializer())
             {
                 return json.DeSerialize<IdentifiedData>(ms);
