@@ -22,6 +22,8 @@ using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
+using SanteDB.Core.Model.DataTypes;
+using SanteDB.Core.Model.Interfaces;
 using SharpCompress.IO;
 using System;
 using System.Collections;
@@ -244,9 +246,11 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Gets or sets the item at the specified element
         /// </summary>
-        public AppletManifest this[int index] {
+        public AppletManifest this[int index]
+        {
             get { return this.m_appletManifest[index]; }
-            set {
+            set
+            {
                 this.m_appletManifest[index] = value;
                 this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, index));
 
@@ -287,10 +291,10 @@ namespace SanteDB.Core.Applets
                 if (s_widgetAssets == null)
                     s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets)
                         .Where(o => o.MimeType == "text/html")
-                        .Select(o=> new { asset = o, content = (o.Content == null && this.Resolver != null ? this.Resolver(o) : o.Content) as AppletWidget })
-                        .Where(o=>o.content != null)
-                        .GroupBy(o=>o.content.Name)
-                        .Select(o=>o.OrderByDescending(d=>d.content.Priority).First().asset)
+                        .Select(o => new { asset = o, content = (o.Content == null && this.Resolver != null ? this.Resolver(o) : o.Content) as AppletWidget })
+                        .Where(o => o.content != null)
+                        .GroupBy(o => o.content.Name)
+                        .Select(o => o.OrderByDescending(d => d.content.Priority).First().asset)
                         .ToList();
                 return s_widgetAssets;
             }
@@ -383,7 +387,7 @@ namespace SanteDB.Core.Applets
             if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
 
             var retVal = this.m_appletManifest.Remove(item);
-            if(retVal) this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            if (retVal) this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
             return retVal;
         }
 
@@ -551,7 +555,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Render asset content
         /// </summary>
-        public byte[] RenderAssetContent(AppletAsset asset, string preProcessLocalization = null, bool staticScriptRefs = true, bool allowCache = true,  IDictionary<String, String> bindingParameters = null)
+        public byte[] RenderAssetContent(AppletAsset asset, string preProcessLocalization = null, bool staticScriptRefs = true, bool allowCache = true, IDictionary<String, String> bindingParameters = null)
         {
 
             // First, is there an object already
@@ -573,7 +577,7 @@ namespace SanteDB.Core.Applets
             {
 
                 // Inject CSP 
-                if(asset.MimeType == "text/javascript" || asset.MimeType == "application/json" )
+                if (asset.MimeType == "text/javascript" || asset.MimeType == "application/json")
                 {
                     var retVal = content as String;
                     if (bindingParameters != null)
@@ -664,7 +668,7 @@ namespace SanteDB.Core.Applets
 
                                 // Inject any business rules as static refs
                                 var body = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "body");
-                                if(body != null)
+                                if (body != null)
                                 {
                                     body.Add(
                                         this.SelectMany(o => o.Assets.Where(a => a.Name.StartsWith("rules/"))).Select(o => new XElement(xs_xhtml + "script", new XAttribute("src", $"/{o.Manifest.Info.Id}/{o.Name}"), new XAttribute("type", "text/javascript"), new XAttribute("nonce", bindingParameters.TryGetValue("csp_nonce", out string nonce) ? nonce : ""), new XText("// Script reference")))
@@ -808,7 +812,7 @@ namespace SanteDB.Core.Applets
             }
             else if (content is AppletAssetVirtual virtualContent) // Virtual asset 
             {
-                if(!s_cache.TryGetValue(assetPath, out byte[] data))
+                if (!s_cache.TryGetValue(assetPath, out byte[] data))
                 {
                     // TODO: Find a better way to do this
                     data = virtualContent.Include.SelectMany(includePath =>
@@ -917,7 +921,7 @@ namespace SanteDB.Core.Applets
                 var incAsset = this.ResolveAsset(itm, asset);
                 if (incAsset != null)
                     headerInjection.AddRange(new StyleBundleContent(itm).HeaderElement);
-                
+
             }
 
             // Content - SSI
@@ -1025,7 +1029,7 @@ namespace SanteDB.Core.Applets
         /// </summary>
         /// <param name="templateId">The identifier of the template to fetch</param>
         /// <param name="parameters">The parameters to use</param>
-        public IdentifiedData GetTemplateInstance(string templateId, IDictionary<String, String> parameters)
+        public IdentifiedData GetTemplateInstance(string templateId, IDictionary<String, String> parameters = null)
         {
             var definition = this.GetTemplateDefinition(templateId);
             if (definition == null)
@@ -1035,13 +1039,18 @@ namespace SanteDB.Core.Applets
             if (definitionAsset == null)
                 throw new FileNotFoundException($"Template content {definition.Definition} not found");
 
+            if (parameters == null)
+                parameters = new Dictionary<String, String>();
             parameters.Add("today", DateTime.Now.Date.ToString("yyyy-MM-dd"));
-            parameters.Add("now", DateTime.Now.Date.ToString("o"));
+            parameters.Add("now", DateTime.Now.ToString("o"));
 
             using (var ms = new MemoryStream(this.RenderAssetContent(definitionAsset, bindingParameters: parameters, allowCache: false)))
             using (var json = new JsonViewModelSerializer())
             {
-                return json.DeSerialize<IdentifiedData>(ms);
+                var result = json.DeSerialize<IdentifiedData>(ms);
+                if (result is IHasTemplate template) // Correct any type-os in the JSON
+                    template.Template = new TemplateDefinition() { Mnemonic = templateId };
+                return result;
             }
         }
 

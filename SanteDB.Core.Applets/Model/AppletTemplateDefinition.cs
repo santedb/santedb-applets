@@ -93,7 +93,8 @@ namespace SanteDB.Core.Applets.Model
         /// templates based on patient conditions)
         /// </summary>
         [XmlElement("scope"), JsonProperty("scope")]
-        public String Scope { get; set; }
+        public List<String> Scope { get; set; }
+
 
     }
 }
