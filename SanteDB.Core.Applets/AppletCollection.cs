@@ -455,8 +455,11 @@ namespace SanteDB.Core.Applets
             if (!s_templateCache.TryGetValue(templateMnemonic ?? "", out retVal))
                 lock (s_syncLock)
                 {
-                    retVal = this.m_appletManifest.SelectMany(o => o.Templates).
-                        FirstOrDefault(o => o.Mnemonic.ToLowerInvariant() == templateMnemonic);
+                    retVal = this.m_appletManifest
+                        .SelectMany(o => o.Templates)
+                        .GroupBy(o=>o.Mnemonic)
+                        .Select(o=>o.OrderByDescending(t=>t.Priority).FirstOrDefault())
+                        .FirstOrDefault(o => o.Mnemonic.ToLowerInvariant() == templateMnemonic);
                     s_templateCache.Add(templateMnemonic, retVal);
                 }
             return retVal;
