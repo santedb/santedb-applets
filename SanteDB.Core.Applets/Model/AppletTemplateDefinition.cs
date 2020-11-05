@@ -95,6 +95,11 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("scope"), JsonProperty("scope")]
         public List<String> Scope { get; set; }
 
+        /// <summary>
+        /// Gets or sets the priority of the template (for overrides)
+        /// </summary>
+        [XmlAttribute("priority"), JsonProperty("priority")]
+        public int Priority { get; set; }
 
     }
 }
