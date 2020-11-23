@@ -101,5 +101,11 @@ namespace SanteDB.Core.Applets.Model
         [XmlAttribute("priority"), JsonProperty("priority")]
         public int Priority { get; set; }
 
+        /// <summary>
+        /// Gets or sets the priority of the template (for overrides)
+        /// </summary>
+        [XmlElement("icon"), JsonProperty("icon")]
+        public string Icon { get; set; }
+
     }
 }

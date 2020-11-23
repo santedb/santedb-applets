@@ -67,6 +67,13 @@ namespace SanteDB.Core.Applets.Model
         }
 
         /// <summary>
+        /// Uuid of the applet
+        /// </summary>
+        [XmlAttribute("uuid")]
+        [JsonProperty("uuid")]
+        public Guid Uuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the applet info
         /// </summary>
         /// <value>The name.</value>
