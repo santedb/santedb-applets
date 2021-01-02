@@ -127,7 +127,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         public void Save(Stream stream)
         {
-            using (GZipStream gzs = new GZipStream(stream, CompressionMode.Compress))
+            using (GZipStream gzs = new GZipStream(new NonDisposingStream(stream), CompressionMode.Compress))
             {
                 if (this is AppletSolution)
                     s_solutionSerializer.Serialize(gzs, this);
