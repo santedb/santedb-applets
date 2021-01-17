@@ -33,12 +33,6 @@ namespace SanteDB.Core.Applets.Model
     {
 
         /// <summary>
-        /// Gets the key of the template
-        /// </summary>
-        [XmlAttribute("uuid"), JsonProperty("id")]
-        public Guid? Key { get; set; }
-
-        /// <summary>
         /// Public
         /// </summary>
         [XmlAttribute("public"), JsonProperty("public"), QueryParameter("public")]
