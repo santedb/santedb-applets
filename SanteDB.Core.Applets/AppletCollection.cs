@@ -436,8 +436,8 @@ namespace SanteDB.Core.Applets
                         retVal = this.m_appletManifest.SelectMany(o => o.Strings).
                         Where(o => o.Language == locale).
                         SelectMany(o => o.String).
-                        OrderByDescending(s => s.Priority).
-                        Select(o => new KeyValuePair<String, String>(o.Key, o.Value)).ToList();
+                        GroupBy(s => s.Key).
+                        Select(o => new KeyValuePair<String, String>(o.Key, o.OrderByDescending(s=>s.Priority).FirstOrDefault().Value)).ToList();
                         s_stringCache.Add(locale, retVal);
                     }
                 }
