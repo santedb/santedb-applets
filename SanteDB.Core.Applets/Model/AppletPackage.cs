@@ -44,7 +44,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         public AppletPackage()
         {
-            this.Version = typeof(AppletPackage).GetTypeInfo().Assembly.GetName().Version.ToString();
+            this.Version = typeof(AppletPackage).Assembly.GetName().Version.ToString();
         }
 
         // Serializer

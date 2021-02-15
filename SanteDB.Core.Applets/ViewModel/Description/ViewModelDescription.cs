@@ -129,7 +129,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
                 // Children from the heirarchy
                 while (rootType != typeof(IdentifiedData) && retVal == null)
                 {
-                    rootType = rootType.GetTypeInfo().BaseType;
+                    rootType = rootType.BaseType;
                     if (rootType == null) break;
                     typeName = this.GetTypeName(rootType);
 
@@ -152,7 +152,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
             string rootTypeName = null;
             if (!m_rootTypeNames.TryGetValue(rootType, out rootTypeName))
             {
-                rootTypeName = rootType.GetTypeInfo().GetCustomAttribute<XmlTypeAttribute>()?.TypeName ??
+                rootTypeName = rootType.GetCustomAttribute<XmlTypeAttribute>()?.TypeName ??
                                            rootType.Name;
                 lock (m_rootTypeNames)
                     if (!m_rootTypeNames.ContainsKey(rootType))
