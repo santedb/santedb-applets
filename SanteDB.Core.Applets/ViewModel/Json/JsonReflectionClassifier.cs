@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2019 - 2020, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
+ * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -14,7 +14,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2019-11-27
+ * Date: 2021-2-9
  */
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;
@@ -53,7 +53,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         public JsonReflectionClassifier(Type type, IViewModelSerializer owner)
         {
             this.m_type = type;
-            var classifierAtt = type.StripGeneric().GetTypeInfo().GetCustomAttribute<ClassifierAttribute>();
+            var classifierAtt = type.StripGeneric().GetCustomAttribute<ClassifierAttribute>();
             this.m_classifierAttribute = classifierAtt;
             this.m_serializer = owner;
         }
@@ -121,7 +121,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 {
                     while (propertyName != null)
                     {
-                        var classifierValue = typeof(IdentifiedData).GetTypeInfo().IsAssignableFrom(setProperty.PropertyType.GetTypeInfo()) ?
+                        var classifierValue = typeof(IdentifiedData).IsAssignableFrom(setProperty.PropertyType) ?
                             this.LoadClassifier(setProperty.PropertyType, itm.Key) :
                             itm.Key;
 
@@ -130,7 +130,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         else
                             itmClassifier = target = classifierValue;
 
-                        propertyName = setProperty.PropertyType.GetTypeInfo().GetCustomAttribute<ClassifierAttribute>()?.ClassifierProperty;
+                        propertyName = setProperty.PropertyType.GetCustomAttribute<ClassifierAttribute>()?.ClassifierProperty;
                         if (propertyName != null)
                         {
                             setProperty = setProperty.PropertyType.GetRuntimeProperty(propertyName);
@@ -174,7 +174,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 var funcType = typeof(Func<,>).MakeGenericType(type, typeof(bool));
                 var exprType = typeof(Expression<>).MakeGenericType(funcType);
                 var mi = typeof(IEntitySourceProvider).GetGenericMethod(nameof(IEntitySourceProvider.Query), new Type[] { type }, new Type[] { exprType });
-                var classPropertyName = type.GetTypeInfo().GetCustomAttribute<ClassifierAttribute>()?.ClassifierProperty;
+                var classPropertyName = type.GetCustomAttribute<ClassifierAttribute>()?.ClassifierProperty;
                 if (classPropertyName != null)
                 {
                     var rtp = type.GetRuntimeProperty(classPropertyName);
@@ -234,8 +234,8 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     lock (m_classifierCache)
                         if (!m_classifierCache.ContainsKey(classifierObj.GetType()))
                         {
-                            classifierAttribute = classifierObj?.GetType().GetTypeInfo().GetCustomAttribute<ClassifierAttribute>();
-                            m_classifierCache.Add(classifierObj.GetType(), classifierObj.GetType().GetTypeInfo().GetCustomAttribute<ClassifierAttribute>());
+                            classifierAttribute = classifierObj?.GetType().GetCustomAttribute<ClassifierAttribute>();
+                            m_classifierCache.Add(classifierObj.GetType(), classifierObj.GetType().GetCustomAttribute<ClassifierAttribute>());
                         }
             }
 

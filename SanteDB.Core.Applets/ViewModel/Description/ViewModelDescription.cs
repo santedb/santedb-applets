@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2019 - 2020, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
+ * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -14,7 +14,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2019-11-27
+ * Date: 2021-2-9
  */
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Serialization;
@@ -129,7 +129,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
                 // Children from the heirarchy
                 while (rootType != typeof(IdentifiedData) && retVal == null)
                 {
-                    rootType = rootType.GetTypeInfo().BaseType;
+                    rootType = rootType.BaseType;
                     if (rootType == null) break;
                     typeName = this.GetTypeName(rootType);
 
@@ -152,7 +152,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
             string rootTypeName = null;
             if (!m_rootTypeNames.TryGetValue(rootType, out rootTypeName))
             {
-                rootTypeName = rootType.GetTypeInfo().GetCustomAttribute<XmlTypeAttribute>()?.TypeName ??
+                rootTypeName = rootType.GetCustomAttribute<XmlTypeAttribute>()?.TypeName ??
                                            rootType.Name;
                 lock (m_rootTypeNames)
                     if (!m_rootTypeNames.ContainsKey(rootType))

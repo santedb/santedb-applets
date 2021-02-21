@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2019 - 2020, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
+ * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -14,7 +14,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2020-5-1
+ * Date: 2021-2-9
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Extensions;
@@ -222,7 +222,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         public Object Deserialize(JsonReader r, Type asType, JsonSerializationContext context)
         {
             var retVal = new Object();
-            if (!asType.GetTypeInfo().IsAbstract)
+            if (!asType.IsAbstract)
                 retVal = Activator.CreateInstance(asType);
 
             int depth = r.TokenType == JsonToken.StartObject ? r.Depth : r.Depth - 1; // current depth
@@ -244,7 +244,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         switch ((String)r.Value)
                         {
                             case "$type":
-                                var xsiType = s_binder.BindToType(asType.GetTypeInfo().Assembly.FullName, r.ReadAsString());
+                                var xsiType = s_binder.BindToType(asType.Assembly.FullName, r.ReadAsString());
                                 if (xsiType != asType)
                                 {
                                     var fmtr = context.JsonContext.GetFormatter(xsiType);
@@ -283,7 +283,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         public object GetSimpleValue(object value)
         {
-            var simpleValueAttribute = value.GetType().GetTypeInfo().GetCustomAttribute<SimpleValueAttribute>();
+            var simpleValueAttribute = value.GetType().GetCustomAttribute<SimpleValueAttribute>();
             if (simpleValueAttribute != null)
                 return value.GetType().GetRuntimeProperty(simpleValueAttribute.ValueProperty).GetValue(value);
             return null;
@@ -298,7 +298,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             if (simpleValue == null)
                 return null;
 
-            var simpleValueAttribute = this.m_type.GetTypeInfo().GetCustomAttribute<SimpleValueAttribute>();
+            var simpleValueAttribute = this.m_type.GetCustomAttribute<SimpleValueAttribute>();
             object retVal = null;
 
             // Value attribute is null

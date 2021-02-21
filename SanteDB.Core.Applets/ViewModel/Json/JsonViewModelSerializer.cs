@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2019 - 2020, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
+ * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -14,7 +14,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2019-11-27
+ * Date: 2021-2-9
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Applets.ViewModel.Description;
@@ -65,7 +65,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         public JsonViewModelSerializer()
         {
-            this.ViewModel = ViewModelDescription.Load(typeof(JsonViewModelSerializer).GetTypeInfo().Assembly.GetManifestResourceStream("SanteDB.Core.Applets.ViewModel.Default.xml"));
+            this.ViewModel = ViewModelDescription.Load(typeof(JsonViewModelSerializer).Assembly.GetManifestResourceStream("SanteDB.Core.Applets.ViewModel.Default.xml"));
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 case JsonToken.StartObject:
                     {
                         var formatter = this.GetFormatter(nonGenericT);
-                        bool isList = typeof(IList).GetTypeInfo().IsAssignableFrom(t.GetTypeInfo());
+                        bool isList = typeof(IList).IsAssignableFrom(t);
                         // Classifier???
                         if (classifier == null || !isList)
                         {
@@ -203,7 +203,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 // Array read, we want to re-call the specified parse
                 case JsonToken.StartArray:
                     {
-                        if (!typeof(IList).GetTypeInfo().IsAssignableFrom(t.GetTypeInfo()))
+                        if (!typeof(IList).IsAssignableFrom(t))
                             throw new JsonSerializationException($"{t} does not implement IList at {r.Path}");
                         int depth = r.Depth;
                         var listInstance = Activator.CreateInstance(t) as IList;
@@ -219,7 +219,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 case JsonToken.Date:
                 case JsonToken.Integer:
                 case JsonToken.String:
-                    if (typeof(IdentifiedData).GetTypeInfo().IsAssignableFrom(nonGenericT.GetTypeInfo())) // Complex object
+                    if (typeof(IdentifiedData).IsAssignableFrom(nonGenericT)) // Complex object
                     {
                         var formatter = this.GetFormatter(nonGenericT);
                         return formatter.FromSimpleValue(r.Value);
@@ -239,7 +239,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                                     return Convert.ToDecimal(r.Value);
                                 else if (t.StripNullable() == typeof(Int32))
                                     return Convert.ToInt32(r.Value);
-                                else if (t.StripNullable().GetTypeInfo().IsEnum)
+                                else if (t.StripNullable().IsEnum)
                                     return Enum.ToObject(t.StripNullable(), Convert.ToInt32(r.Value));
                                 else
                                     return (Double)r.Value;
@@ -253,7 +253,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                                     return new DateTimeOffset((DateTime)r.Value);
                             case JsonToken.Integer:
                                 t = t.StripNullable();
-                                if (t.StripNullable().GetTypeInfo().IsEnum)
+                                if (t.StripNullable().IsEnum)
                                     return Enum.ToObject(t.StripNullable(), r.Value);
                                 return Convert.ChangeType(r.Value, t);
                             case JsonToken.String:
@@ -321,7 +321,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 
             }
             var listValue = methodInfo.Invoke(this, new object[] { key }) as IList;
-            if (propertyType.GetTypeInfo().IsAssignableFrom(listValue.GetType().GetTypeInfo()))
+            if (propertyType.IsAssignableFrom(listValue.GetType()))
                 return listValue;
             else
             {
@@ -460,7 +460,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             IViewModelClassifier retVal = null;
             if (!this.m_classifiers.TryGetValue(type, out retVal))
             {
-                var classifierAtt = type.StripGeneric().GetTypeInfo().GetCustomAttribute<ClassifierAttribute>();
+                var classifierAtt = type.StripGeneric().GetCustomAttribute<ClassifierAttribute>();
                 if (classifierAtt != null)
                     retVal = new JsonReflectionClassifier(type, this);
                 lock (this.m_syncLock)
@@ -504,10 +504,10 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         public void LoadSerializerAssembly(Assembly asm)
         {
-            var typeFormatters = asm.ExportedTypes.Where(o => typeof(IJsonViewModelTypeFormatter).GetTypeInfo().IsAssignableFrom(o.GetTypeInfo()) && o.GetTypeInfo().IsClass)
+            var typeFormatters = asm.ExportedTypes.Where(o => typeof(IJsonViewModelTypeFormatter).IsAssignableFrom(o) && o.IsClass)
                 .Select(o => Activator.CreateInstance(o) as IJsonViewModelTypeFormatter)
                 .Where(o => !this.m_formatters.ContainsKey(o.HandlesType));
-            var classifiers = asm.ExportedTypes.Where(o => typeof(IViewModelClassifier).GetTypeInfo().IsAssignableFrom(o.GetTypeInfo()) && o.GetTypeInfo().IsClass)
+            var classifiers = asm.ExportedTypes.Where(o => typeof(IViewModelClassifier).IsAssignableFrom(o) && o.IsClass)
                 .Select(o => Activator.CreateInstance(o) as IViewModelClassifier)
                 .Where(o => !this.m_classifiers.ContainsKey(o.HandlesType));
             foreach (var fmtr in typeFormatters)

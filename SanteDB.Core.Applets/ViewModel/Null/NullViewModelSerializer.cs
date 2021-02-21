@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2019 - 2020, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
+ * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you 
  * may not use this file except in compliance with the License. You may 
@@ -14,7 +14,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2019-11-27
+ * Date: 2021-2-9
  */
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Diagnostics;
@@ -117,7 +117,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
 
             }
             var listValue = methodInfo.Invoke(this, new object[] { key }) as IList;
-            if (propertyType.GetTypeInfo().IsAssignableFrom(listValue.GetType().GetTypeInfo()))
+            if (propertyType.IsAssignableFrom(listValue.GetType()))
                 return listValue;
             else
             {
@@ -172,7 +172,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         /// </summary>
         public void LoadSerializerAssembly(Assembly asm)
         {
-            var typeFormatters = asm.ExportedTypes.Where(o => typeof(INullTypeFormatter).GetTypeInfo().IsAssignableFrom(o.GetTypeInfo()) && o.GetTypeInfo().IsClass)
+            var typeFormatters = asm.ExportedTypes.Where(o => typeof(INullTypeFormatter).IsAssignableFrom(o) && o.IsClass)
               .Select(o => Activator.CreateInstance(o) as INullTypeFormatter)
               .Where(o => !m_formatters.ContainsKey(o.HandlesType));
             foreach (var fmtr in typeFormatters)
@@ -204,7 +204,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
             IViewModelClassifier retVal = null;
             if (!m_classifiers.TryGetValue(type, out retVal))
             {
-                var classifierAtt = type.StripGeneric().GetTypeInfo().GetCustomAttribute<ClassifierAttribute>();
+                var classifierAtt = type.StripGeneric().GetCustomAttribute<ClassifierAttribute>();
                 if (classifierAtt != null)
                     retVal = new Json.JsonReflectionClassifier(type, this);
                 lock (m_classifiers)
