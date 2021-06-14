@@ -437,8 +437,8 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     foreach (var cls in classifier.Classify(instance as IList))
                     {
                         Object value = new List<Object>(cls.Value as IEnumerable<Object>);
-                        if (cls.Value.Count == 1)
-                            value = cls.Value[0];
+                        //if (cls.Value.Count == 1)
+                        //    value = cls.Value[0];
                         // Now write
                         this.WritePropertyUtil(w, cls.Key, value, new JsonSerializationContext(propertyName, this, instance, context as JsonSerializationContext), true);
                     }
