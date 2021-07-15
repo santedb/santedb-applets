@@ -307,7 +307,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// <summary>
         /// Load collection
         /// </summary>
-        internal IList LoadCollection(Type propertyType, Guid key)
+        internal IEnumerable LoadCollection(Type propertyType, Guid key)
         {
             MethodInfo methodInfo = null;
 
@@ -320,13 +320,13 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         this.m_relatedLoadAssociations.Add(propertyType, methodInfo);
 
             }
-            var listValue = methodInfo.Invoke(this, new object[] { key }) as IList;
+            var listValue = methodInfo.Invoke(this, new object[] { key }) as IEnumerable;
             if (propertyType.IsAssignableFrom(listValue.GetType()))
                 return listValue;
             else
             {
                 var retVal = Activator.CreateInstance(propertyType, listValue);
-                return retVal as IList;
+                return retVal as IEnumerable;
             }
 
         }
