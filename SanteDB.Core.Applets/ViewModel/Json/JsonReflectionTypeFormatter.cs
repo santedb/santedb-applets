@@ -112,7 +112,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             String retVal = null;
             if (!this.m_jsonPropertyNames.TryGetValue(info, out retVal) || includeIgnored)
             {
-                if (!includeIgnored && info.GetCustomAttribute<DataIgnoreAttribute>() != null && info.GetCustomAttribute<JsonPropertyAttribute>() == null ||
+                if (!includeIgnored && info.GetCustomAttribute<SerializationMetadataAttribute>() != null && info.GetCustomAttribute<JsonPropertyAttribute>() == null ||
                     info.GetCustomAttribute<JsonIgnoreAttribute>() != null && info.GetCustomAttribute<SerializationReferenceAttribute>() == null)
                     retVal = null;
                 else
@@ -210,10 +210,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 
             }
 
-            // Loaded something, let's cache it
-            if (loadedProperties && o.Key.HasValue && ((o as IVersionedEntity) == null || (o as IVersionedEntity)?.VersionKey.HasValue == true) &&
-                o.LoadState != LoadState.New)
-                (ApplicationServiceContext.Current.GetService(typeof(IDataCachingService)) as IDataCachingService).Add(o);
         }
 
         /// <summary>
