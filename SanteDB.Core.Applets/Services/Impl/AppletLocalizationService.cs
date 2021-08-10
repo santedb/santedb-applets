@@ -15,6 +15,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// <summary>
     /// Applet localization
     /// </summary>
+    [ServiceProvider("Applet Localization Service")]
     public class AppletLocalizationService : ILocalizationService
     {
 
