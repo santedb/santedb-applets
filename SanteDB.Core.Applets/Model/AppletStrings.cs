@@ -37,6 +37,12 @@ namespace SanteDB.Core.Applets.Model
         public string Language { get; set; }
 
         /// <summary>
+        /// Reference for the translation strings file
+        /// </summary>
+        [XmlAttribute("extern")]
+        public string Reference { get; set; }
+
+        /// <summary>
         /// Gets or sets the string
         /// </summary>
         [XmlElement("string"), JsonProperty("string")]

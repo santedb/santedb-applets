@@ -23,9 +23,11 @@ using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Model.Interfaces;
+using SanteDB.Core.Services;
 using SharpCompress.IO;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -129,14 +131,11 @@ namespace SanteDB.Core.Applets
     {
 
         // A cache of rendered assets
-        private static Dictionary<String, Byte[]> s_cache = new Dictionary<string, byte[]>();
-        private static Dictionary<String, List<KeyValuePair<String, String>>> s_stringCache = new Dictionary<string, List<KeyValuePair<string, string>>>();
-        private static Dictionary<String, AppletTemplateDefinition> s_templateCache = new Dictionary<string, AppletTemplateDefinition>();
-        private static Dictionary<String, ViewModelDescription> s_viewModelCache = new Dictionary<string, ViewModelDescription>();
+        private static ConcurrentDictionary<String, Byte[]> s_cache = new ConcurrentDictionary<string, byte[]>();
+        private static ConcurrentDictionary<String, AppletTemplateDefinition> s_templateCache = new ConcurrentDictionary<string, AppletTemplateDefinition>();
+        private static ConcurrentDictionary<String, ViewModelDescription> s_viewModelCache = new ConcurrentDictionary<string, ViewModelDescription>();
         private static List<AppletAsset> s_viewStateAssets = null;
         private static List<AppletAsset> s_widgetAssets = null;
-
-        private static Object s_syncLock = new object();
 
         private AssetContentResolver m_resolver = null;
         private Regex m_localizationRegex = new Regex("{{\\s?:?:?'([A-Za-z0-9\\._\\-]*?)'\\s?\\|\\s?i18n\\s?}}");
@@ -217,7 +216,6 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public static void ClearCaches()
         {
-            s_stringCache?.Clear();
             s_viewStateAssets?.Clear();
             s_widgetAssets?.Clear();
             s_viewModelCache?.Clear();
@@ -422,27 +420,6 @@ namespace SanteDB.Core.Applets
             this.m_referenceBundles.Add(bundle);
         }
 
-        /// <summary>
-        /// Get the list of strings from all the loaded applets
-        /// </summary>
-        public List<KeyValuePair<String, String>> GetStrings(String locale)
-        {
-            List<KeyValuePair<String, String>> retVal = null;
-            if (!s_stringCache.TryGetValue(locale ?? "", out retVal))
-                lock (s_syncLock)
-                {
-                    if (!s_stringCache.TryGetValue(locale ?? "", out retVal))
-                    {
-                        retVal = this.m_appletManifest.SelectMany(o => o.Strings).
-                        Where(o => o.Language == locale).
-                        SelectMany(o => o.String).
-                        GroupBy(s => s.Key).
-                        Select(o => new KeyValuePair<String, String>(o.Key, o.OrderByDescending(s=>s.Priority).FirstOrDefault().Value)).ToList();
-                        s_stringCache.Add(locale, retVal);
-                    }
-                }
-            return retVal;
-        }
 
         /// <summary>
         /// Gets the template definition
@@ -452,15 +429,14 @@ namespace SanteDB.Core.Applets
             AppletTemplateDefinition retVal = null;
             templateMnemonic = templateMnemonic.ToLowerInvariant();
             if (!s_templateCache.TryGetValue(templateMnemonic ?? "", out retVal))
-                lock (s_syncLock)
-                {
-                    retVal = this.m_appletManifest
-                        .SelectMany(o => o.Templates)
-                        .GroupBy(o=>o.Mnemonic)
-                        .Select(o=>o.OrderByDescending(t=>t.Priority).FirstOrDefault())
-                        .FirstOrDefault(o => o.Mnemonic.ToLowerInvariant() == templateMnemonic);
-                    s_templateCache.Add(templateMnemonic, retVal);
-                }
+            {
+                retVal = this.m_appletManifest
+                    .SelectMany(o => o.Templates)
+                    .GroupBy(o => o.Mnemonic)
+                    .Select(o => o.OrderByDescending(t => t.Priority).FirstOrDefault())
+                    .FirstOrDefault(o => o.Mnemonic.ToLowerInvariant() == templateMnemonic);
+                s_templateCache.TryAdd(templateMnemonic, retVal);
+            }
             return retVal;
         }
 
@@ -472,29 +448,29 @@ namespace SanteDB.Core.Applets
             ViewModelDescription retVal = null;
             viewModelName = viewModelName?.ToLowerInvariant();
             if (!s_viewModelCache.TryGetValue(viewModelName ?? "", out retVal))
-                lock (s_syncLock)
-                {
-                    var viewModelDefinition = this.m_appletManifest.SelectMany(o => o.ViewModel).
-                        FirstOrDefault(o => o.ViewModelId.ToLowerInvariant() == viewModelName);
+            {
+                var viewModelDefinition = this.m_appletManifest.SelectMany(o => o.ViewModel).
+                    FirstOrDefault(o => o.ViewModelId.ToLowerInvariant() == viewModelName);
 
-                    if (viewModelDefinition != null)
-                        viewModelDefinition.DefinitionContent = this.RenderAssetContent(this.ResolveAsset(viewModelDefinition.Definition));
+                if (viewModelDefinition != null)
+                    viewModelDefinition.DefinitionContent = this.RenderAssetContent(this.ResolveAsset(viewModelDefinition.Definition));
 
-                    // De-serialize
-                    if (viewModelDefinition != null)
-                        using (MemoryStream ms = new MemoryStream(viewModelDefinition.DefinitionContent))
+                // De-serialize
+                if (viewModelDefinition != null)
+                    using (MemoryStream ms = new MemoryStream(viewModelDefinition.DefinitionContent))
+                    {
+                        retVal = ViewModelDescription.Load(ms);
+                        foreach (var itm in retVal.Include)
+                            retVal.Model.AddRange(this.GetViewModelDescription(itm).Model);
+
+                        // caching 
+                        if (this.CachePages)
                         {
-                            retVal = ViewModelDescription.Load(ms);
-                            foreach (var itm in retVal.Include)
-                                retVal.Model.AddRange(this.GetViewModelDescription(itm).Model);
-
-                            // caching 
-                            if (this.CachePages)
-                                if (!s_viewModelCache.ContainsKey(viewModelName))
-                                    s_viewModelCache.Add(viewModelName, retVal);
+                            s_viewModelCache.TryAdd(viewModelName, retVal);
                         }
+                    }
 
-                }
+            }
             return retVal;
         }
 
@@ -502,56 +478,49 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Resolve the asset 
         /// </summary>
-        public AppletAsset ResolveAsset(String assetPath, AppletAsset relative = null, String language = null)
+        public AppletAsset ResolveAsset(String assetPath, AppletManifest relativeManifest = null, AppletAsset relativeAsset = null)
         {
 
             if (assetPath == null)
                 return null;
 
+            // Manifest to search for asset
+            AppletManifest searchManifest = null;
+
             // Is the asset start with ~
-            if (assetPath.StartsWith("~"))
-                assetPath = "/" + relative.Manifest.Info.Id + assetPath.Substring(1);
-
-            Uri path = null;
-            if (!Uri.TryCreate(assetPath, UriKind.RelativeOrAbsolute, out path))
-                return null;
-            else
-            {
-
-                AppletManifest resolvedManifest = null;
-                String pathLeft = path.IsAbsoluteUri ? path.AbsolutePath.Substring(1) :
-                    path.OriginalString.StartsWith("/") ? path.OriginalString.Substring(1) : path.OriginalString;
-                // Is the host specified?
-                if (path.IsAbsoluteUri && !String.IsNullOrEmpty(path.Host))
+            if (assetPath.StartsWith("/"))
+            { // Absolute
+                var pathRegex = new Regex(@"^\/(.*?)\/(.*)$");
+                var pathData = pathRegex.Match(assetPath);
+                if (pathData.Success)
                 {
-                    resolvedManifest = this.FirstOrDefault(o => o.Info.Id == path.Host);
+                    searchManifest = this.FirstOrDefault(o => o.Info.Id == pathData.Groups[1].Value);
+                    assetPath = pathData.Groups[2].Value;
+
                 }
                 else
                 {
-                    // We can accept /org.x.y.z or /org/x/y/z
-                    StringBuilder applId = new StringBuilder();
-                    while (pathLeft.Contains("/"))
-                    {
-                        applId.AppendFormat("{0}.", pathLeft.Substring(0, pathLeft.IndexOf("/")));
-                        pathLeft = pathLeft.Substring(pathLeft.IndexOf("/") + 1);
-                        resolvedManifest = this.FirstOrDefault(o => o.Info.Id == applId.ToString(0, applId.Length - 1));
-                        if (resolvedManifest != null) break;
-                    }
+                    throw new InvalidCastException("Absolute references must be in format /id.to.the.applet/path/to/the/file");
                 }
-                if (resolvedManifest == null) resolvedManifest = relative?.Manifest;
-
-                // Is there a resource?
-                if (resolvedManifest != null)
-                {
-                    if (pathLeft.EndsWith("/") || String.IsNullOrEmpty(pathLeft))
-                        pathLeft += "index.html";
-                    pathLeft = pathLeft.ToLower(); // case insensitive
-                    return resolvedManifest.Assets.FirstOrDefault(o => o.Name == pathLeft);
-                }
-
-
-                return null;
             }
+            else if (assetPath.StartsWith("~")) {
+                assetPath = assetPath.Substring(2); // it is in current path
+                searchManifest = relativeManifest ?? relativeAsset?.Manifest;
+                if (searchManifest == null)
+                {
+                    throw new InvalidOperationException("Cannot search relative manifest with no reference/related asset");
+                }
+            }
+            else
+            {
+                searchManifest = relativeManifest ?? relativeAsset?.Manifest;
+            }
+
+            if (assetPath.EndsWith("/") || String.IsNullOrEmpty(assetPath))
+                assetPath += "index.html";
+            assetPath = assetPath.ToLower(); // case insensitive
+            return searchManifest?.Assets.FirstOrDefault(o => o.Name == assetPath);
+
         }
 
         /// <summary>
@@ -560,6 +529,7 @@ namespace SanteDB.Core.Applets
         public byte[] RenderAssetContent(AppletAsset asset, string preProcessLocalization = null, bool staticScriptRefs = true, bool allowCache = true, IDictionary<String, String> bindingParameters = null)
         {
 
+            // TODO: This method needs to be cleaned up since it exists from the old/early OpenIZ days
             // First, is there an object already
             byte[] cacheObject = null;
             string assetPath = String.Format("{0}?lang={1}", asset.ToString(), preProcessLocalization);
@@ -585,9 +555,10 @@ namespace SanteDB.Core.Applets
                     if (bindingParameters != null)
                         retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
                     cacheObject = Encoding.UTF8.GetBytes(retVal);
-                    lock (s_syncLock)
-                        if (allowCache && !s_cache.ContainsKey(cacheKey))
-                            s_cache.Add(cacheKey, cacheObject);
+                    if (allowCache)
+                    {
+                        s_cache.TryAdd(cacheKey, cacheObject);
+                    }
                     return cacheObject;
                 }
                 else
@@ -611,9 +582,10 @@ namespace SanteDB.Core.Applets
                         }
 
                         content = oms.ToArray();
-                        lock (s_cache)
-                            if (!s_cache.ContainsKey(cacheKey))
-                                s_cache.Add(cacheKey, content as byte[]);
+                        if (allowCache)
+                        {
+                            s_cache.TryAdd(cacheKey, content as byte[]);
+                        }
                         return content as byte[];
                     }
                 }
@@ -701,7 +673,7 @@ namespace SanteDB.Core.Applets
 
 
                                     // Get the layout
-                                    var layoutAsset = this.ResolveAsset(htmlAsset.Layout, asset);
+                                    var layoutAsset = this.ResolveAsset(htmlAsset.Layout, relativeAsset: asset);
                                     if (layoutAsset == null)
                                         throw new FileNotFoundException(String.Format("Layout asset {0} not found", htmlAsset.Layout));
 
@@ -738,7 +710,7 @@ namespace SanteDB.Core.Applets
                             assetName = assetName.Substring(0, assetName.Length - 1);
                         if (assetName == "content")
                             continue;
-                        var includeAsset = this.ResolveAsset(assetName, asset);
+                        var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
                         if (includeAsset == null)
                         {
                             inc.AddAfterSelf(new XElement(xs_xhtml + "strong", new XText(String.Format("{0} NOT FOUND", assetName))));
@@ -794,7 +766,7 @@ namespace SanteDB.Core.Applets
                     String retVal = sw.ToString();
                     if (!String.IsNullOrEmpty(preProcessLocalization))
                     {
-                        var assetString = this.GetStrings(preProcessLocalization);
+                        var assetString = ApplicationServiceContext.Current.GetService<ILocalizationService>().GetStrings(preProcessLocalization);
                         retVal = this.m_localizationRegex.Replace(retVal, (m) => assetString.FirstOrDefault(o => o.Key == m.Groups[1].Value).Value ?? m.Groups[1].Value);
                     }
 
@@ -805,9 +777,10 @@ namespace SanteDB.Core.Applets
                     }
                     var byteData = Encoding.UTF8.GetBytes(retVal);
                     // Add to cache
-                    lock (s_syncLock)
-                        if (allowCache && !s_cache.ContainsKey(cacheKey))
-                            s_cache.Add(cacheKey, byteData);
+                    if (allowCache)
+                    {
+                        s_cache.TryAdd(cacheKey, byteData);
+                    }
 
                     return byteData;
                 }
@@ -823,9 +796,10 @@ namespace SanteDB.Core.Applets
                         return asset.Manifest.Assets.Where(o => regExp.IsMatch(o.Name)).SelectMany(inclAsset => this.RenderAssetContent(inclAsset, preProcessLocalization, staticScriptRefs, allowCache, bindingParameters));
                     }).ToArray();
 
-                    lock (s_syncLock)
-                        if (allowCache && !s_cache.ContainsKey(cacheKey))
-                            s_cache.Add(cacheKey, data);
+                    if (allowCache)
+                    {
+                        s_cache.TryAdd(cacheKey, data);
+                    }
                 }
                 return data;
             }
@@ -869,7 +843,7 @@ namespace SanteDB.Core.Applets
                     assetName = assetName.Substring(0, assetName.Length - 1);
                 if (assetName == "content")
                     continue;
-                var includeAsset = this.ResolveAsset(assetName, asset);
+                var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
                 if (includeAsset != null)
                     scriptRefs.AddRange(this.GetLazyScripts(includeAsset));
             }
@@ -912,7 +886,7 @@ namespace SanteDB.Core.Applets
             else
                 foreach (var itm in htmlAsset.Script.Where(o => o.IsStatic != false))
                 {
-                    var incAsset = this.ResolveAsset(itm.Reference, asset);
+                    var incAsset = this.ResolveAsset(itm.Reference, relativeAsset: asset);
                     if (incAsset != null)
                         headerInjection.AddRange(new ScriptBundleContent(itm.Reference).HeaderElement);
                     else
@@ -920,7 +894,7 @@ namespace SanteDB.Core.Applets
                 }
             foreach (var itm in htmlAsset.Style)
             {
-                var incAsset = this.ResolveAsset(itm, asset);
+                var incAsset = this.ResolveAsset(itm, relativeAsset: asset);
                 if (incAsset != null)
                     headerInjection.AddRange(new StyleBundleContent(itm).HeaderElement);
 
@@ -935,7 +909,7 @@ namespace SanteDB.Core.Applets
                     assetName = assetName.Substring(0, assetName.Length - 1);
                 if (assetName == "content")
                     continue;
-                var includeAsset = this.ResolveAsset(assetName, asset);
+                var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
                 if (includeAsset != null)
                     headerInjection.AddRange(this.GetInjectionHeaders(includeAsset, isUiContainer));
             }
