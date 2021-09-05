@@ -44,7 +44,10 @@
     <PackageIconUrl>http://santesuite.org/assets/img/logo.png</PackageIconUrl>
     <PackageProjectUrl>http://santesuite.org</PackageProjectUrl>
     <AssemblyName>SanteDB.Core.Applets</AssemblyName>
-  </PropertyGroup>  
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="BindingExpressionVisitor.cs" />
+  </ItemGroup>  
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
@@ -141,8 +144,8 @@
   <Choose>
     <When Condition="$(SolutionName.Contains('-ext'))">
       <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-        <PackageReference Include="SharpCompress" Version="0.26.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="SharpCompress" Version="0.28.3" />
         <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
         <ProjectReference Include="..\..\santedb-model\SanteDB.Core.Model\SanteDB.Core.Model.csproj">
           <Project>{F1A82A4F-4A57-47D7-AE76-444C8A4FF54A}</Project>
@@ -156,10 +159,10 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="SanteDB.Core.Api" Version="$(VersionNumber)" />
         <PackageReference Include="SanteDB.Core.Model" Version="$(VersionNumber)" />
-        <PackageReference Include="SharpCompress" Version="0.26.0" />
+        <PackageReference Include="SharpCompress" Version="0.28.3" />
         <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.0.1" />
       </ItemGroup>
     </Otherwise>
