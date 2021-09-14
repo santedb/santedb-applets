@@ -44,7 +44,10 @@
     <PackageIconUrl>http://santesuite.org/assets/img/logo.png</PackageIconUrl>
     <PackageProjectUrl>http://santesuite.org</PackageProjectUrl>
     <AssemblyName>SanteDB.Core.Applets</AssemblyName>
-  </PropertyGroup>  
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="BindingExpressionVisitor.cs" />
+  </ItemGroup>  
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
