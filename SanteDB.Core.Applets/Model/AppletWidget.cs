@@ -27,7 +27,7 @@ using System.Xml.Serialization;
 namespace SanteDB.Core.Applets.Model
 {
 
-   
+
     /// <summary>
     /// Identifies the type which the widget is
     /// </summary>

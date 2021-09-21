@@ -27,7 +27,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace SanteDB.Core.Applets.Services.Impl
@@ -45,7 +44,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// String cache
         /// </summary>
-        private ConcurrentDictionary<String, IDictionary<String,String>> m_stringCache = new ConcurrentDictionary<string, IDictionary<String, String>>();
+        private ConcurrentDictionary<String, IDictionary<String, String>> m_stringCache = new ConcurrentDictionary<string, IDictionary<String, String>>();
 
         // Applet manager
         private IAppletManagerService m_appletManager;
@@ -88,7 +87,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         public string GetString(string locale, string stringKey)
         {
             var refData = this.GetOrLoadStringData(locale ?? Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName);
-            if(refData.TryGetValue(stringKey, out String retVal))
+            if (refData.TryGetValue(stringKey, out String retVal))
             {
                 return retVal;
             }
@@ -101,7 +100,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get all strings for the specified locale
         /// </summary>
-        public KeyValuePair<String,String>[] GetStrings(string locale)
+        public KeyValuePair<String, String>[] GetStrings(string locale)
         {
             return this.GetOrLoadStringData(locale).ToArray();
         }
@@ -122,9 +121,9 @@ namespace SanteDB.Core.Applets.Services.Impl
                 {
                     localStrings = this.m_solutionManager.Solutions
                         .SelectMany(s => this.m_solutionManager.GetApplets(s.Meta.Id))
-                        .SelectMany(a => this.ResolveStringData(a, a.Strings.Where(l=>l.Language == locale)))
+                        .SelectMany(a => this.ResolveStringData(a, a.Strings.Where(l => l.Language == locale)))
                         .GroupBy(s => s.Key)
-                        .ToDictionary(o => o.Key, o => o.OrderByDescending(g => g.Priority).First().Value);
+                        .ToDictionary(o => o.Key, o => o.OrderByDescending(g => g.Priority).First().Value.Replace("\'", "'"));
                 }
                 else
                 {
@@ -132,7 +131,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                         .Applets
                         .SelectMany(a => this.ResolveStringData(a, a.Strings.Where(l => l.Language == locale)))
                         .GroupBy(s => s.Key)
-                        .ToDictionary(o => o.Key, o => o.OrderByDescending(g => g.Priority).First().Value);
+                        .ToDictionary(o => o.Key, o => o.OrderByDescending(g => g.Priority).First().Value.Replace("\'", "'"));
                 }
 
                 this.m_stringCache.TryAdd(locale, localStrings);
@@ -145,12 +144,13 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         private IEnumerable<AppletStringData> ResolveStringData(AppletManifest applet, IEnumerable<AppletStrings> stringResources)
         {
-            foreach (var res in stringResources) {
+            foreach (var res in stringResources)
+            {
 
                 if (!String.IsNullOrEmpty(res.Reference))
                 {
                     var asset = this.m_appletManager.Applets.ResolveAsset(res.Reference, applet);
-                    if(asset == null)
+                    if (asset == null)
                     {
                         this.m_tracer.TraceWarning($"Cannot resolve {res.Reference} - strings from this file will not be loaded");
                     }
@@ -167,7 +167,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                             this.m_tracer.TraceWarning($"Could not process {asset} as a resources file - {e.Message} - Strings will not be loaded");
                         }
 
-                        foreach(var externString in resourceFile?.Strings)
+                        foreach (var externString in resourceFile?.Strings)
                         {
                             yield return new AppletStringData()
                             {
@@ -181,7 +181,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                 }
                 else
                 {
-                    foreach(var internString in res.String)
+                    foreach (var internString in res.String)
                     {
                         yield return internString;
                     }

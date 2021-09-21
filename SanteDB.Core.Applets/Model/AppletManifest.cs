@@ -31,9 +31,9 @@ namespace SanteDB.Core.Applets.Model
     /// The applet manifest is responsible for storing data related to a JavaScript applet
     /// </summary>
     [XmlType(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
-	[XmlRoot(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
-	public class AppletManifest : IEquatable<AppletManifest>
-	{
+    [XmlRoot(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
+    public class AppletManifest : IEquatable<AppletManifest>
+    {
 
         private static XmlSerializer x_xsz = XmlModelSerializerFactory.Current.CreateSerializer(typeof(AppletManifest));
 

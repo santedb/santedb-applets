@@ -18,7 +18,6 @@
  * User: fyfej
  * Date: 2021-8-5
  */
-using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model

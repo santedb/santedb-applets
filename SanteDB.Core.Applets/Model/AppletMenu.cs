@@ -28,8 +28,8 @@ namespace SanteDB.Core.Applets.Model
     /// Applet tile
     /// </summary>
     [XmlType(nameof(AppletMenu), Namespace = "http://santedb.org/applet")]
-	public class AppletMenu
-	{
+    public class AppletMenu
+    {
 
         /// <summary>
         /// Initialize
