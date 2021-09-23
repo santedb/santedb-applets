@@ -18,16 +18,11 @@
  * User: fyfej
  * Date: 2021-8-22
  */
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SanteDB.Core.Applets.Model.Extern
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Text;
     using System.Xml.Serialization;
 
     namespace SanteDB.Core.Applets.Model

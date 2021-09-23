@@ -34,7 +34,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -505,7 +504,8 @@ namespace SanteDB.Core.Applets
                     throw new InvalidCastException("Absolute references must be in format /id.to.the.applet/path/to/the/file");
                 }
             }
-            else if (assetPath.StartsWith("~")) {
+            else if (assetPath.StartsWith("~"))
+            {
                 assetPath = assetPath.Substring(2); // it is in current path
                 searchManifest = relativeManifest ?? relativeAsset?.Manifest;
                 if (searchManifest == null)

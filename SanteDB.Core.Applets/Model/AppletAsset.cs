@@ -30,14 +30,14 @@ namespace SanteDB.Core.Applets.Model
     /// Represents an applet asset
     /// </summary>
     [XmlType(nameof(AppletAsset), Namespace = "http://santedb.org/applet")]
-	public class AppletAsset
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SanteDB.Core.Applets.Model.AppletAsset"/> class.
-		/// </summary>
-		public AppletAsset ()
-		{
-		}
+    public class AppletAsset
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SanteDB.Core.Applets.Model.AppletAsset"/> class.
+        /// </summary>
+        public AppletAsset()
+        {
+        }
 
         /// <summary>
         /// Gets the or sets the manifest to which the asset belongs

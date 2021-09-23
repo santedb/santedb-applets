@@ -27,7 +27,7 @@ using System.Xml.Serialization;
 namespace SanteDB.Core.Applets.Model
 {
 
-   
+
     /// <summary>
     /// Identifies the type which the widget is
     /// </summary>
@@ -52,10 +52,25 @@ namespace SanteDB.Core.Applets.Model
     [XmlType(nameof(AppletWidgetSize), Namespace = "http://santedb.org/applet")]
     public enum AppletWidgetSize
     {
+       /// <summary>
+       /// The applet widget should spen the entire width of screen
+       /// </summary>
         [XmlEnum("l")]
         Large,
+        /// <summary>
+        /// The applet widget should be medium sized
+        /// </summary>
+        /// <remarks>
+        /// On desktop this is 50% width, for tablets 50-100% width, and phones 100% width
+        /// </remarks>
         [XmlEnum("m")]
         Medium,
+        /// <summary>
+        /// The applet widget should be the smallest horizontal widget
+        /// </summary>
+        /// <remarks>
+        /// On a desktop, this is 25% width, for tablets 50% width and phones 100% width
+        /// </remarks>
         [XmlEnum("s")]
         Small
     }
@@ -66,13 +81,16 @@ namespace SanteDB.Core.Applets.Model
     [XmlType(nameof(AppletWidgetView), Namespace = "http://santedb.org/applet")]
     public enum AppletWidgetView : short
     {
+        /// <summary>
+        /// There is no special widget view
+        /// </summary>
         [XmlEnum("none")]
         None = 0x0,
         /// <summary>
-        /// Widget button is to edit the widget
+        /// Widget button is to show an alternate view
         /// </summary>
-        [XmlEnum("create")]
-        Create = 0x1,
+        [XmlEnum("alternate")]
+        Alternate = 0x1,
         /// <summary>
         /// Widget button is to edit the widget
         /// </summary>
