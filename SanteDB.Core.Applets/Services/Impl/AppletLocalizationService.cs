@@ -69,12 +69,12 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Format the specified string
         /// </summary>
-        public string FormatString(string stringKey, params object[] parameters) => this.FormatString(null, stringKey, parameters);
+        public string FormatString(string stringKey, dynamic parameters) => this.FormatString(null, stringKey, parameters);
 
         /// <summary>
         /// Format the string
         /// </summary>
-        public string FormatString(string locale, string stringKey, params object[] parameters) => String.Format(this.GetString(locale, stringKey), parameters);
+        public string FormatString(string locale, string stringKey, dynamic parameters) => string.Format(this.GetString(locale, stringKey), parameters);
 
         /// <summary>
         /// Get string
