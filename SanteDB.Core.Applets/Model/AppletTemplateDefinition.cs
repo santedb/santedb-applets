@@ -49,7 +49,7 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets or sets the form
         /// </summary>
-        [XmlElement("form"),JsonProperty("form")]
+        [XmlElement("form"), JsonProperty("form")]
         public String Form { get; set; }
 
         /// <summary>

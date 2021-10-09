@@ -391,9 +391,8 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 
             }
 
-            if (instance is IdentifiedData)
+            if (instance is IdentifiedData identifiedData)
             {
-                var identifiedData = instance as IdentifiedData;
 
                 // Complex type .. allow the formatter to handle this
                 IJsonViewModelTypeFormatter typeFormatter = this.GetFormatter(instance.GetType());

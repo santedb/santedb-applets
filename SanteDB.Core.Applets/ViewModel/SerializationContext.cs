@@ -170,7 +170,7 @@ namespace SanteDB.Core.Applets.ViewModel
 
             // Known miss targets
             HashSet<String> missProp = null;
-            if(key.HasValue)
+            if (key.HasValue)
                 if (this.LoadedProperties.TryGetValue(key.Value, out missProp))
                 {
                     if (missProp.Contains(childProperty))

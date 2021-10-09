@@ -2,22 +2,23 @@
  * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you 
- * may not use this file except in compliance with the License. You may 
- * obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations under 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * User: fyfej
  * Date: 2021-8-6
  */
+
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Model.Extern.SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
@@ -27,7 +28,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace SanteDB.Core.Applets.Services.Impl
@@ -38,14 +38,13 @@ namespace SanteDB.Core.Applets.Services.Impl
     [ServiceProvider("Applet Localization Service")]
     public class AppletLocalizationService : ILocalizationService
     {
-
         // Applet localization service
         private Tracer m_tracer = Tracer.GetTracer(typeof(AppletLocalizationService));
 
         /// <summary>
         /// String cache
         /// </summary>
-        private ConcurrentDictionary<String, IDictionary<String,String>> m_stringCache = new ConcurrentDictionary<string, IDictionary<String, String>>();
+        private ConcurrentDictionary<String, IDictionary<String, String>> m_stringCache = new ConcurrentDictionary<string, IDictionary<String, String>>();
 
         // Applet manager
         private IAppletManagerService m_appletManager;
@@ -70,15 +69,15 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Format the specified string
         /// </summary>
-        public string FormatString(string stringKey, params object[] parameters) => this.FormatString(null, stringKey, parameters);
+        public string FormatString(string stringKey, dynamic parameters) => this.FormatString(null, stringKey, parameters);
 
         /// <summary>
         /// Format the string
         /// </summary>
-        public string FormatString(string locale, string stringKey, params object[] parameters) => String.Format(this.GetString(locale, stringKey), parameters);
+        public string FormatString(string locale, string stringKey, dynamic parameters) => string.Format(this.GetString(locale, stringKey), parameters);
 
         /// <summary>
-        /// Get string 
+        /// Get string
         /// </summary>
         public string GetString(string stringKey) => this.GetString(null, stringKey);
 
@@ -88,7 +87,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         public string GetString(string locale, string stringKey)
         {
             var refData = this.GetOrLoadStringData(locale ?? Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName);
-            if(refData.TryGetValue(stringKey, out String retVal))
+            if (refData.TryGetValue(stringKey, out String retVal))
             {
                 return retVal;
             }
@@ -101,7 +100,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get all strings for the specified locale
         /// </summary>
-        public KeyValuePair<String,String>[] GetStrings(string locale)
+        public KeyValuePair<String, String>[] GetStrings(string locale)
         {
             return this.GetOrLoadStringData(locale).ToArray();
         }
@@ -117,14 +116,13 @@ namespace SanteDB.Core.Applets.Services.Impl
             }
             else
             {
-
                 if (this.m_solutionManager?.Solutions.Any() == true) // Load from solutions
                 {
                     localStrings = this.m_solutionManager.Solutions
                         .SelectMany(s => this.m_solutionManager.GetApplets(s.Meta.Id))
-                        .SelectMany(a => this.ResolveStringData(a, a.Strings.Where(l=>l.Language == locale)))
+                        .SelectMany(a => this.ResolveStringData(a, a.Strings.Where(l => l.Language == locale)))
                         .GroupBy(s => s.Key)
-                        .ToDictionary(o => o.Key, o => o.OrderByDescending(g => g.Priority).First().Value);
+                        .ToDictionary(o => o.Key, o => o.OrderByDescending(g => g.Priority).First().Value.Replace("\\'", "'"));
                 }
                 else
                 {
@@ -132,7 +130,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                         .Applets
                         .SelectMany(a => this.ResolveStringData(a, a.Strings.Where(l => l.Language == locale)))
                         .GroupBy(s => s.Key)
-                        .ToDictionary(o => o.Key, o => o.OrderByDescending(g => g.Priority).First().Value);
+                        .ToDictionary(o => o.Key, o => o.OrderByDescending(g => g.Priority).First().Value.Replace("\\'", "'"));
                 }
 
                 this.m_stringCache.TryAdd(locale, localStrings);
@@ -145,18 +143,17 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         private IEnumerable<AppletStringData> ResolveStringData(AppletManifest applet, IEnumerable<AppletStrings> stringResources)
         {
-            foreach (var res in stringResources) {
-
+            foreach (var res in stringResources)
+            {
                 if (!String.IsNullOrEmpty(res.Reference))
                 {
                     var asset = this.m_appletManager.Applets.ResolveAsset(res.Reference, applet);
-                    if(asset == null)
+                    if (asset == null)
                     {
                         this.m_tracer.TraceWarning($"Cannot resolve {res.Reference} - strings from this file will not be loaded");
                     }
                     else
                     {
-
                         ResourceFile resourceFile = null;
                         try
                         {
@@ -167,21 +164,20 @@ namespace SanteDB.Core.Applets.Services.Impl
                             this.m_tracer.TraceWarning($"Could not process {asset} as a resources file - {e.Message} - Strings will not be loaded");
                         }
 
-                        foreach(var externString in resourceFile?.Strings)
+                        foreach (var externString in resourceFile?.Strings)
                         {
                             yield return new AppletStringData()
                             {
                                 Key = externString.Key,
-                                Value = externString.Value,
+                                Value = externString.Value.Replace("\\'", "'"),
                                 Priority = 1
                             };
                         }
-
                     }
                 }
                 else
                 {
-                    foreach(var internString in res.String)
+                    foreach (var internString in res.String)
                     {
                         yield return internString;
                     }

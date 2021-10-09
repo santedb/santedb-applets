@@ -216,7 +216,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 var keyPropertyValue = o.GetType().GetRuntimeProperty(keyPropertyName).GetValue(o);
 
                 // Does the owner serializer already load this?
-                if(keyPropertyValue != null)
+                if (keyPropertyValue != null)
                     classifierObj = this.m_serializer.GetLoadedObject((Guid)keyPropertyValue);
                 if (classifierObj == null)
                 {
@@ -224,7 +224,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     var getValueMethod = typeof(EntitySource).GetGenericMethod("Get", new Type[] { classProperty.PropertyType }, new Type[] { typeof(Guid?) });
                     classifierObj = getValueMethod.Invoke(EntitySource.Current, new object[] { keyPropertyValue });
                     classProperty.SetValue(o, classifierObj);
-                    if(keyPropertyValue != null)
+                    if (keyPropertyValue != null)
                         this.m_serializer.AddLoadedObject((Guid)keyPropertyValue, (IdentifiedData)classifierObj);
 
                 }
