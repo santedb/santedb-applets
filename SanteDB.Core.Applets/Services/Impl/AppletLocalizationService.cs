@@ -28,14 +28,16 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace SanteDB.Core.Applets.Services.Impl
 {
-    /// <summary>
-    /// Applet localization
-    /// </summary>
-    [ServiceProvider("Applet Localization Service")]
+	/// <summary>
+	/// Applet localization
+	/// </summary>
+	[ServiceProvider("Applet Localization Service")]
     public class AppletLocalizationService : ILocalizationService
     {
         // Applet localization service
@@ -74,7 +76,33 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Format the string
         /// </summary>
-        public string FormatString(string locale, string stringKey, dynamic parameters) => string.Format(this.GetString(locale, stringKey), parameters);
+        public string FormatString(string locale, string stringKey, dynamic parameters)
+        {
+	        if (parameters == null)
+	        {
+		        return this.GetString(locale, stringKey);
+	        }
+
+	        object o = parameters;
+	        var properties = o.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            var template = this.GetString(locale, stringKey);
+            var matches = Regex.Matches(template, "\\{(.*?)\\}").Cast<Match>().Select(c => c.Value).ToArray();
+
+	        foreach (var value in matches)
+	        {
+		        var propertyInfo = properties.FirstOrDefault(c => c.Name == value.Replace("{", string.Empty).Replace("}", string.Empty).Trim());
+
+		        if (propertyInfo == null)
+		        {
+			        continue;
+		        }
+
+		        template = template.Replace(value, Convert.ToString(propertyInfo.GetValue(o, null)));
+	        }
+
+	        return template;
+        }
 
         /// <summary>
         /// Get string
