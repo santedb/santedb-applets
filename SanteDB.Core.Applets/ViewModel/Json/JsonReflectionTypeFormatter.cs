@@ -2,22 +2,23 @@
  * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you 
- * may not use this file except in compliance with the License. You may 
- * obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations under 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * User: fyfej
  * Date: 2021-8-5
  */
+
 using Newtonsoft.Json;
 using SanteDB.Core.Extensions;
 using SanteDB.Core.Model;
@@ -79,7 +80,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         private JsonReflectionTypeFormatter()
         {
-
         }
 
         /// <summary>
@@ -87,7 +87,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         private Dictionary<String, PropertyInfo> GetPropertyInfo(Type propertyType)
         {
-
             Dictionary<String, PropertyInfo> retVal = null;
             lock (this.m_syncLock)
                 if (!this.m_jsonPropertyInfo.TryGetValue(propertyType, out retVal))
@@ -110,7 +109,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         protected String GetPropertyName(PropertyInfo info, bool includeIgnored = false)
         {
-
             String retVal = null;
             if (!this.m_jsonPropertyNames.TryGetValue(info, out retVal) || includeIgnored)
             {
@@ -143,7 +141,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         this.m_jsonPropertyNames.Add(info, retVal);
             }
             return retVal;
-
         }
 
         /// <summary>
@@ -157,7 +154,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             // For each item in the property ...
             bool loadedProperties = false;
 
-            // Iterate properties 
+            // Iterate properties
             foreach (var propertyInfo in o.GetType().GetRuntimeProperties())
             {
                 // Get the property name
@@ -169,7 +166,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 if (!context.ShouldSerialize(propertyName))
                     continue;
 
-                // Get the property 
+                // Get the property
                 var value = propertyInfo.GetValue(o);
 
                 // Null ,do we want to force load?
@@ -198,10 +195,8 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                                     propertyInfo.SetValue(o, value);
                                     loadedProperties = value != null;
                                 }
-
                             }
                         }
-
                     }
                     else
                         continue;
@@ -209,7 +204,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 
                 // TODO: Classifier
                 context.JsonContext.WritePropertyUtil(w, propertyName, value, context);
-
             }
 
             // Loaded something, let's cache it
@@ -255,8 +249,10 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                                     return nRetVal;
                                 }
                                 break;
+
                             case "$ref": // TODO: lookup reference
                                 break;
+
                             default:
                                 string propertyName = r.Value as String;
                                 PropertyInfo propertyInfo = null;
