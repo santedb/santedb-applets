@@ -2,22 +2,23 @@
  * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you 
- * may not use this file except in compliance with the License. You may 
- * obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations under 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * User: fyfej
  * Date: 2021-8-5
  */
+
 using Newtonsoft.Json;
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Diagnostics;
@@ -41,7 +42,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
     /// </summary>
     public class JsonViewModelSerializer : IViewModelSerializer
     {
-
         // Formatters
         private Dictionary<Type, IJsonViewModelTypeFormatter> m_formatters = new Dictionary<Type, IJsonViewModelTypeFormatter>();
 
@@ -59,6 +59,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 
         // Reloated load association
         private Dictionary<Type, MethodInfo> m_relatedLoadAssociations = new Dictionary<Type, MethodInfo>();
+
         private Dictionary<Guid, IEnumerable> m_loadedAssociations = new Dictionary<Guid, IEnumerable>();
         private Dictionary<Guid, IdentifiedData> m_loadedObjects = new Dictionary<Guid, IdentifiedData>();
 
@@ -212,7 +213,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         while (r.Read() && !(r.TokenType == JsonToken.EndArray && r.Depth == depth))
                             listInstance.Add(this.ReadElementUtil(r, nonGenericT, context));
                         return listInstance;
-
                     }
                 case JsonToken.Null:
                 case JsonToken.Boolean:
@@ -233,9 +233,11 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         {
                             case JsonToken.Null:
                                 return null;
+
                             case JsonToken.Boolean:
                             case JsonToken.Bytes:
                                 return r.Value;
+
                             case JsonToken.Float:
                                 if (t.StripNullable() == typeof(Decimal))
                                     return Convert.ToDecimal(r.Value);
@@ -245,6 +247,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                                     return Enum.ToObject(t.StripNullable(), Convert.ToInt32(r.Value));
                                 else
                                     return (Double)r.Value;
+
                             case JsonToken.Date:
                                 t = t.StripNullable();
                                 if (t == typeof(DateTime))
@@ -253,11 +256,13 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                                     return ((DateTime)r.Value).ToString("o");
                                 else
                                     return new DateTimeOffset((DateTime)r.Value);
+
                             case JsonToken.Integer:
                                 t = t.StripNullable();
                                 if (t.StripNullable().IsEnum)
                                     return Enum.ToObject(t.StripNullable(), r.Value);
                                 return Convert.ChangeType(r.Value, t);
+
                             case JsonToken.String:
                                 if (String.IsNullOrEmpty((string)r.Value))
                                     return null;
@@ -269,8 +274,11 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                                     return Decimal.Parse((String)r.Value);
                                 else if (t.StripNullable() == typeof(byte[]))
                                     return Convert.FromBase64String((String)r.Value);
+                                else if (t.StripNullable().IsEnum && r.ValueType == typeof(String))
+                                    return Enum.Parse(t.StripNullable(), (string)r.Value);
                                 else
                                     return r.Value;
+
                             default:
                                 return r.Value;
                         }
@@ -301,7 +309,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 lock (this.m_syncLock)
                     if (!this.m_relatedLoadMethods.ContainsKey(propertyType))
                         this.m_relatedLoadMethods.Add(propertyType, methodInfo);
-
             }
             return methodInfo.Invoke(this, new object[] { key });
         }
@@ -320,7 +327,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 lock (this.m_syncLock)
                     if (!this.m_relatedLoadAssociations.ContainsKey(propertyType))
                         this.m_relatedLoadAssociations.Add(propertyType, methodInfo);
-
             }
             var listValue = methodInfo.Invoke(this, new object[] { key }) as IEnumerable;
             if (propertyType.IsAssignableFrom(listValue.GetType()))
@@ -330,7 +336,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 var retVal = Activator.CreateInstance(propertyType, listValue);
                 return retVal as IEnumerable;
             }
-
         }
 
         /// <summary>
@@ -378,7 +383,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         public void WritePropertyUtil(JsonWriter w, String propertyName, Object instance, SerializationContext context, bool noSubContext = false)
         {
-
             if (instance == null) return;
 
             // first write the property
@@ -388,12 +392,10 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 if (context?.ShouldSerialize(propertyName) == false && !noSubContext)
                     return;
                 else w.WritePropertyName(propertyName);
-
             }
 
             if (instance is IdentifiedData identifiedData)
             {
-
                 // Complex type .. allow the formatter to handle this
                 IJsonViewModelTypeFormatter typeFormatter = this.GetFormatter(instance.GetType());
 
@@ -450,7 +452,6 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             {
                 w.WriteValue(instance);
             }
-
         }
 
         /// <summary>
@@ -534,11 +535,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         public void Serialize(Stream s, IdentifiedData data)
         {
-
             using (StreamWriter tw = new StreamWriter(s))
                 this.Serialize(tw, data);
         }
-
 
         /// <summary>
         /// Serialize to the specified text writer
