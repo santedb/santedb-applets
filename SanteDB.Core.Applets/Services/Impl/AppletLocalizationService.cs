@@ -26,6 +26,8 @@ using SanteDB.Core.Services;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -34,10 +36,10 @@ using System.Threading;
 
 namespace SanteDB.Core.Applets.Services.Impl
 {
-	/// <summary>
-	/// Applet localization
-	/// </summary>
-	[ServiceProvider("Applet Localization Service")]
+    /// <summary>
+    /// Applet localization
+    /// </summary>
+    [ServiceProvider("Applet Localization Service")]
     public class AppletLocalizationService : ILocalizationService
     {
         // Applet localization service
@@ -78,30 +80,23 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public string FormatString(string locale, string stringKey, dynamic parameters)
         {
-	        if (parameters == null)
-	        {
-		        return this.GetString(locale, stringKey);
-	        }
-
-	        object o = parameters;
-	        var properties = o.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            if (parameters == null)
+            {
+                return this.GetString(locale, stringKey);
+            }
 
             var template = this.GetString(locale, stringKey);
-            var matches = Regex.Matches(template, "\\{(.*?)\\}").Cast<Match>().Select(c => c.Value).ToArray();
 
-	        foreach (var value in matches)
-	        {
-		        var propertyInfo = properties.FirstOrDefault(c => c.Name == value.Replace("{", string.Empty).Replace("}", string.Empty).Trim());
-
-		        if (propertyInfo == null)
-		        {
-			        continue;
-		        }
-
-		        template = template.Replace(value, Convert.ToString(propertyInfo.GetValue(o, null)));
-	        }
-
-	        return template;
+            // Dynamic properties can be passed (like new { foo = "Bar" }) so we want to use the type descriptor
+            if (parameters != null)
+            {
+                PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(parameters.GetType());
+                return Regex.Replace(template, @"(\{\w*?\})", (m) => properties[m.Value.Substring(1, m.Value.Length - 2)]?.GetValue(parameters));
+            }
+            else
+            {
+                return template;
+            }
         }
 
         /// <summary>
