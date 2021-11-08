@@ -49,7 +49,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         private Dictionary<Type, IViewModelClassifier> m_classifiers = new Dictionary<Type, IViewModelClassifier>();
 
         // Tracer
-        private Tracer m_tracer = Tracer.GetTracer(typeof(JsonViewModelSerializer));
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(JsonViewModelSerializer));
 
         // Sync lock
         private Object m_syncLock = new object();

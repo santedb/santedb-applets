@@ -2,22 +2,23 @@
  * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you 
- * may not use this file except in compliance with the License. You may 
- * obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations under 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * User: fyfej
  * Date: 2021-8-5
  */
+
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model.Query;
@@ -36,7 +37,6 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// </summary>
     public class AppletSubscriptionRepository : IRepositoryService<SubscriptionDefinition>, IDaemonService
     {
-
         // Subscription definitions
         private List<SubscriptionDefinition> m_subscriptionDefinitions;
 
@@ -44,7 +44,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         private object m_lockObject = new object();
 
         // Tracer
-        private Tracer m_tracer = Tracer.GetTracer(typeof(AppletSubscriptionRepository));
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletSubscriptionRepository));
 
         /// <summary>
         /// Gets the service name
@@ -60,14 +60,17 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// Fired when the service is starting
         /// </summary>
         public event EventHandler Starting;
+
         /// <summary>
         /// Fired when the service has started
         /// </summary>
         public event EventHandler Started;
+
         /// <summary>
         /// Fired when the service is about to stop
         /// </summary>
         public event EventHandler Stopping;
+
         /// <summary>
         /// Fired when the service has stopped
         /// </summary>
@@ -143,7 +146,6 @@ namespace SanteDB.Core.Applets.Services.Impl
             // Subscribe to the applet manager
             EventHandler loaderFn = (o, e) =>
             {
-
                 var retVal = new List<SubscriptionDefinition>(this.m_subscriptionDefinitions?.Count ?? 10);
                 var slns = ApplicationServiceContext.Current.GetService<IAppletSolutionManagerService>().Solutions.ToList();
                 slns.Add(new AppletSolution() { Meta = new AppletInfo() { Id = String.Empty } });
@@ -154,7 +156,6 @@ namespace SanteDB.Core.Applets.Services.Impl
                     // Find and load all sub defn's
                     foreach (var am in slnMgr)
                     {
-
                         var definitions = am.Assets.Where(a => a.Name.StartsWith("subscription/")).Select<AppletAsset, SubscriptionDefinition>(a =>
                         {
                             using (var ms = new MemoryStream(slnMgr.RenderAssetContent(a)))
@@ -183,9 +184,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     this.m_subscriptionDefinitions.Clear();
                     this.m_subscriptionDefinitions.AddRange(retVal);
                 }
-
             };
-
 
             ApplicationServiceContext.Current.Started += (o, e) =>
             {

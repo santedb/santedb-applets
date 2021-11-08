@@ -43,7 +43,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     public class AppletLocalizationService : ILocalizationService
     {
         // Applet localization service
-        private Tracer m_tracer = Tracer.GetTracer(typeof(AppletLocalizationService));
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletLocalizationService));
 
         /// <summary>
         /// String cache
@@ -73,12 +73,12 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Format the specified string
         /// </summary>
-        public string FormatString(string stringKey, dynamic parameters) => this.FormatString(null, stringKey, parameters);
+        public string GetString(string stringKey, dynamic parameters) => this.GetString(null, stringKey, parameters);
 
         /// <summary>
         /// Format the string
         /// </summary>
-        public string FormatString(string locale, string stringKey, dynamic parameters)
+        public string GetString(string locale, string stringKey, dynamic parameters)
         {
             if (parameters == null)
             {

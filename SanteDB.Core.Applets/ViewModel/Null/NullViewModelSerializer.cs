@@ -2,22 +2,23 @@
  * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you 
- * may not use this file except in compliance with the License. You may 
- * obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations under 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * User: fyfej
  * Date: 2021-8-5
  */
+
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
@@ -35,13 +36,13 @@ using System.Reflection;
 namespace SanteDB.Core.Applets.ViewModel.Null
 {
     /// <summary>
-    /// Represents a serializer that 
+    /// Represents a serializer that
     /// </summary>
     public class NullViewModelSerializer : IViewModelSerializer
     {
-
         // Tracer for the class
-        private Tracer m_tracer = Tracer.GetTracer(typeof(NullViewModelSerializer));
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(NullViewModelSerializer));
+
         // Sync lock
         private Object m_syncLock = new object();
 
@@ -50,17 +51,18 @@ namespace SanteDB.Core.Applets.ViewModel.Null
 
         // Related load methods
         private static Dictionary<Type, MethodInfo> m_relatedLoadMethods = new Dictionary<Type, MethodInfo>();
+
         // Classifiers
         private static Dictionary<Type, IViewModelClassifier> m_classifiers = new Dictionary<Type, IViewModelClassifier>();
 
         // Reloated load association
         private static Dictionary<Type, MethodInfo> m_relatedLoadAssociations = new Dictionary<Type, MethodInfo>();
+
         private Dictionary<Guid, IEnumerable> m_loadedAssociations = new Dictionary<Guid, IEnumerable>();
         private Dictionary<Guid, IdentifiedData> m_loadedObjects = new Dictionary<Guid, IdentifiedData>();
 
         // Formatters
         private Dictionary<Type, INullTypeFormatter> m_formatters = new Dictionary<Type, INullTypeFormatter>();
-
 
         /// <summary>
         /// Gets or sets the view model definnition
@@ -97,7 +99,6 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 lock (m_relatedLoadMethods)
                     if (!m_relatedLoadMethods.ContainsKey(propertyType))
                         m_relatedLoadMethods.Add(propertyType, methodInfo);
-
             }
             return methodInfo.Invoke(this, new object[] { key });
         }
@@ -116,7 +117,6 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 lock (m_relatedLoadAssociations)
                     if (!m_relatedLoadAssociations.ContainsKey(propertyType))
                         m_relatedLoadAssociations.Add(propertyType, methodInfo);
-
             }
             var listValue = methodInfo.Invoke(this, new object[] { key }) as IList;
             if (propertyType.IsAssignableFrom(listValue.GetType()))
@@ -126,7 +126,6 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 var retVal = Activator.CreateInstance(propertyType, listValue);
                 return retVal as IList;
             }
-
         }
 
         /// <summary>
@@ -221,7 +220,6 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         /// </summary>
         public void WritePropertyUtil(String propertyName, Object instance, SerializationContext context, bool noSubContext = false)
         {
-
             if (instance == null) return;
 
             // first write the property
@@ -261,7 +259,6 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                     }
                 }
             }
-
         }
 
         /// <summary>
