@@ -79,15 +79,15 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Find the specified object
         /// </summary>
-        public IEnumerable<SubscriptionDefinition> Find(Expression<Func<SubscriptionDefinition, bool>> query)
+        public IQueryResultSet<SubscriptionDefinition> Find(Expression<Func<SubscriptionDefinition, bool>> query)
         {
-            int tr;
-            return this.Find(query, 0, 100, out tr);
+            return new MemoryQueryResultSet<SubscriptionDefinition>(this.m_subscriptionDefinitions?.Where(query.Compile()));
         }
 
         /// <summary>
         /// Find the specified subscription definitions
         /// </summary>
+        [Obsolete("Use Find(Expression<Func<SubscriptionDefinition, bool>>)")]
         public IEnumerable<SubscriptionDefinition> Find(Expression<Func<SubscriptionDefinition, bool>> query, int offset, int? count, out int totalResults, params ModelSort<SubscriptionDefinition>[] orderBy)
         {
             var results = this.m_subscriptionDefinitions?.Where(query.Compile());
