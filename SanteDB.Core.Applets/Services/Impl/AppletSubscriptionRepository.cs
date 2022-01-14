@@ -32,9 +32,9 @@ using System.Linq.Expressions;
 namespace SanteDB.Core.Applets.Services.Impl
 {
     /// <summary>
-    /// An implementation of the ISubscriptionRepository that loads definitions from applets
+    /// An implementation of the <see cref="ISubscriptionRepository"/> that loads definitions from applets
     /// </summary>
-    public class AppletSubscriptionRepository : IRepositoryService<SubscriptionDefinition>, IDaemonService
+    public class AppletSubscriptionRepository : ISubscriptionRepository,  IDaemonService
     {
 
         // Subscription definitions
