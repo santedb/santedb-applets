@@ -21,6 +21,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -33,6 +34,7 @@ namespace SanteDB.Core.Applets.Model
     /// Applet asset XML 
     /// </summary>
     [XmlType(nameof(AppletAssetHtml), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletAssetHtml
     {
 

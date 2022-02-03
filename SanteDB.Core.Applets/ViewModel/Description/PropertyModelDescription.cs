@@ -19,6 +19,7 @@
  * Date: 2021-8-5
  */
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.ViewModel.Description
@@ -27,6 +28,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
     /// Property model description
     /// </summary>
     [XmlType(nameof(PropertyModelDescription), Namespace = "http://santedb.org/model/view")]
+    [ExcludeFromCodeCoverage]
     public class PropertyModelDescription : PropertyContainerDescription
     {
 

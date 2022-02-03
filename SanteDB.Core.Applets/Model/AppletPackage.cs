@@ -25,6 +25,7 @@ using SharpCompress.Compressors.Deflate;
 using SharpCompress.Compressors.LZMA;
 using SharpCompress.IO;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -36,6 +37,7 @@ namespace SanteDB.Core.Applets.Model
     /// </summary>
     [XmlType(nameof(AppletPackage), Namespace = "http://santedb.org/applet")]
     [XmlRoot(nameof(AppletPackage), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletPackage
     {
 

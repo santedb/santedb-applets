@@ -20,6 +20,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Serialization;
 
@@ -29,6 +30,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
     /// Property container description
     /// </summary>
     [XmlType(nameof(PropertyContainerDescription), Namespace = "http://santedb.org/model/view")]
+    [ExcludeFromCodeCoverage]
     public abstract class PropertyContainerDescription
     {
 

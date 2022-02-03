@@ -18,6 +18,8 @@
  * User: fyfej
  * Date: 2021-8-5
  */
+
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.ViewModel.Description
@@ -26,6 +28,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
     /// View model description for classifiers
     /// </summary>
     [XmlType(nameof(ClassifierModelDescription), Namespace = "http://santedb.org/model/view")]
+    [ExcludeFromCodeCoverage]
     public class ClassifierModelDescription
     {
 

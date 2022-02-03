@@ -20,6 +20,7 @@
  */
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -29,6 +30,7 @@ namespace SanteDB.Core.Applets.Model
     /// </summary>
     [XmlType(nameof(LocaleString), Namespace = "http://santedb.org/applet")]
     [JsonObject]
+    [ExcludeFromCodeCoverage]
     public class LocaleString
     {
 

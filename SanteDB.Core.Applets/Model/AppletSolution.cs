@@ -20,6 +20,7 @@
  */
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -29,6 +30,7 @@ namespace SanteDB.Core.Applets.Model
     /// </summary>
     [XmlType(nameof(AppletSolution), Namespace = "http://santedb.org/applet")]
     [XmlRoot(nameof(AppletSolution), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletSolution : AppletPackage
     {
 

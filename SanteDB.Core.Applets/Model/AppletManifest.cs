@@ -22,6 +22,7 @@ using SanteDB.Core.Model.Serialization;
 using SharpCompress.Compressors.LZMA;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Xml.Serialization;
 
@@ -32,6 +33,7 @@ namespace SanteDB.Core.Applets.Model
     /// </summary>
     [XmlType(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
     [XmlRoot(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletManifest : IEquatable<AppletManifest>
     {
 

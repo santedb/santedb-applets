@@ -20,6 +20,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -28,6 +29,7 @@ namespace SanteDB.Core.Applets.Model
     /// Represents a configuration of an applet
     /// </summary>
     [XmlType(nameof(AppletInitialConfiguration), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletInitialConfiguration
     {
 
@@ -57,6 +59,7 @@ namespace SanteDB.Core.Applets.Model
     /// Applet configuration entry
     /// </summary>
     [XmlType(nameof(AppletConfigurationEntry), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletConfigurationEntry
     {
         /// <summary>

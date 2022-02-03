@@ -20,6 +20,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -28,6 +29,7 @@ namespace SanteDB.Core.Applets.Model
     /// Represents view state information related to the applet
     /// </summary>
     [XmlType(nameof(AppletViewState), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletViewState
     {
 

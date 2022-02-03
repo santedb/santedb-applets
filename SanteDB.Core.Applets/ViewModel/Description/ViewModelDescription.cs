@@ -22,6 +22,7 @@ using SanteDB.Core.Model;
 using SanteDB.Core.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -34,6 +35,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
     /// </summary>
     [XmlType(nameof(ViewModelDescription), Namespace = "http://santedb.org/model/view")]
     [XmlRoot("ViewModel", Namespace = "http://santedb.org/model/view")]
+    [ExcludeFromCodeCoverage]
     public class ViewModelDescription
     {
 

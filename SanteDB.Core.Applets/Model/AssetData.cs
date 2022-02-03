@@ -24,6 +24,7 @@ using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Model.Security;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -32,6 +33,7 @@ namespace SanteDB.Core.Applets.Model
     /// A class representing data operations
     /// </summary>
     [XmlType(nameof(AssetData), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AssetData
     {
         /// <summary>
@@ -57,6 +59,7 @@ namespace SanteDB.Core.Applets.Model
     /// Asset data action base
     /// </summary>
     [XmlType(nameof(AssetDataActionBase), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public abstract class AssetDataActionBase
     {
 
@@ -82,6 +85,7 @@ namespace SanteDB.Core.Applets.Model
     /// Asset data update
     /// </summary>
     [XmlType(nameof(AssetDataUpdate), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AssetDataUpdate : AssetDataActionBase
     {
         /// <summary>
@@ -102,6 +106,7 @@ namespace SanteDB.Core.Applets.Model
     /// Obsoletes the specified data elements
     /// </summary>
     [XmlType(nameof(AssetDataObsolete), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AssetDataObsolete : AssetDataActionBase
     {
         /// <summary>
@@ -115,6 +120,7 @@ namespace SanteDB.Core.Applets.Model
     /// Data insert
     /// </summary>
     [XmlType(nameof(AssetDataInsert), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AssetDataInsert : AssetDataActionBase
     {
         /// <summary>

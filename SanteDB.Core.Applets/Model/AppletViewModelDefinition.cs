@@ -19,6 +19,7 @@
  * Date: 2021-8-5
  */
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -27,6 +28,7 @@ namespace SanteDB.Core.Applets.Model
     /// Represents a view model definition
     /// </summary>
     [XmlType(nameof(AppletViewModelDefinition), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletViewModelDefinition
     {
 

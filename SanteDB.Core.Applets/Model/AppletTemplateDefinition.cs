@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using SanteDB.Core.Model.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -31,6 +32,7 @@ namespace SanteDB.Core.Applets.Model
     /// Applet template definition
     /// </summary>
     [XmlType(nameof(AppletTemplateDefinition), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletTemplateDefinition
     {
 

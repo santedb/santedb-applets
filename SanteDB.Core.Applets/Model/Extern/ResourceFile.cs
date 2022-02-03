@@ -19,6 +19,8 @@
  * Date: 2021-8-22
  */
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace SanteDB.Core.Applets.Model.Extern
 {
     using System.Collections.Generic;
@@ -32,6 +34,7 @@ namespace SanteDB.Core.Applets.Model.Extern
         /// </summary>
         [XmlRoot("resources")]
         [XmlType(nameof(ResourceFile))]
+        [ExcludeFromCodeCoverage]
         public class ResourceFile
         {
 

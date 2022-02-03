@@ -18,6 +18,8 @@
  * User: fyfej
  * Date: 2021-8-5
  */
+
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using System.Xml.Serialization;
 
@@ -28,6 +30,7 @@ namespace SanteDB.Core.Applets.Model
     /// </summary>
     [XmlType(nameof(AssetScriptReference), Namespace = "http://santedb.org/applet")]
     [JsonObject(nameof(AssetScriptReference))]
+    [ExcludeFromCodeCoverage]
     public class AssetScriptReference
     {
         /// <summary>
