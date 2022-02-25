@@ -128,6 +128,14 @@ namespace SanteDB.Core.Applets.Services.Impl
         }
 
         /// <summary>
+        /// Obsolete the specified definition
+        /// </summary>
+        public SubscriptionDefinition Delete(Guid key)
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
         /// Save the specified definition
         /// </summary>
         public SubscriptionDefinition Save(SubscriptionDefinition data)
