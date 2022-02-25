@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using SanteDB.Core.Model.DataTypes;
 using System.Linq;
+using SanteDB.Core.Model.Query;
 
 namespace SanteDB.Core.Applets.Test
 {
@@ -66,25 +67,31 @@ namespace SanteDB.Core.Applets.Test
                 return new TObject() { Key = key };
             }
 
-            public IEnumerable<TObject> GetRelations<TObject>(Guid? sourceKey, int? sourceVersionSequence) where TObject : IdentifiedData, IVersionedAssociation, new()
+            public IQueryResultSet<TObject> GetRelations<TObject>(Guid? sourceKey, int? sourceVersionSequence) where TObject : IdentifiedData, IVersionedAssociation, new()
             {
                 throw new NotImplementedException();
             }
 
-            public IEnumerable<TObject> GetRelations<TObject>(params Guid?[] sourceKey) where TObject : IdentifiedData, ISimpleAssociation, new()
+            public IQueryResultSet<TObject> GetRelations<TObject>(params Guid?[] sourceKey) where TObject : IdentifiedData, ISimpleAssociation, new()
             {
-                return new List<TObject>();
+                return new MemoryQueryResultSet<TObject>(new TObject[0]);
+            }
+
+
+            public IQueryResultSet GetRelations(Type tmodel, params Guid?[] sourceKey) 
+            {
+                return new MemoryQueryResultSet(new Object[0]);
             }
 
             /// <summary>
             /// Query the specified object
             /// </summary>
-            public IEnumerable<TObject> Query<TObject>(Expression<Func<TObject, bool>> query) where TObject : IdentifiedData, new()
+            public IQueryResultSet<TObject> Query<TObject>(Expression<Func<TObject, bool>> query) where TObject : IdentifiedData, new()
             {
                 if (typeof(TObject) == typeof(Concept))
                 {
                     // Add list of concepts
-                    return new List<Concept>()
+                    return new MemoryQueryResultSet<TObject>(new List<Concept>()
                     {
                         new Concept()
                         {
@@ -106,12 +113,12 @@ namespace SanteDB.Core.Applets.Test
                                 new ConceptName() { Language = "sw" , Name = "Kike" }
                             }
                         },
-                    }.OfType<TObject>();
+                    }.OfType<TObject>());
                 }
 
                 if (typeof(TObject) == typeof(AssigningAuthority))
                 {
-                    return new List<AssigningAuthority>
+                    return new MemoryQueryResultSet<TObject>(new List<AssigningAuthority>
                     {
                         new AssigningAuthority
                         {
@@ -121,7 +128,7 @@ namespace SanteDB.Core.Applets.Test
                             Name = "Testing Identifier",
                             ValidationRegex = "^[0-9]{10}$"
                         }
-                    }.OfType<TObject>();
+                    }.OfType<TObject>());
                 }
 
                 Assert.Fail();
