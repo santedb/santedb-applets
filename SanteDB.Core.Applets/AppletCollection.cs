@@ -994,8 +994,8 @@ namespace SanteDB.Core.Applets
 
             if (parameters == null)
                 parameters = new Dictionary<String, String>();
-            parameters.Add("today", DateTime.Now.Date.ToString("yyyy-MM-dd"));
-            parameters.Add("now", DateTime.Now.ToString("o"));
+            parameters.Add("today", DateTimeOffset.Now.Date.ToString("yyyy-MM-dd"));
+            parameters.Add("now", DateTimeOffset.Now.ToString("o"));
 
             using (var ms = new MemoryStream(this.RenderAssetContent(definitionAsset, bindingParameters: parameters, allowCache: false)))
             using (var json = new JsonViewModelSerializer())
