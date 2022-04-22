@@ -236,7 +236,7 @@ namespace SanteDB.Core.Applets.Test
 					{
 						ParticipationRole = new Concept
 						{
-							Key = ActParticipationKey.RecordTarget,
+							Key = ActParticipationKeys.RecordTarget,
                             Mnemonic = "RecordTarget"
 						},
 						PlayerEntity = this.m_patientUnderTest
@@ -245,7 +245,7 @@ namespace SanteDB.Core.Applets.Test
 					{
 						ParticipationRole = new Concept
 						{
-							Key = ActParticipationKey.Location,
+							Key = ActParticipationKeys.Location,
                             Mnemonic = "Location"
 
                         },
@@ -298,7 +298,7 @@ namespace SanteDB.Core.Applets.Test
 								{
 									ParticipationRole = new Concept
 									{
-										Key = ActParticipationKey.RecordTarget,
+										Key = ActParticipationKeys.RecordTarget,
                                         Mnemonic = "RecordTarget"
 									},
 									PlayerEntity = this.m_patientUnderTest
@@ -307,7 +307,7 @@ namespace SanteDB.Core.Applets.Test
 								{
 									ParticipationRole = new Concept
 									{
-										Key = ActParticipationKey.Location,
+										Key = ActParticipationKeys.Location,
                                         Mnemonic = "Location"
 									},
 									PlayerEntity = new Place
@@ -356,7 +356,7 @@ namespace SanteDB.Core.Applets.Test
                                 {
                                     ParticipationRole = new Concept
                                     {
-                                        Key = ActParticipationKey.RecordTarget,
+                                        Key = ActParticipationKeys.RecordTarget,
                                         Mnemonic = "RecordTarget"
                                     },
                                     PlayerEntity = this.m_patientUnderTest
@@ -365,7 +365,7 @@ namespace SanteDB.Core.Applets.Test
                                 {
                                     ParticipationRole = new Concept
                                     {
-                                        Key = ActParticipationKey.Location,
+                                        Key = ActParticipationKeys.Location,
                                         Mnemonic = "Location"
                                     },
                                     PlayerEntity = new Place
@@ -391,7 +391,7 @@ namespace SanteDB.Core.Applets.Test
                                 {
                                     ParticipationRole = new Concept
                                     {
-                                        Key = ActParticipationKey.RecordTarget,
+                                        Key = ActParticipationKeys.RecordTarget,
                                         Mnemonic = "RecordTarget"
                                     },
                                     PlayerEntity = this.m_patientUnderTest
@@ -400,7 +400,7 @@ namespace SanteDB.Core.Applets.Test
                                 {
                                     ParticipationRole = new Concept
                                     {
-                                        Key = ActParticipationKey.Location,
+                                        Key = ActParticipationKeys.Location,
                                         Mnemonic = "Location"
                                     },
                                     PlayerEntity = new Place
@@ -477,7 +477,7 @@ namespace SanteDB.Core.Applets.Test
                                 {
                                     ParticipationRole = new Concept
                                     {
-                                        Key = ActParticipationKey.RecordTarget,
+                                        Key = ActParticipationKeys.RecordTarget,
                                         Mnemonic = "RecordTarget"
                                     },
                                     PlayerEntity = this.m_patientUnderTest
@@ -486,7 +486,7 @@ namespace SanteDB.Core.Applets.Test
                                 {
                                     ParticipationRole = new Concept
                                     {
-                                        Key = ActParticipationKey.Location,
+                                        Key = ActParticipationKeys.Location,
                                         Mnemonic = "Location"
                                     },
                                     PlayerEntity = new Place
