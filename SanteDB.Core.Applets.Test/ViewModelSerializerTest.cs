@@ -56,7 +56,7 @@ namespace SanteDB.Core.Applets.Test
                     SecurityHash = Guid.NewGuid().ToString(),
                     Email = "bob@bob.com",
                     InvalidLoginAttempts = 2,
-                    UserClass = UserClassKeys.HumanUser
+                    UserClass = ActorTypeKeys.HumanUser
                 }
             },
 			StatusConceptKey = StatusKeys.Active,
