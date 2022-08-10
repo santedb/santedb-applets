@@ -122,9 +122,9 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get all strings for the specified locale
         /// </summary>
-        public KeyValuePair<String, String>[] GetStrings(string locale)
+        public IEnumerable<KeyValuePair<String, String>> GetStrings(string locale)
         {
-            return this.GetOrLoadStringData(locale).ToArray();
+            return this.GetOrLoadStringData(locale);
         }
 
         /// <summary>

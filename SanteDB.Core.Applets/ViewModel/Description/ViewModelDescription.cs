@@ -231,7 +231,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         /// </summary>
         private static void MergeInternal(PropertyContainerDescription victim, PropertyContainerDescription merged)
         {
-            if (victim.All && !merged.All)
+            if (victim.All.GetValueOrDefault() && !merged.All.GetValueOrDefault())
                 merged.All = victim.All;
             if (victim.Ref != merged.Ref && merged.Ref == null)
                 merged.Ref = victim.Ref;

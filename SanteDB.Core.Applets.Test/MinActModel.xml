@@ -26,9 +26,10 @@
     <property name="relationship" all="false">
       <property name="HasSubject" all="false">
         <property name="relationshipType" all="false"/>
+        <property name="relationshipTypeModel" all="true"/>
       </property>
       <property name="HasComponent" all="false">
-        <property name="targetModel" all="false"/>
+        <property name="targetModel" all="true"/>
       </property>
       </property>
   </type>

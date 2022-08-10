@@ -388,7 +388,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             if (!String.IsNullOrEmpty(propertyName))  // In an array so don't emit the property name
             {
                 // Are we to never serialize this?
-                if (context?.ShouldSerialize(propertyName) == false && !noSubContext)
+                if (context?.ShouldSerialize(propertyName) == false )
                     return;
                 else w.WritePropertyName(propertyName);
             }
@@ -419,7 +419,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     w.WriteEndObject();
                 }
             }
-            else if (instance is IList && !instance.GetType().IsArray)
+            else if (instance is IList ilst && !instance.GetType().IsArray)
             {
                 // Classifications?
                 var classifier = this.GetClassifier(instance.GetType().StripNullable());
@@ -427,7 +427,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 if (classifier == null) // no classifier
                 {
                     w.WriteStartArray();
-                    foreach (var itm in instance as IList)
+                    foreach (var itm in ilst)
                     {
                         this.WritePropertyUtil(w, null, itm, new JsonSerializationContext(propertyName, this, instance, context as JsonSerializationContext), noSubContext);
                     }

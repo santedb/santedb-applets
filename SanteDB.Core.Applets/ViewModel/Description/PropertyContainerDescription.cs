@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.ViewModel.Description
@@ -65,10 +66,31 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         public List<PropertyModelDescription> Properties { get; set; }
 
         /// <summary>
-        /// Whether to retrieve all children
+        /// Whether to retrieve all children serialized for XML
         /// </summary>
+        // HACK: This is done because XML serializer can't handle nullables
         [XmlAttribute("all")]
-        public bool All { get; set; }
+        public string AllXml
+        {
+            get => this.All.HasValue ? XmlConvert.ToString(this.All.Value) : null;
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    this.All = null;
+                }
+                else
+                {
+                    this.All = XmlConvert.ToBoolean(value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Property for nullable value of all
+        /// </summary>
+        [XmlIgnore]
+        public bool? All { get; set; }
 
         /// <summary>
         /// Gets the reference to use

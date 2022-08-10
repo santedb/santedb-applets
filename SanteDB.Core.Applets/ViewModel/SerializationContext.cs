@@ -234,13 +234,16 @@ namespace SanteDB.Core.Applets.ViewModel
         {
             var retVal = true;
             if (childProperty == "id") return retVal;
-            var propertyDescription = this.ElementDescription?.FindProperty(childProperty) as PropertyModelDescription;
-            if (propertyDescription?.Action == SerializationBehaviorType.Never || // Never serialize
-                this.ElementDescription == null ||
-                (!this.ElementDescription.All && propertyDescription == null))
+            var subPropertyDescription = this.ElementDescription?.FindProperty(childProperty);
+            if (subPropertyDescription?.Action == SerializationBehaviorType.Never || // Sub-property is explicit - it should never be serialized
+                this.ElementDescription?.All == false && subPropertyDescription == null) // This scope is not ALL and there is no explicit property
+            {
+                retVal = false;
+            }
+            else if(this.ElementDescription == null || !this.ElementDescription.All.HasValue) // This scope is not defined so use the parent
             {
                 // Parent is not set to all and does not explicitly call this property out
-                retVal &= (this.ElementDescription == null && this.Parent?.ElementDescription?.All == true);
+                retVal &= this.Parent?.ElementDescription?.All == true;
             }
 
             // Get the member
