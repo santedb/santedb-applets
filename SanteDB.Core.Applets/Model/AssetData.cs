@@ -72,7 +72,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlElement("Concept", typeof(Concept), Namespace = "http://santedb.org/model")]
         [XmlElement("ConceptSet", typeof(ConceptSet), Namespace = "http://santedb.org/model")]
-        [XmlElement("AssigningAuthority", typeof(AssigningAuthority), Namespace = "http://santedb.org/model")]
+        [XmlElement("AssigningAuthority", typeof(IdentityDomain), Namespace = "http://santedb.org/model")]
         [XmlElement("ConceptClass", typeof(ConceptClass), Namespace = "http://santedb.org/model")]
         [XmlElement("SecurityPolicy", typeof(SecurityPolicy), Namespace = "http://santedb.org/model")]
         [XmlElement("SecurityRole", typeof(SecurityRole), Namespace = "http://santedb.org/model")]

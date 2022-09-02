@@ -116,11 +116,11 @@ namespace SanteDB.Core.Applets.Test
                     }.OfType<TObject>());
                 }
 
-                if (typeof(TObject) == typeof(AssigningAuthority))
+                if (typeof(TObject) == typeof(IdentityDomain))
                 {
-                    return new MemoryQueryResultSet<TObject>(new List<AssigningAuthority>
+                    return new MemoryQueryResultSet<TObject>(new List<IdentityDomain>
                     {
-                        new AssigningAuthority
+                        new IdentityDomain
                         {
                             Key = Guid.NewGuid(),
                             IsUnique = false,
