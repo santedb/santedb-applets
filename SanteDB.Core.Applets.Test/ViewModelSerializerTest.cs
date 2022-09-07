@@ -16,7 +16,6 @@
  * User: fyfej
  * Date: 2019-11-27
  */
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SanteDB.Core.Applets.ViewModel;
 using SanteDB.Core.Model.Collection;
 using SanteDB.Core.Model.Constants;
@@ -25,18 +24,21 @@ using SanteDB.Core.Model.Entities;
 using SanteDB.Core.Model.Roles;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using SanteDB.Core.Model.Acts;
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Applets.ViewModel.Json;
+using NUnit.Framework;
 
 namespace SanteDB.Core.Applets.Test
 {
     /// <summary>
     /// Represents a view model serialization test
     /// </summary>
-    [TestClass]
+    [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class ViewModelSerializerTest
     {
         /// <summary>
@@ -188,7 +190,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Tests the serialization of a simple act.
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TestSerializeSimpleAct()
         {
             var act = new Act
@@ -215,7 +217,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Tests the serialization of a complex act with participations.
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TestSerializeActWithParticipations()
         {
             var act = new Act
@@ -266,7 +268,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Tests the serialization of a complex act with relationships.
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TestSerializeActWithRelationships()
         {
             var act = new Act
@@ -330,7 +332,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Tests the serialization of a complex act with relationships.
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TestSerializeActWithDefinition()
         {
             var act = new Act
@@ -445,7 +447,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Tests the serialization of a complex act with relationships.
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TestSerializeActWithDeepNestDefinition()
         {
             var act = new Act
@@ -517,7 +519,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Test serialization of the IMS patient object
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TestShouldNotRecurse()
         {
             var serializer = new JsonViewModelSerializer();
@@ -542,7 +544,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Test serialization of the IMS patient object
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TestSerializeComplexIMSObject()
         {
             var serializer = new JsonViewModelSerializer();

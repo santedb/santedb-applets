@@ -121,7 +121,7 @@ namespace SanteDB.Core.Applets.Model
         public AppletManifest Unpack()
         {
             using (MemoryStream ms = new MemoryStream(this.Manifest))
-            using (LZipStream gs = new LZipStream(new NonDisposingStream(ms), CompressionMode.Decompress))
+            using (LZipStream gs = new LZipStream(NonDisposingStream.Create(ms), CompressionMode.Decompress))
                 return AppletManifest.Load(gs);
         }
 
@@ -130,7 +130,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         public void Save(Stream stream)
         {
-            using (GZipStream gzs = new GZipStream(new NonDisposingStream(stream), CompressionMode.Compress))
+            using (GZipStream gzs = new GZipStream(NonDisposingStream.Create(stream), CompressionMode.Compress))
             {
                 if (this is AppletSolution)
                     s_solutionSerializer.Serialize(gzs, this);

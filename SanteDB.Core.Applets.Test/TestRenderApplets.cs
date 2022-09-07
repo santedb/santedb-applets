@@ -18,7 +18,6 @@
  */
 
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SanteDB.Core.Applets.Model;
 using System.Diagnostics;
 using System.Text;
@@ -27,14 +26,17 @@ using SanteDB.Core.Model.EntityLoader;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Interfaces;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using SanteDB.Core.Model.DataTypes;
 using System.Linq;
 using SanteDB.Core.Model.Query;
+using NUnit.Framework;
 
 namespace SanteDB.Core.Applets.Test
 {
-    [TestClass]
+    [TestFixture]
+    [ExcludeFromCodeCoverage]
     public class TestRenderApplets
     {
         // Applet collection
@@ -43,7 +45,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Initialize the test
         /// </summary>
-        [TestInitialize]
+        [OneTimeSetUp]
         public void Initialize()
         {
             this.m_appletCollection.Add(AppletManifest.Load(typeof(TestRenderApplets).Assembly.GetManifestResourceStream("SanteDB.Core.Applets.Test.HelloWorldApplet.xml")));
@@ -136,20 +138,20 @@ namespace SanteDB.Core.Applets.Test
             }
         }
 
-        [TestMethod]
+        [Test]
         public void TestCreatePackage()
         {
             var package = this.m_appletCollection[1].CreatePackage();
             Assert.IsNotNull(package);
         }
 
-        [TestMethod]
+        [Test]
         public void TestResolveAbsolute()
         {
             Assert.IsNotNull(this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/layout"));
         }
 
-        [TestMethod]
+        [Test]
         public void TestResolveIndex()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/");
@@ -158,7 +160,7 @@ namespace SanteDB.Core.Applets.Test
             Assert.AreEqual("en", asset.Language);
         }
 
-        [TestMethod]
+        [Test]
         public void TestResolveRelative()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/index.html");
@@ -166,14 +168,14 @@ namespace SanteDB.Core.Applets.Test
             Assert.IsNotNull(this.m_appletCollection.ResolveAsset("layout", relativeAsset: asset));
         }
 
-        [TestMethod]
+        [Test]
         public void TestResolveSettingLanguage()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.applets.core.settings/");
             Assert.IsNotNull(asset);
         }
 
-        [TestMethod]
+        [Test]
         public void TestRenderSettingsHtml()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.applets.core.settings/");
@@ -181,7 +183,7 @@ namespace SanteDB.Core.Applets.Test
             Trace.WriteLine(Encoding.UTF8.GetString(render));
         }
 
-        [TestMethod]
+        [Test]
         public void TestRenderHtml()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/index.html");
@@ -192,7 +194,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Test pre-processing of localization
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TestPreProcessLocalization()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.applet.test.layout/index.html");
@@ -208,7 +210,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Test rendering
         /// </summary>
-        [TestMethod]
+        [Test]
         public void TestLayoutBundleReferences()
         {
             var coll = new AppletCollection();
