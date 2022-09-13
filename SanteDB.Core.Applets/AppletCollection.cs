@@ -32,6 +32,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -163,6 +164,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Gets or sets the base url
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public virtual String BaseUrl
         {
             get { return this.m_baseUrl; }
@@ -177,6 +179,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Asset content resolver called when asset content is null
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public virtual AssetContentResolver Resolver
         {
             get { return this.m_resolver; }
@@ -213,6 +216,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Clear all caches
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public static void ClearCaches()
         {
             s_viewStateAssets?.Clear();
@@ -242,6 +246,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Gets or sets the item at the specified element
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public AppletManifest this[int index]
         {
             get { return this.m_appletManifest[index]; }
@@ -255,6 +260,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Return the count of applets in the collection
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public int Count
         {
             get
@@ -298,6 +304,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Return true if the collection is readonly
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public virtual bool IsReadOnly
         {
             get
@@ -332,6 +339,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Returns true if the collection contains the specified item
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public bool Contains(AppletManifest item)
         {
             return this.m_appletManifest.Contains(item);
@@ -340,6 +348,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Copies the specified collection to the array
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public void CopyTo(AppletManifest[] array, int arrayIndex)
         {
             this.m_appletManifest.CopyTo(array, arrayIndex);
@@ -356,6 +365,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Get the index of the specified item
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public int IndexOf(AppletManifest item)
         {
             return this.m_appletManifest.IndexOf(item);

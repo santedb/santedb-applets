@@ -59,6 +59,7 @@ namespace SanteDB.Core.Applets.Model.Extern
         /// Represents the string data
         /// </summary>
         [XmlType(nameof(ExternalStringResource))]
+        [ExcludeFromCodeCoverage]
         public class ExternalStringResource
         {
 

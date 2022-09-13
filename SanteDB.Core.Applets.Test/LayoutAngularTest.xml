@@ -48,7 +48,7 @@
   <asset name="index.html" mimeType="text/html">
     <contentHtml>
       <layout>layout</layout>
-      <script>index-controller</script>
+      <script static="false">index-controller</script>
       <style>index-style</style>
       <content>
         <div xmlns="http://www.w3.org/1999/xhtml" ng-controller="IndexController">
