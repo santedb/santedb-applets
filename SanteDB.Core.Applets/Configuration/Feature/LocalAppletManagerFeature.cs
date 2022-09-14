@@ -68,6 +68,11 @@ namespace SanteDB.Core.Applets.Configuration
         public override Type ConfigurationType => typeof(AppletConfigurationSection);
 
         /// <summary>
+        /// Get the group this feature belongs to
+        /// </summary>
+        public override string Group => FeatureGroup.System;
+
+        /// <summary>
         /// Get default configuration
         /// </summary>
         protected override object GetDefaultConfiguration() => new AppletConfigurationSection();

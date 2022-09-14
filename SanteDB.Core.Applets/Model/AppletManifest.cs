@@ -92,12 +92,6 @@ namespace SanteDB.Core.Applets.Model
         }
 
         /// <summary>
-        /// Gets or sets the data operations to be performed
-        /// </summary>
-        [XmlElement("data")]
-        public AssetData DataSetup { get; set; }
-
-        /// <summary>
         /// Applet information itself
         /// </summary>
         [XmlElement("info")]
