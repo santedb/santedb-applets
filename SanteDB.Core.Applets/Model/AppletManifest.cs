@@ -121,6 +121,18 @@ namespace SanteDB.Core.Applets.Model
         public List<AppletErrorAssetDefinition> ErrorAssets { get; set; }
 
         /// <summary>
+        /// Attempt to retrieve the assets <paramref name="assetPath"/>
+        /// </summary>
+        /// <param name="assetPath">The path to the asset name in this collection</param>
+        /// <param name="asset">The resolved asset</param>
+        /// <returns>True if the asset was successfully retrieved</returns>
+        public bool TryGetAsset(string assetPath, out AppletAsset asset)
+        {
+            asset = this.Assets.Find(o => o.Name == assetPath);
+            return asset != null;
+        }
+
+        /// <summary>
         /// Initial applet configuration
         /// </summary>
         /// <value>The configuration.</value>

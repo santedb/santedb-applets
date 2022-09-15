@@ -477,6 +477,15 @@ namespace SanteDB.Core.Applets
         }
 
         /// <summary>
+        /// Try to resolve the specified asset
+        /// </summary>
+        public bool TryResolveApplet(String assetPath, out AppletAsset asset)
+        {
+            asset = this.ResolveAsset(assetPath);
+            return asset != null;
+        }
+
+        /// <summary>
         /// Resolve the asset
         /// </summary>
         public AppletAsset ResolveAsset(String assetPath, AppletManifest relativeManifest = null, AppletAsset relativeAsset = null)
