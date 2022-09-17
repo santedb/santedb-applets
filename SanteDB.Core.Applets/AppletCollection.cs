@@ -488,7 +488,14 @@ namespace SanteDB.Core.Applets
         /// <returns>The resolved asset (if any)</returns>
         public AppletAsset GetErrorAsset(HttpStatusCode httpStatusCode) {
             var assetData = this.SelectMany(o => o.ErrorAssets.Select(e => new { Applet = o, Error = e })).FirstOrDefault(o => o.Error.ErrorCode == (int)httpStatusCode);
-            return this.ResolveAsset(assetData.Error.Asset, assetData.Applet);
+            if (assetData == null)
+            {
+                return null;
+            }
+            else
+            {
+                return this.ResolveAsset(assetData.Error.Asset, assetData.Applet);
+            }
         }
 
         /// <summary>
