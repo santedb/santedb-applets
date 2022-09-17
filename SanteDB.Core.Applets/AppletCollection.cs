@@ -35,6 +35,7 @@ using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -121,6 +122,7 @@ namespace SanteDB.Core.Applets
                 throw new InvalidOperationException("Collection is readonly");
             }
         }
+
     }
 
     /// <summary>
@@ -203,6 +205,7 @@ namespace SanteDB.Core.Applets
         {
             AppletCollection.ClearCaches();
         }
+
 
         /// <summary>
         /// Applet collection rewrite to alternate url
@@ -335,6 +338,7 @@ namespace SanteDB.Core.Applets
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, this.m_appletManifest));
             this.m_appletManifest.Clear();
         }
+
 
         /// <summary>
         /// Returns true if the collection contains the specified item
@@ -476,6 +480,17 @@ namespace SanteDB.Core.Applets
             return retVal;
         }
 
+
+        /// <summary>
+        /// Get the configured error asset from the applet collection
+        /// </summary>
+        /// <param name="httpStatusCode">The error for which the applet asset should be retrieved</param>
+        /// <returns>The resolved asset (if any)</returns>
+        public AppletAsset GetErrorAsset(HttpStatusCode httpStatusCode) {
+            var assetData = this.SelectMany(o => o.ErrorAssets.Select(e => new { Applet = o, Error = e })).FirstOrDefault(o => o.Error.ErrorCode == (int)httpStatusCode);
+            return this.ResolveAsset(assetData.Error.Asset, assetData.Applet);
+        }
+
         /// <summary>
         /// Try to resolve the specified asset
         /// </summary>
@@ -484,6 +499,12 @@ namespace SanteDB.Core.Applets
             asset = this.ResolveAsset(assetPath);
             return asset != null;
         }
+
+
+        /// <summary>
+        /// Get the configured login asset for this collection
+        /// </summary>
+        public String GetLoginAssetPath() => this.Select(o => o.LoginAsset).FirstOrDefault();
 
         /// <summary>
         /// Resolve the asset
@@ -768,7 +789,7 @@ namespace SanteDB.Core.Applets
                     if (!String.IsNullOrEmpty(preProcessLocalization))
                     {
                         var assetString = ApplicationServiceContext.Current?.GetService<ILocalizationService>().GetStrings(preProcessLocalization) ??
-                            asset.Manifest.Strings.FirstOrDefault(o=>o.Language == preProcessLocalization).String.ToDictionary(o=>o.Key, o=>o.Value);
+                            asset.Manifest.Strings.FirstOrDefault(o => o.Language == preProcessLocalization).String.ToDictionary(o => o.Key, o => o.Value);
                         retVal = this.m_localizationRegex.Replace(retVal, (m) => assetString?.FirstOrDefault(o => o.Key == m.Groups[1].Value).Value ?? m.Groups[1].Value);
                     }
 
