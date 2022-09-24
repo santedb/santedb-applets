@@ -167,7 +167,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                         {
                             using (var ms = new MemoryStream(slnMgr.RenderAssetContent(a)))
                             {
-                                this.m_tracer.TraceInfo("Attempting load of {0}", a.Name);
+                                this.m_tracer.TraceVerbose("Attempting load of {0}", a.Name);
                                 try
                                 {
                                     return SubscriptionDefinition.Load(ms);
