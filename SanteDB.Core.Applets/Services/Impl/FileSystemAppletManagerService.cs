@@ -18,12 +18,8 @@
  * User: fyfej
  * Date: 2022-9-7
  */
-using SanteDB.Core;
-using SanteDB.Core.Applets;
 using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Applets.Model;
-using SanteDB.Core.Applets.Services;
-using SanteDB.Core.Configuration;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Security;
@@ -32,7 +28,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
-using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
@@ -146,14 +141,20 @@ namespace SanteDB.Core.Applets.Services.Impl
             // Save the applet
             var appletDir = Path.Combine(this.m_configuration.AppletDirectory, solutionId);
             if (!Directory.Exists(appletDir))
+            {
                 Directory.CreateDirectory(appletDir);
+            }
 
             // Install
             String pakFile = null;
             if (this.m_fileDictionary.TryGetValue($"{solutionId}{appletId}", out pakFile) && File.Exists(pakFile))
+            {
                 return File.ReadAllBytes(pakFile);
+            }
             else
+            {
                 throw new FileNotFoundException($"Applet {appletId} not found");
+            }
         }
 
         /// <summary>
@@ -168,13 +169,19 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 var soln = this.m_solutions.FirstOrDefault(o => o.Meta.Id == packageId);
                 if (soln == null)
+                {
                     throw new FileNotFoundException($"Applet {packageId} is not installed");
+                }
                 else
                 {
                     this.m_solutions.Remove(soln);
                     lock (this.m_fileDictionary)
+                    {
                         if (this.m_fileDictionary.ContainsKey(packageId + ".sln"))
+                        {
                             File.Delete(this.m_fileDictionary[packageId + ".sln"]);
+                        }
+                    }
                 }
             }
             else
@@ -182,14 +189,20 @@ namespace SanteDB.Core.Applets.Services.Impl
                 // Dependency check
                 var dependencies = this.m_appletCollection[String.Empty].Where(o => o.Info.Dependencies.Any(d => d.Id == packageId));
                 if (dependencies.Any())
+                {
                     throw new InvalidOperationException($"Uninstalling {packageId} would break : {String.Join(", ", dependencies.Select(o => o.Info))}");
+                }
 
                 // We're good to go!
                 this.m_appletCollection[String.Empty].Remove(applet);
 
                 lock (this.m_fileDictionary)
+                {
                     if (this.m_fileDictionary.ContainsKey(packageId))
+                    {
                         File.Delete(this.m_fileDictionary[packageId]);
+                    }
+                }
 
                 AppletCollection.ClearCaches();
             }
@@ -214,7 +227,9 @@ namespace SanteDB.Core.Applets.Services.Impl
             var appletScope = owner?.Meta.Id ?? String.Empty;
             // TODO: Verify package hash / signature
             if (!this.VerifyPackage(package))
+            {
                 throw new SecurityException("Applet failed validation");
+            }
             else if (!this.m_appletCollection[appletScope].VerifyDependencies(package.Meta))
             {
                 this.m_tracer.TraceWarning($"Applet {package.Meta} depends on : [{String.Join(", ", package.Meta.Dependencies.Select(o => o.ToString()))}] which are missing or incompatible");
@@ -223,16 +238,26 @@ namespace SanteDB.Core.Applets.Services.Impl
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
             if (!Path.IsPathRooted(appletDir))
+            {
                 appletDir = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), this.m_configuration.AppletDirectory);
+            }
+
             if (owner != null)
+            {
                 appletDir = Path.Combine(appletDir, owner.Meta.Id);
+            }
+
             if (!Directory.Exists(appletDir))
+            {
                 Directory.CreateDirectory(appletDir);
+            }
 
             // Install
             var pakFile = Path.Combine(appletDir, package.Meta.Id + ".pak");
             if (this.m_appletCollection[appletScope].Any(o => o.Info.Id == package.Meta.Id) && File.Exists(pakFile) && !isUpgrade)
+            {
                 throw new InvalidOperationException($"Cannot replace {package.Meta} unless upgrade is specifically specified");
+            }
 
             using (var fs = File.Create(pakFile))
             {
@@ -240,8 +265,12 @@ namespace SanteDB.Core.Applets.Services.Impl
             }
 
             lock (this.m_fileDictionary)
+            {
                 if (!this.m_fileDictionary.ContainsKey($"{appletScope}{package.Meta.Id}"))
+                {
                     this.m_fileDictionary.Add($"{appletScope}{package.Meta.Id}", pakFile);
+                }
+            }
 
             var pkg = package.Unpack();
 
@@ -259,6 +288,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             // Install templates
             var idp = ApplicationServiceContext.Current.GetService<ITemplateDefinitionRepositoryService>();
             if (idp != null)
+            {
                 foreach (var itm in pkg.Templates)
                 {
                     if (idp.GetTemplateDefinition(itm.Mnemonic) == null)
@@ -273,6 +303,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                         });
                     }
                 }
+            }
 
             AppletCollection.ClearCaches();
 
@@ -290,10 +321,14 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 verifyBytes = asln.Include.SelectMany(o => o.Manifest).ToArray();
                 if (BitConverter.ToString(SHA256.Create().ComputeHash(verifyBytes)) != BitConverter.ToString(package.Meta.Hash))
+                {
                     throw new InvalidOperationException($"Package contents of {package.Meta.Id} appear to be corrupt!");
+                }
             }
             else if (BitConverter.ToString(SHA256.Create().ComputeHash(package.Manifest)) != BitConverter.ToString(package.Meta.Hash))
+            {
                 throw new InvalidOperationException($"Package contents of {package.Meta.Id} appear to be corrupt!");
+            }
 
             if (package.Meta.Signature != null)
             {
@@ -317,10 +352,14 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 throw new SecurityException($"Cannot verify identity of publisher {embCert.Subject} - {String.Join(",", chainStatus.Select(o => o.Status))}");
                             }
                             else
+                            {
                                 cert = new X509Certificate2Collection(embCert);
+                            }
                         }
                         else
+                        {
                             throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
+                        }
                     }
 
                     // Verify signature
@@ -331,9 +370,13 @@ namespace SanteDB.Core.Applets.Services.Impl
                     // Verify timestamp
                     var timestamp = package.Unpack().Info.TimeStamp;
                     if (timestamp > DateTime.Now)
+                    {
                         throw new SecurityException($"Package {package.Meta.Id} was published in the future! Something's fishy, refusing to load");
+                    }
                     else if (cert[0].NotAfter < timestamp || cert[0].NotBefore > timestamp)
+                    {
                         throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
+                    }
 
                     if (retVal == true)
                     {
@@ -394,7 +437,9 @@ namespace SanteDB.Core.Applets.Services.Impl
                 }
 
                 if (!Directory.Exists(appletDir))
+                {
                     this.m_tracer.TraceWarning("Applet directory {0} doesn't exist, no applets will be loaded", appletDir);
+                }
                 else
                 {
                     this.m_tracer.TraceEvent(EventLevel.Verbose, "Scanning {0} for applets...", appletDir);
@@ -509,7 +554,9 @@ namespace SanteDB.Core.Applets.Services.Impl
 
             // TODO: Verify package hash / signature
             if (!this.VerifyPackage(solution))
+            {
                 throw new SecurityException("Applet failed validation");
+            }
 
             this.m_appletCollection.Add(solution.Meta.Id, new AppletCollection());
             this.m_readonlyAppletCollection.Add(solution.Meta.Id, this.m_appletCollection[solution.Meta.Id].AsReadonly());
@@ -518,15 +565,21 @@ namespace SanteDB.Core.Applets.Services.Impl
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
             if (!Path.IsPathRooted(appletDir))
+            {
                 appletDir = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), this.m_configuration.AppletDirectory);
+            }
 
             if (!Directory.Exists(appletDir))
+            {
                 Directory.CreateDirectory(appletDir);
+            }
 
             // Install
             var pakFile = Path.Combine(appletDir, solution.Meta.Id + ".pak");
             if (this.m_solutions.Any(o => o.Meta.Id == solution.Meta.Id) && File.Exists(pakFile) && !isUpgrade)
+            {
                 throw new InvalidOperationException($"Cannot replace {solution.Meta} unless upgrade is specifically specified");
+            }
 
             // Unpack items from the solution package and install if needed
             foreach (var itm in solution.Include.Where(o => o.Manifest != null))
@@ -542,8 +595,12 @@ namespace SanteDB.Core.Applets.Services.Impl
 
             // Register the pakfile
             lock (this.m_fileDictionary)
+            {
                 if (!this.m_fileDictionary.ContainsKey(solution.Meta.Id + ".sln"))
+                {
                     this.m_fileDictionary.Add(solution.Meta.Id + ".sln", pakFile);
+                }
+            }
 
             this.m_solutions.Add(solution);
 

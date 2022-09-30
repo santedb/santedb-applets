@@ -109,8 +109,12 @@ namespace SanteDB.Core.Applets.ViewModel.Description
                 var arrSearch = this.Properties.ToArray();
                 model = arrSearch.FirstOrDefault(o => o.Name == name);
                 lock (this.m_properties)
+                {
                     if (!this.m_properties.ContainsKey(name))
+                    {
                         this.m_properties.Add(name, model);
+                    }
+                }
             }
             return model;
         }

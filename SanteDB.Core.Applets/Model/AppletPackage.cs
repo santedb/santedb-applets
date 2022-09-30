@@ -60,7 +60,9 @@ namespace SanteDB.Core.Applets.Model
         public static AppletPackage Load(byte[] resourceData)
         {
             using (MemoryStream ms = new MemoryStream(resourceData))
+            {
                 return AppletPackage.Load(ms);
+            }
         }
 
         /// <summary>
@@ -74,9 +76,14 @@ namespace SanteDB.Core.Applets.Model
                 {
                     AppletPackage retVal = null;
                     if (s_packageSerializer.CanDeserialize(xr))
+                    {
                         retVal = s_packageSerializer.Deserialize(xr) as AppletPackage;
+                    }
                     else if (s_solutionSerializer.CanDeserialize(xr))
+                    {
                         retVal = s_solutionSerializer.Deserialize(xr) as AppletSolution;
+                    }
+
                     return retVal;
                 }
             }
@@ -122,7 +129,9 @@ namespace SanteDB.Core.Applets.Model
         {
             using (MemoryStream ms = new MemoryStream(this.Manifest))
             using (LZipStream gs = new LZipStream(NonDisposingStream.Create(ms), CompressionMode.Decompress))
+            {
                 return AppletManifest.Load(gs);
+            }
         }
 
         /// <summary>
@@ -133,9 +142,13 @@ namespace SanteDB.Core.Applets.Model
             using (GZipStream gzs = new GZipStream(NonDisposingStream.Create(stream), CompressionMode.Compress))
             {
                 if (this is AppletSolution)
+                {
                     s_solutionSerializer.Serialize(gzs, this);
+                }
                 else
+                {
                     s_packageSerializer.Serialize(gzs, this);
+                }
             }
         }
     }

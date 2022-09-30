@@ -42,7 +42,10 @@ namespace SanteDB.Core.Applets.Model
         {
             var str = this.Names?.Find(o => o.Language == language);
             if (str == null && returnNuetralIfNotFound)
+            {
                 str = this.Names?.Find(o => o.Language == null);
+            }
+
             return str?.Value;
         }
 
@@ -53,7 +56,10 @@ namespace SanteDB.Core.Applets.Model
         {
             var str = this.GroupNames?.Find(o => o.Language == language);
             if (str == null && returnNuetralIfNotFound)
+            {
                 str = this.GroupNames?.Find(o => o.Language == null);
+            }
+
             return str?.Value;
         }
 

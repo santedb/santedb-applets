@@ -65,7 +65,10 @@ namespace SanteDB.Core.Applets.Model
         {
             var str = this.Titles?.Find(o => o.Language == language);
             if (str == null && returnNuetralIfNotFound)
+            {
                 str = this.Titles?.Find(o => o.Language == null);
+            }
+
             return str?.Value;
         }
 
@@ -117,9 +120,13 @@ namespace SanteDB.Core.Applets.Model
             {
                 // HACK: In mono XElement is serialized differently than .NET let's detect that
                 if (value.Name.LocalName == "content" && value.Name.Namespace == "http://santedb.org/applet")
+                {
                     this.m_html = value.Elements().FirstOrDefault(o => o.Name.Namespace == "http://www.w3.org/1999/xhtml");
+                }
                 else
+                {
                     this.m_html = value;
+                }
             }
         }
 

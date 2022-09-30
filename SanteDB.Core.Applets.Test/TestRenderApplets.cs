@@ -18,21 +18,20 @@
  * User: fyfej
  * Date: 2022-5-30
  */
-using System;
-using SanteDB.Core.Applets.Model;
-using System.Diagnostics;
-using System.Text;
-using System.IO;
-using SanteDB.Core.Model.EntityLoader;
-using SanteDB.Core.Model;
-using SanteDB.Core.Model.Interfaces;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-using SanteDB.Core.Model.DataTypes;
-using System.Linq;
-using SanteDB.Core.Model.Query;
 using NUnit.Framework;
+using SanteDB.Core.Applets.Model;
+using SanteDB.Core.Model;
+using SanteDB.Core.Model.DataTypes;
+using SanteDB.Core.Model.EntityLoader;
+using SanteDB.Core.Model.Interfaces;
+using SanteDB.Core.Model.Query;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
 
 namespace SanteDB.Core.Applets.Test
 {
@@ -81,7 +80,7 @@ namespace SanteDB.Core.Applets.Test
             }
 
 
-            public IQueryResultSet GetRelations(Type tmodel, params Guid?[] sourceKey) 
+            public IQueryResultSet GetRelations(Type tmodel, params Guid?[] sourceKey)
             {
                 return new MemoryQueryResultSet(new Object[0]);
             }
@@ -220,8 +219,8 @@ namespace SanteDB.Core.Applets.Test
             var asset = coll.ResolveAsset("/org.santedb.applet.test.layout/index.html");
             var render = coll.RenderAssetContent(asset);
             string html = Encoding.UTF8.GetString(render);
-//            Assert.IsTrue(html.Contains("index-controller"), "Missing index-controller");
-            
+            //            Assert.IsTrue(html.Contains("index-controller"), "Missing index-controller");
+
             Assert.IsTrue(html.Contains("layout-controller"), "Missing layout-controller");
             Assert.IsTrue(html.Contains("index-style"), "Missing index-style");
             Assert.IsTrue(html.Contains("layout-controller"), "Missing layout-style");
@@ -238,7 +237,7 @@ namespace SanteDB.Core.Applets.Test
                 typeof(TestRenderApplets).Assembly.GetManifestResourceStream(
                     "SanteDB.Core.Applets.Test.LayoutAngularTest.xml"));
             coll.Add(am);
-            
+
             // cannot add to readonly 
             var ro = coll.AsReadonly();
             Assert.Throws<InvalidOperationException>(() => ro.Add(am));
@@ -250,7 +249,7 @@ namespace SanteDB.Core.Applets.Test
             coll.Remove(am);
             coll.Insert(0, am);
             coll.RemoveAt(0);
-coll.Add(am);
+            coll.Add(am);
             var asf = coll.ResolveAsset("/org.santedb.applet.test.layout/index.html");
             Assert.IsNotNull(asf);
             Assert.AreEqual(1, coll.GetLazyScripts(asf).Count);

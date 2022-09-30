@@ -22,9 +22,7 @@ using Newtonsoft.Json;
 using SanteDB.Core.Extensions;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;
-using SanteDB.Core.Model.Interfaces;
 using SanteDB.Core.Model.Serialization;
-using SanteDB.Core.Services;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -88,6 +86,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         {
             Dictionary<String, PropertyInfo> retVal = null;
             lock (this.m_syncLock)
+            {
                 if (!this.m_jsonPropertyInfo.TryGetValue(propertyType, out retVal))
                 {
                     retVal = new Dictionary<string, PropertyInfo>();
@@ -95,11 +94,17 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     {
                         var propertyName = GetPropertyName(pi);
                         if (propertyName != null && !propertyName.StartsWith("$"))
+                        {
                             retVal.Add(propertyName, pi);
+                        }
                     }
                     if (!this.m_jsonPropertyInfo.ContainsKey(propertyType))
+                    {
                         this.m_jsonPropertyInfo.Add(propertyType, retVal);
+                    }
                 }
+            }
+
             return retVal;
         }
 
@@ -113,13 +118,17 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             {
                 if (!includeIgnored && info.GetCustomAttribute<SerializationMetadataAttribute>() != null && info.GetCustomAttribute<JsonPropertyAttribute>() == null ||
                     info.GetCustomAttribute<JsonIgnoreAttribute>() != null && info.GetCustomAttribute<SerializationReferenceAttribute>() == null)
+                {
                     retVal = null;
+                }
                 else
                 {
                     // Property info
                     JsonPropertyAttribute jpa = info.GetCustomAttribute<JsonPropertyAttribute>();
                     if (jpa != null)
+                    {
                         retVal = jpa.PropertyName;
+                    }
                     else
                     {
                         SerializationReferenceAttribute sra = info.GetCustomAttribute<SerializationReferenceAttribute>();
@@ -127,17 +136,25 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         {
                             jpa = info.DeclaringType.GetRuntimeProperty(sra.RedirectProperty).GetCustomAttribute<JsonPropertyAttribute>();
                             if (jpa != null)
+                            {
                                 retVal = jpa.PropertyName + "Model";
+                            }
                         }
                     }
 
                     if (retVal == null)
+                    {
                         retVal = info.Name.ToLower() + "Model";
+                    }
                 }
 
                 lock (this.m_syncLock)
+                {
                     if (!this.m_jsonPropertyNames.ContainsKey(info))
+                    {
                         this.m_jsonPropertyNames.Add(info, retVal);
+                    }
+                }
             }
             return retVal;
         }
@@ -148,7 +165,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         public void Serialize(JsonWriter w, IdentifiedData o, JsonSerializationContext context)
         {
             if (o == null)
+            {
                 throw new ArgumentNullException(nameof(o));
+            }
 
             // For each item in the property ...
             bool loadedProperties = false;
@@ -159,11 +178,15 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 // Get the property name
                 var propertyName = GetPropertyName(propertyInfo);
                 if (propertyName == null || propertyName.StartsWith("$")) // Skip internal property names
+                {
                     continue;
+                }
 
                 // Serialization decision
                 if (!context.ShouldSerialize(propertyName))
+                {
                     continue;
+                }
 
                 // Get the property
                 var value = propertyInfo.GetValue(o);
@@ -177,7 +200,10 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         if (value is IList && !propertyInfo.PropertyType.IsArray)
                         {
                             if (o.Key.HasValue)
+                            {
                                 value = context.JsonContext.LoadCollection(propertyInfo.PropertyType, (Guid)o.Key);
+                            }
+
                             propertyInfo.SetValue(o, value);
                             loadedProperties = (value as IList).Count > 0;
                         }
@@ -198,7 +224,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         }
                     }
                     else
+                    {
                         continue;
+                    }
                 }
 
                 // TODO: Classifier
@@ -214,7 +242,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         {
             var retVal = new Object();
             if (!asType.IsAbstract)
+            {
                 retVal = Activator.CreateInstance(asType);
+            }
 
             int depth = r.TokenType == JsonToken.StartObject ? r.Depth : r.Depth - 1; // current depth
             var properties = GetPropertyInfo(asType);
@@ -227,9 +257,13 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     // The current reader is at an end of object
                     case JsonToken.EndObject:
                         if (depth == r.Depth)
+                        {
                             return retVal;
+                        }
                         else
+                        {
                             throw new JsonSerializationException("JSON in invalid state");
+                        }
                     // Current reader is at a property name
                     case JsonToken.PropertyName:
                         switch ((String)r.Value)
@@ -262,7 +296,10 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                                     }
                                 }
                                 else
+                                {
                                     r.Skip();
+                                }
+
                                 break;
                         }
                         break;
@@ -278,7 +315,10 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         {
             var simpleValueAttribute = value.GetType().GetCustomAttribute<SimpleValueAttribute>();
             if (simpleValueAttribute != null)
+            {
                 return value.GetType().GetRuntimeProperty(simpleValueAttribute.ValueProperty).GetValue(value);
+            }
+
             return null;
         }
 
@@ -289,7 +329,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         {
             // Simple value is null
             if (simpleValue == null)
+            {
                 return null;
+            }
 
             var simpleValueAttribute = this.m_type.GetCustomAttribute<SimpleValueAttribute>();
             object retVal = null;
@@ -301,22 +343,36 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 var simpleProperty = this.m_type.GetRuntimeProperty(simpleValueAttribute.ValueProperty);
                 var propertyType = simpleProperty.PropertyType.StripNullable();
                 if (propertyType == typeof(Guid))
+                {
                     return Guid.Parse((String)simpleValue);
+                }
                 else if (propertyType == typeof(byte[]))
                 {
                     if (simpleValue is Boolean)
+                    {
                         simpleProperty.SetValue(retVal, new BooleanExtensionHandler().Serialize(simpleValue));
+                    }
                     else if (simpleValue is String)
+                    {
                         simpleProperty.SetValue(retVal, new StringExtensionHandler().Serialize(simpleValue));
+                    }
                     else if (simpleValue is Int32 || simpleValue is float || simpleValue is double || simpleValue is decimal)
+                    {
                         simpleProperty.SetValue(retVal, new DecimalExtensionHandler().Serialize(simpleValue));
+                    }
                     else
+                    {
                         simpleProperty.SetValue(retVal, simpleValue);
+                    }
                 }
                 else if (propertyType == typeof(String) && simpleValue?.GetType() != typeof(String))
+                {
                     simpleProperty.SetValue(retVal, simpleValue?.ToString());
+                }
                 else
+                {
                     simpleProperty.SetValue(retVal, simpleValue);
+                }
             }
             return retVal;
         }

@@ -173,7 +173,10 @@ namespace SanteDB.Core.Applets
             set
             {
                 if (this.IsReadOnly)
+                {
                     throw new InvalidOperationException("Collection is readonly");
+                }
+
                 this.m_baseUrl = value;
             }
         }
@@ -188,7 +191,10 @@ namespace SanteDB.Core.Applets
             set
             {
                 if (this.IsReadOnly)
+                {
                     throw new InvalidOperationException("Collection is readonly");
+                }
+
                 this.m_resolver = value;
             }
         }
@@ -280,7 +286,10 @@ namespace SanteDB.Core.Applets
             get
             {
                 if (s_viewStateAssets == null)
+                {
                     s_viewStateAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(a => ((a.Content == null && this.Resolver != null ? this.Resolver(a) : a.Content) as AppletAssetHtml)?.ViewState != null).ToList();
+                }
+
                 return s_viewStateAssets;
             }
         }
@@ -293,6 +302,7 @@ namespace SanteDB.Core.Applets
             get
             {
                 if (s_widgetAssets == null)
+                {
                     s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets)
                         .Where(o => o.MimeType == "text/html")
                         .Select(o => new { asset = o, content = (o.Content == null && this.Resolver != null ? this.Resolver(o) : o.Content) as AppletWidget })
@@ -300,6 +310,8 @@ namespace SanteDB.Core.Applets
                         .GroupBy(o => o.content.Name)
                         .Select(o => o.OrderByDescending(d => d.content.Priority).First().asset)
                         .ToList();
+                }
+
                 return s_widgetAssets;
             }
         }
@@ -322,7 +334,11 @@ namespace SanteDB.Core.Applets
         /// <param name="item"></param>
         public void Add(AppletManifest item)
         {
-            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
+            if (this.IsReadOnly)
+            {
+                throw new InvalidOperationException("Collection is readonly");
+            }
+
             this.m_appletManifest.Add(item);
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
             AppletCollection.ClearCaches();
@@ -333,7 +349,10 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public void Clear()
         {
-            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
+            if (this.IsReadOnly)
+            {
+                throw new InvalidOperationException("Collection is readonly");
+            }
 
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, this.m_appletManifest));
             this.m_appletManifest.Clear();
@@ -380,7 +399,11 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public void Insert(int index, AppletManifest item)
         {
-            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
+            if (this.IsReadOnly)
+            {
+                throw new InvalidOperationException("Collection is readonly");
+            }
+
             this.m_appletManifest.Insert(index, item);
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
         }
@@ -390,10 +413,17 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public bool Remove(AppletManifest item)
         {
-            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
+            if (this.IsReadOnly)
+            {
+                throw new InvalidOperationException("Collection is readonly");
+            }
 
             var retVal = this.m_appletManifest.Remove(item);
-            if (retVal) this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            if (retVal)
+            {
+                this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            }
+
             return retVal;
         }
 
@@ -402,7 +432,10 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public void RemoveAt(int index)
         {
-            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
+            if (this.IsReadOnly)
+            {
+                throw new InvalidOperationException("Collection is readonly");
+            }
 
             var item = this.m_appletManifest[index];
             this.m_appletManifest.RemoveAt(index);
@@ -423,7 +456,10 @@ namespace SanteDB.Core.Applets
         /// <param name="bundle"></param>
         public void RegisterBundle(RenderBundle bundle)
         {
-            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
+            if (this.IsReadOnly)
+            {
+                throw new InvalidOperationException("Collection is readonly");
+            }
 
             this.m_referenceBundles.Add(bundle);
         }
@@ -460,15 +496,20 @@ namespace SanteDB.Core.Applets
                     FirstOrDefault(o => o.ViewModelId.ToLowerInvariant() == viewModelName);
 
                 if (viewModelDefinition != null)
+                {
                     viewModelDefinition.DefinitionContent = this.RenderAssetContent(this.ResolveAsset(viewModelDefinition.Definition));
+                }
 
                 // De-serialize
                 if (viewModelDefinition != null)
+                {
                     using (MemoryStream ms = new MemoryStream(viewModelDefinition.DefinitionContent))
                     {
                         retVal = ViewModelDescription.Load(ms);
                         foreach (var itm in retVal.Include)
+                        {
                             retVal.Model.AddRange(this.GetViewModelDescription(itm).Model);
+                        }
 
                         // caching
                         if (this.CachePages)
@@ -476,6 +517,7 @@ namespace SanteDB.Core.Applets
                             s_viewModelCache.TryAdd(viewModelName, retVal);
                         }
                     }
+                }
             }
             return retVal;
         }
@@ -486,7 +528,8 @@ namespace SanteDB.Core.Applets
         /// </summary>
         /// <param name="httpStatusCode">The error for which the applet asset should be retrieved</param>
         /// <returns>The resolved asset (if any)</returns>
-        public AppletAsset GetErrorAsset(HttpStatusCode httpStatusCode) {
+        public AppletAsset GetErrorAsset(HttpStatusCode httpStatusCode)
+        {
             var assetData = this.SelectMany(o => o.ErrorAssets.Select(e => new { Applet = o, Error = e })).FirstOrDefault(o => o.Error.ErrorCode == (int)httpStatusCode);
             if (assetData == null)
             {
@@ -519,7 +562,9 @@ namespace SanteDB.Core.Applets
         public AppletAsset ResolveAsset(String assetPath, AppletManifest relativeManifest = null, AppletAsset relativeAsset = null)
         {
             if (assetPath == null)
+            {
                 return null;
+            }
 
             // Manifest to search for asset
             AppletManifest searchManifest = null;
@@ -554,7 +599,10 @@ namespace SanteDB.Core.Applets
             }
 
             if (assetPath.EndsWith("/") || String.IsNullOrEmpty(assetPath))
+            {
                 assetPath += "index.html";
+            }
+
             assetPath = assetPath.ToLower(); // case insensitive
             return searchManifest?.Assets.FirstOrDefault(o => o.Name == assetPath);
         }
@@ -578,7 +626,9 @@ namespace SanteDB.Core.Applets
             // Resolve content
             var content = asset.Content;
             if (content == null && this.Resolver != null)
+            {
                 content = this.Resolver(asset);
+            }
 
             if (content is String) // Content is a string
             {
@@ -587,7 +637,10 @@ namespace SanteDB.Core.Applets
                 {
                     var retVal = content as String;
                     if (bindingParameters != null)
+                    {
                         retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
+                    }
+
                     cacheObject = Encoding.UTF8.GetBytes(retVal);
                     if (allowCache)
                     {
@@ -596,7 +649,9 @@ namespace SanteDB.Core.Applets
                     return cacheObject;
                 }
                 else
+                {
                     return Encoding.UTF8.GetBytes(content as String);
+                }
             }
             else if (content is byte[]) // Content is a binary asset
             {
@@ -624,7 +679,9 @@ namespace SanteDB.Core.Applets
                     }
                 }
                 else
+                {
                     return content as byte[];
+                }
             }
             else if (content is XElement) // Content is XML
             {
@@ -652,7 +709,9 @@ namespace SanteDB.Core.Applets
                 XElement htmlContent = null;
 
                 if (htmlAsset.Static)
+                {
                     htmlContent = htmlAsset.Html as XElement;
+                }
                 else
                 {
                     // Type of tag to render basic content
@@ -702,16 +761,22 @@ namespace SanteDB.Core.Applets
                         default:
                             {
                                 if (String.IsNullOrEmpty(htmlAsset.Layout))
+                                {
                                     htmlContent = htmlAsset.Html as XElement;
+                                }
                                 else
                                 {
                                     // Get the layout
                                     var layoutAsset = this.ResolveAsset(htmlAsset.Layout, relativeAsset: asset);
                                     if (layoutAsset == null)
+                                    {
                                         throw new FileNotFoundException(String.Format("Layout asset {0} not found", htmlAsset.Layout));
+                                    }
 
                                     using (MemoryStream ms = new MemoryStream(this.RenderAssetContent(layoutAsset, preProcessLocalization, bindingParameters: bindingParameters)))
+                                    {
                                         htmlContent = XDocument.Load(ms).FirstNode as XElement;
+                                    }
 
                                     // Find the <!--#include virtual="content" --> tag
                                     var contentNode = htmlContent.DescendantNodes().OfType<XComment>().SingleOrDefault(o => o.Value.Trim() == "#include virtual=\"content\"");
@@ -736,9 +801,15 @@ namespace SanteDB.Core.Applets
                     {
                         String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
                         if (assetName.EndsWith("\""))
+                        {
                             assetName = assetName.Substring(0, assetName.Length - 1);
+                        }
+
                         if (assetName == "content")
+                        {
                             continue;
+                        }
+
                         var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
                         if (includeAsset == null)
                         {
@@ -746,13 +817,16 @@ namespace SanteDB.Core.Applets
                             inc.Remove();
                         }
                         else
+                        {
                             using (MemoryStream ms = new MemoryStream(this.RenderAssetContent(includeAsset, preProcessLocalization, bindingParameters: bindingParameters)))
                             {
                                 try
                                 {
                                     var xel = XDocument.Load(ms).Elements().First() as XElement;
                                     if (xel.Name == xs_xhtml + "html")
+                                    {
                                         inc.AddAfterSelf(xel.Element(xs_xhtml + "body").Elements());
+                                    }
                                     else
                                     {
                                         //var headerInjection = this.GetInjectionHeaders(includeAsset);
@@ -769,6 +843,7 @@ namespace SanteDB.Core.Applets
                                     throw new XmlException($"Error in Asset: {includeAsset}", e);
                                 }
                             }
+                        }
                     }
 
                     // Re-write
@@ -782,7 +857,9 @@ namespace SanteDB.Core.Applets
                     var headTitle = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "head");
                     var title = htmlAsset.GetTitle(preProcessLocalization);
                     if (headTitle != null && !String.IsNullOrEmpty(title))
+                    {
                         headTitle.Add(new XElement(xs_xhtml + "title", new XText(title)));
+                    }
                 }
 
                 // Render out the content
@@ -834,7 +911,9 @@ namespace SanteDB.Core.Applets
                 return data;
             }
             else
+            {
                 return null;
+            }
         }
 
         /// <summary>
@@ -853,12 +932,16 @@ namespace SanteDB.Core.Applets
         {
             var htmlAsset = asset.Content as AppletAssetHtml;
             if (htmlAsset == null && this.Resolver != null)
+            {
                 htmlAsset = this.Resolver(asset) as AppletAssetHtml;
+            }
 
             // Insert scripts & Styles
             List<AssetScriptReference> scriptRefs = new List<AssetScriptReference>();
             if (htmlAsset == null)
+            {
                 return scriptRefs;
+            }
 
             scriptRefs.AddRange(htmlAsset.Script.Where(o => o.IsStatic == false));
 
@@ -868,12 +951,20 @@ namespace SanteDB.Core.Applets
             {
                 String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
                 if (assetName.EndsWith("\""))
+                {
                     assetName = assetName.Substring(0, assetName.Length - 1);
+                }
+
                 if (assetName == "content")
+                {
                     continue;
+                }
+
                 var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
                 if (includeAsset != null)
+                {
                     scriptRefs.AddRange(this.GetLazyScripts(includeAsset));
+                }
             }
 
             // Re-write
@@ -892,39 +983,57 @@ namespace SanteDB.Core.Applets
         {
             var htmlAsset = asset.Content as AppletAssetHtml;
             if (htmlAsset == null && this.Resolver != null)
+            {
                 htmlAsset = this.Resolver(asset) as AppletAssetHtml;
+            }
 
             // Insert scripts & Styles
             List<XElement> headerInjection = new List<XElement>();
             if (htmlAsset == null)
+            {
                 return headerInjection;
+            }
 
             // Inject special headers
             foreach (var itm in htmlAsset.Bundle)
             {
                 var bundle = this.m_referenceBundles.Find(o => o.Name == itm);
                 if (bundle == null)
+                {
                     throw new FileNotFoundException(String.Format("Bundle {0} not found", itm));
+                }
+
                 headerInjection.AddRange(bundle.Content.SelectMany(o => o.HeaderElement));
             }
 
             // All scripts
             if (isUiContainer) // IS A UI CONTAINER = ANGULAR UI REQUIRES ALL CONTROLLERS BE LOADED
+            {
                 return this.ViewStateAssets.SelectMany(o => this.GetInjectionHeaders(o, false)).Distinct(new XElementEquityComparer()).ToList();
+            }
             else
+            {
                 foreach (var itm in htmlAsset.Script.Where(o => o.IsStatic != false))
                 {
                     var incAsset = this.ResolveAsset(itm.Reference, relativeAsset: asset);
                     if (incAsset != null)
+                    {
                         headerInjection.AddRange(new ScriptBundleContent(itm.Reference).HeaderElement);
+                    }
                     else
+                    {
                         throw new FileNotFoundException(String.Format("Asset {0} not found", itm.Reference));
+                    }
                 }
+            }
+
             foreach (var itm in htmlAsset.Style)
             {
                 var incAsset = this.ResolveAsset(itm, relativeAsset: asset);
                 if (incAsset != null)
+                {
                     headerInjection.AddRange(new StyleBundleContent(itm).HeaderElement);
+                }
             }
 
             // Content - SSI
@@ -933,12 +1042,20 @@ namespace SanteDB.Core.Applets
             {
                 String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
                 if (assetName.EndsWith("\""))
+                {
                     assetName = assetName.Substring(0, assetName.Length - 1);
+                }
+
                 if (assetName == "content")
+                {
                     continue;
+                }
+
                 var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
                 if (includeAsset != null)
+                {
                     headerInjection.AddRange(this.GetInjectionHeaders(includeAsset, isUiContainer));
+                }
             }
 
             // Re-write
@@ -964,7 +1081,9 @@ namespace SanteDB.Core.Applets
                     return false;
                 }
                 else
+                {
                     verified &= depItm != null && new Version(depItm?.Info.Version) >= new Version(itm.Version ?? "0.0.0.0");
+                }
             }
             return verified;
         }
@@ -1033,14 +1152,21 @@ namespace SanteDB.Core.Applets
         {
             var definition = this.GetTemplateDefinition(templateId);
             if (definition == null)
+            {
                 throw new FileNotFoundException($"Template {templateId} not found");
+            }
 
             var definitionAsset = this.ResolveAsset(definition.Definition);
             if (definitionAsset == null)
+            {
                 throw new FileNotFoundException($"Template content {definition.Definition} not found");
+            }
 
             if (parameters == null)
+            {
                 parameters = new Dictionary<String, String>();
+            }
+
             parameters.Add("today", DateTimeOffset.Now.Date.ToString("yyyy-MM-dd"));
             parameters.Add("now", DateTimeOffset.Now.ToString("o"));
 
@@ -1049,7 +1175,10 @@ namespace SanteDB.Core.Applets
             {
                 var result = json.DeSerialize<IdentifiedData>(ms);
                 if (result is IHasTemplate template) // Correct any type-os in the JSON
+                {
                     template.Template = new TemplateDefinition() { Mnemonic = templateId };
+                }
+
                 return result;
             }
         }

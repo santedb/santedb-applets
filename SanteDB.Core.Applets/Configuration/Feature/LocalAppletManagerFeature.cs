@@ -21,14 +21,10 @@
 using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Features;
-using SanteDB.Core.Services.Impl;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.Core.Applets.Configuration
 {
@@ -54,7 +50,7 @@ namespace SanteDB.Core.Applets.Configuration
             {
                 AppletDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "applets")
             };
-            
+
             return base.CreateInstallTasks();
         }
         /// <summary>

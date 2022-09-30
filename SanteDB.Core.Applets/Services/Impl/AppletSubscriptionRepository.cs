@@ -34,7 +34,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// <summary>
     /// An implementation of the <see cref="ISubscriptionRepository"/> that loads definitions from applets
     /// </summary>
-    public class AppletSubscriptionRepository : ISubscriptionRepository,  IDaemonService
+    public class AppletSubscriptionRepository : ISubscriptionRepository, IDaemonService
     {
         // Subscription definitions
         private List<SubscriptionDefinition> m_subscriptionDefinitions;
@@ -200,14 +200,20 @@ namespace SanteDB.Core.Applets.Services.Impl
                 var appletService = ApplicationServiceContext.Current.GetService<IAppletManagerService>();
 
                 if (appletService == null)
+                {
                     throw new InvalidOperationException("No applet manager service has been loaded!!!!");
+                }
 
                 ApplicationServiceContext.Current.GetService<IAppletManagerService>().Changed += loaderFn;
 
                 if ((ApplicationServiceContext.Current.GetService<IAppletManagerService>() as IDaemonService)?.IsRunning == false)
+                {
                     (ApplicationServiceContext.Current.GetService<IAppletManagerService>() as IDaemonService).Started += loaderFn;
+                }
                 else
+                {
                     loaderFn(this, EventArgs.Empty);
+                }
             };
             return true;
         }

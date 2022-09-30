@@ -69,14 +69,18 @@ namespace SanteDB.Core.Applets.ViewModel.Null
             if (!m_jsonPropertyNames.TryGetValue(info, out retVal))
             {
                 if (info.GetCustomAttribute<JsonIgnoreAttribute>() != null && info.GetCustomAttribute<SerializationReferenceAttribute>() == null)
+                {
                     retVal = null;
+                }
                 else
                 {
                     var jpa = info.GetCustomAttribute<JsonPropertyAttribute>();
                     var sra = info.GetCustomAttribute<SerializationReferenceAttribute>();
                     // Property info
                     if (jpa != null)
+                    {
                         retVal = jpa.PropertyName;
+                    }
                     else if (sra != null)
                     {
                         // get the key of the SRA redir
@@ -86,22 +90,37 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                         {
                             jpa = redirProp.GetCustomAttribute<JsonPropertyAttribute>();
                             if (jpa != null)
+                            {
                                 retVal = jpa.PropertyName + "Model";
+                            }
+
                             lock (m_jsonPropertyNames)
+                            {
                                 if (!m_jsonPropertyNames.ContainsKey(redirProp))
+                                {
                                     m_jsonPropertyNames.Add(redirProp, jpa.PropertyName);
+                                }
+                            }
                         }
                         else
+                        {
                             retVal = sraRetVal + "Model";
+                        }
                     }
 
                     if (retVal == null)
+                    {
                         retVal = info.Name.ToLower() + "Model";
+                    }
                 }
 
                 lock (m_syncLock)
+                {
                     if (!m_jsonPropertyNames.ContainsKey(info))
+                    {
                         m_jsonPropertyNames.Add(info, retVal);
+                    }
+                }
             }
             return retVal;
 
@@ -114,7 +133,9 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         public void Serialize(IdentifiedData o, NullSerializationContext context)
         {
             if (o == null)
+            {
                 throw new ArgumentNullException(nameof(o));
+            }
 
             // For each item in the property ...
             bool loadedProperties = false;
@@ -125,11 +146,15 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 // Get the property name
                 var propertyName = GetPropertyName(propertyInfo);
                 if (propertyName == null || propertyName.StartsWith("$")) // Skip internal property names
+                {
                     continue;
+                }
 
                 // Serialization decision
                 if (!context.ShouldSerialize(propertyName))
+                {
                     continue;
+                }
 
                 // Get the property 
                 var value = propertyInfo.GetValue(o);
@@ -143,7 +168,10 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                         if (o.Key.HasValue && value is IList && !propertyInfo.PropertyType.IsArray)
                         {
                             if (o.Key.HasValue)
+                            {
                                 value = context.NullContext.LoadCollection(propertyInfo.PropertyType, (Guid)o.Key);
+                            }
+
                             propertyInfo.SetValue(o, value);
                             loadedProperties = (value as IList).Count > 0;
                         }
@@ -165,7 +193,9 @@ namespace SanteDB.Core.Applets.ViewModel.Null
 
                     }
                     else
+                    {
                         continue;
+                    }
                 }
 
                 // TODO: Classifier

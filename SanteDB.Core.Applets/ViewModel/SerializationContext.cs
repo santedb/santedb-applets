@@ -68,8 +68,9 @@ namespace SanteDB.Core.Applets.ViewModel
                 m_cachedSerializationChecks.TryAdd(instance.GetType(), this.m_serializationCheck);
             }
             else if (check != null)
+            {
                 this.m_serializationCheck = (Dictionary<String, MethodInfo>)check;
-
+            }
         }
 
         /// <summary>
@@ -121,9 +122,15 @@ namespace SanteDB.Core.Applets.ViewModel
                 {
                     var elementDescription = this.ViewModelDescription?.FindDescription(this.PropertyName, this.Parent?.ElementDescription);
                     if (elementDescription == null)
+                    {
                         elementDescription = this.ViewModelDescription?.FindDescription(this.Instance?.GetType().StripGeneric());
+                    }
+
                     if (!String.IsNullOrEmpty(elementDescription?.Ref))
+                    {
                         elementDescription = this.ViewModelDescription?.FindDescription(elementDescription.Ref) ?? elementDescription;
+                    }
+
                     this.m_elementDescription = elementDescription;
                 }
                 return this.m_elementDescription;
@@ -154,7 +161,10 @@ namespace SanteDB.Core.Applets.ViewModel
             {
                 var idx = this;
                 while (idx.Parent != null)
+                {
                     idx = idx.Parent;
+                }
+
                 return idx;
             }
         }
@@ -166,18 +176,27 @@ namespace SanteDB.Core.Applets.ViewModel
         {
             var propertyDescription = this.ElementDescription?.FindProperty(childProperty) as PropertyModelDescription;
             if (propertyDescription?.Action != SerializationBehaviorType.Always)
+            {
                 return false;
+            }
 
             // Known miss targets
             HashSet<String> missProp = null;
             if (key.HasValue)
+            {
                 if (this.LoadedProperties.TryGetValue(key.Value, out missProp))
                 {
                     if (missProp.Contains(childProperty))
+                    {
                         return false;
+                    }
                 }
                 else
+                {
                     this.LoadedProperties.Add(key.Value, new HashSet<string>() { });
+                }
+            }
+
             return true;
         }
 
@@ -190,11 +209,14 @@ namespace SanteDB.Core.Applets.ViewModel
             if (this.LoadedProperties.TryGetValue(key, out missProp))
             {
                 if (!missProp.Contains(childProperty))
+                {
                     missProp.Add(childProperty);
+                }
             }
             else
+            {
                 this.LoadedProperties.Add(key, new HashSet<string>() { childProperty });
-
+            }
         }
         /// <summary>
         /// Gets the current object identifier (from a JSON property perspective
@@ -221,7 +243,10 @@ namespace SanteDB.Core.Applets.ViewModel
                     data.Key.HasValue &&
                     (idx.Instance as IdentifiedData)?.Key.Value == data.Key.Value ||
                     idx.Instance == data)
+                {
                     return idx.ObjectId;
+                }
+
                 idx = idx.Parent;
             }
             return null;
@@ -233,14 +258,18 @@ namespace SanteDB.Core.Applets.ViewModel
         public bool ShouldSerialize(String childProperty)
         {
             var retVal = true;
-            if (childProperty == "id") return retVal;
+            if (childProperty == "id")
+            {
+                return retVal;
+            }
+
             var subPropertyDescription = this.ElementDescription?.FindProperty(childProperty);
             if (subPropertyDescription?.Action == SerializationBehaviorType.Never || // Sub-property is explicit - it should never be serialized
                 this.ElementDescription?.All == false && subPropertyDescription == null) // This scope is not ALL and there is no explicit property
             {
                 retVal = false;
             }
-            else if(this.ElementDescription == null || !this.ElementDescription.All.HasValue) // This scope is not defined so use the parent
+            else if (this.ElementDescription == null || !this.ElementDescription.All.HasValue) // This scope is not defined so use the parent
             {
                 // Parent is not set to all and does not explicitly call this property out
                 retVal &= this.Parent?.ElementDescription?.All == true;
@@ -249,7 +278,10 @@ namespace SanteDB.Core.Applets.ViewModel
             // Get the member
             MethodInfo serializationCheck = null;
             if (this.m_serializationCheck.TryGetValue(childProperty, out serializationCheck))
+            {
                 retVal &= (bool)serializationCheck.Invoke(this.Instance, new object[0]);
+            }
+
             return retVal;
         }
 

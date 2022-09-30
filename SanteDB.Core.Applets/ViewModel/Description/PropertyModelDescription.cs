@@ -40,7 +40,9 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         {
             this.Parent = parent;
             foreach (var itm in this.Properties)
+            {
                 itm.Initialize(this);
+            }
         }
 
 

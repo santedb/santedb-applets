@@ -53,9 +53,9 @@ namespace SanteDB.Core.Applets.Model
     [XmlType(nameof(AppletWidgetSize), Namespace = "http://santedb.org/applet")]
     public enum AppletWidgetSize
     {
-       /// <summary>
-       /// The applet widget should spen the entire width of screen
-       /// </summary>
+        /// <summary>
+        /// The applet widget should spen the entire width of screen
+        /// </summary>
         [XmlEnum("l")]
         Large,
         /// <summary>
@@ -210,7 +210,10 @@ namespace SanteDB.Core.Applets.Model
         {
             var str = this.Description?.Find(o => o.Language == language);
             if (str == null && returnNuetralIfNotFound)
+            {
                 str = this.Description?.Find(o => o.Language == null);
+            }
+
             return str?.Value;
         }
     }

@@ -41,9 +41,12 @@ namespace SanteDB.Core.Applets.Model
         {
             this.Manifest = host;
             if (this.Menus != null)
+            {
                 foreach (var itm in this.Menus)
+                {
                     itm.Initialize(host);
-
+                }
+            }
         }
 
         /// <summary>
@@ -93,7 +96,10 @@ namespace SanteDB.Core.Applets.Model
         {
             var str = this.Text?.Find(o => o.Language == language);
             if (str == null && returnNuetralIfNotFound)
+            {
                 str = this.Text?.Find(o => o.Language == null);
+            }
+
             return str?.Value;
         }
 

@@ -18,8 +18,10 @@
  * User: fyfej
  * Date: 2022-5-30
  */
-using SanteDB.Core.Applets.ViewModel;
-using SanteDB.Core.Model.Collection;
+using NUnit.Framework;
+using SanteDB.Core.Applets.ViewModel.Description;
+using SanteDB.Core.Applets.ViewModel.Json;
+using SanteDB.Core.Model.Acts;
 using SanteDB.Core.Model.Constants;
 using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Model.Entities;
@@ -27,12 +29,6 @@ using SanteDB.Core.Model.Roles;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using SanteDB.Core.Model.Acts;
-using SanteDB.Core.Applets.ViewModel.Description;
-using SanteDB.Core.Applets.ViewModel.Json;
-using NUnit.Framework;
 
 namespace SanteDB.Core.Applets.Test
 {
