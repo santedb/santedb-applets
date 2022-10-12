@@ -37,6 +37,17 @@ namespace SanteDB.Core.Applets.Model
     public class AppletManifest : IEquatable<AppletManifest>
     {
 
+        /// <summary>
+        /// Applet configuration setting
+        /// </summary>
+        [XmlType(nameof(AppletConfigurationSettings), Namespace = "http://santedb.org/applet")]
+        [Obsolete]
+        public class AppletConfigurationSettings
+        {
+            [XmlArray("appSettings"), XmlArrayItem("add")]
+            public List<AppletSettingEntry> Settings { get; set; }
+        }
+
         private static XmlSerializer x_xsz = XmlModelSerializerFactory.Current.CreateSerializer(typeof(AppletManifest));
 
         /// <summary>
@@ -153,6 +164,15 @@ namespace SanteDB.Core.Applets.Model
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// Applet configuration settings legacy
+        /// </summary>
+        [XmlElement("configuration")]
+        public AppletConfigurationSettings ConfigurationSettingsObsolete {
+            get => null;
+            set => this.Settings = value.Settings;
         }
 
         /// <summary>
