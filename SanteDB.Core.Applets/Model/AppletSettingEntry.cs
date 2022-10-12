@@ -25,42 +25,13 @@ using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
 {
-    /// <summary>
-    /// Represents a configuration of an applet
-    /// </summary>
-    [XmlType(nameof(AppletInitialConfiguration), Namespace = "http://santedb.org/applet")]
-    [ExcludeFromCodeCoverage]
-    public class AppletInitialConfiguration
-    {
-
-        /// <summary>
-        /// Gets or sets the applet id
-        /// </summary>
-        [XmlAttribute("applet")]
-        public String AppletId
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Applet configuration entry
-        /// </summary>
-        [XmlArray("appSettings"), XmlArrayItem("add")]
-        public List<AppletConfigurationEntry> AppSettings
-        {
-            get;
-            set;
-        }
-
-    }
 
     /// <summary>
     /// Applet configuration entry
     /// </summary>
-    [XmlType(nameof(AppletConfigurationEntry), Namespace = "http://santedb.org/applet")]
+    [XmlType(nameof(AppletSettingEntry), Namespace = "http://santedb.org/applet")]
     [ExcludeFromCodeCoverage]
-    public class AppletConfigurationEntry
+    public class AppletSettingEntry
     {
         /// <summary>
         /// The name of the property

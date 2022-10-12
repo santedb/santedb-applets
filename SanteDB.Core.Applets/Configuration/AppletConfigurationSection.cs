@@ -18,6 +18,7 @@
  * User: fyfej
  * Date: 2022-5-30
  */
+using Newtonsoft.Json;
 using SanteDB.Core.Configuration;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,8 @@ namespace SanteDB.Core.Applets.Configuration
         public AppletConfigurationSection()
         {
             this.AppletDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location ?? Assembly.GetExecutingAssembly().Location), "applets");
+            this.DefaultApplet = "org.santedb.uicore";
+            this.DefaultSolution = "santedb.core.sln";
 
 #if DEBUG
             this.AllowUnsignedApplets = true;
@@ -55,6 +58,19 @@ namespace SanteDB.Core.Applets.Configuration
         [Description("Identifies the directory location where applets should be loaded")]
         [Editor("System.Windows.Forms.Design.FolderNameEditor, System.Design", "System.Drawing.Design.UITypeEditor, System.Drawing")]
         public String AppletDirectory { get; set; }
+
+
+        /// <summary>
+        /// For deployments with multiple solutions on the server, this specifies the default solution.
+        /// </summary>
+        [XmlElement("defaultSolution"), JsonProperty("defaultSolution"), DisplayName("Default Solution"), Description("For SanteDB deployments which have multiple solutions, this specifies the solution which serve as the base for web pages. When not set the default system applet is used")]
+        public string DefaultSolution { get; set; }
+
+        /// <summary>
+        /// Gets or sets the startup asset
+        /// </summary>
+        [XmlElement("defaultApplet"), JsonProperty("defaultApplet"), DisplayName("Default Asset"), Description("Normally, asset paths in the package are rendered via /app-id/page.html however for requests on the root the default needs to be specified (default is org.santedb.uicore)")]
+        public string DefaultApplet { get; set; }
 
         /// <summary>
         /// Allow unsigned applets to be installed

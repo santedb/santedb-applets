@@ -148,8 +148,8 @@ namespace SanteDB.Core.Applets.Model
         /// Initial applet configuration
         /// </summary>
         /// <value>The configuration.</value>
-        [XmlElement("configuration")]
-        public AppletInitialConfiguration Configuration
+        [XmlArray("settings"), XmlArrayItem("add")]
+        public List<AppletSettingEntry> Settings
         {
             get;
             set;

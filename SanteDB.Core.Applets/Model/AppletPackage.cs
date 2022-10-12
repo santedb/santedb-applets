@@ -25,6 +25,7 @@ using SharpCompress.Compressors.Deflate;
 using SharpCompress.Compressors.LZMA;
 using SharpCompress.IO;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Xml;
@@ -121,6 +122,17 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlElement("certificate"), JsonIgnore]
         public byte[] PublicKey { get; set; }
+
+        /// <summary>
+        /// Initial applet configuration
+        /// </summary>
+        /// <value>The configuration.</value>
+        [XmlArray("settings"), XmlArrayItem("add")]
+        public List<AppletSettingEntry> Settings
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Unpack the package
