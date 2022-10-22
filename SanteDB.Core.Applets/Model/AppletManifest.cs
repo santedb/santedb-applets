@@ -232,5 +232,34 @@ namespace SanteDB.Core.Applets.Model
 
             return this.Info?.Id == other.Info?.Id;
         }
+
+        /// <summary>
+        /// Add a setting to the applet
+        /// </summary>
+        /// <param name="name">The name of the setting</param>
+        /// <param name="value">The value of the setting</param>
+        public void AddSetting(string name, string value)
+        {
+            if(this.Settings == null)
+            {
+                this.Settings = new List<AppletSettingEntry>();
+            }
+            var existingSetting = this.Settings.Find(o => o.Name == name);
+            if(existingSetting != null)
+            {
+                existingSetting.Value = value;
+            }
+            else
+            {
+                this.Settings.Add(new AppletSettingEntry(name, value));
+            }
+        }
+
+        /// <summary>
+        /// Gets the specified applet setting
+        /// </summary>
+        /// <param name="name">The name of the setting</param>
+        /// <returns>The setting</returns>
+        public String GetSetting(string name) => this.Settings?.Find(o => o.Name == name)?.Value;
     }
 }

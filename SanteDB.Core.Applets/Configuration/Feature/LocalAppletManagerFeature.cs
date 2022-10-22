@@ -18,12 +18,14 @@
  * User: fyfej
  * Date: 2022-5-30
  */
+using SanteDB.Core.Applets.Services;
 using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Features;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace SanteDB.Core.Applets.Configuration
@@ -51,7 +53,7 @@ namespace SanteDB.Core.Applets.Configuration
                 AppletDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "applets")
             };
 
-            return base.CreateInstallTasks();
+            yield return new GenericServiceFeature<FileSystemAppletManagerService>.InstallTask(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IAppletManagerService).IsAssignableFrom(t.Type)));  
         }
         /// <summary>
         /// Auto-setup the applet features

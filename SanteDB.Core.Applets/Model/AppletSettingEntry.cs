@@ -33,6 +33,25 @@ namespace SanteDB.Core.Applets.Model
     [ExcludeFromCodeCoverage]
     public class AppletSettingEntry
     {
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public AppletSettingEntry()
+        {
+        }
+
+        /// <summary>
+        /// Create a new setting entry
+        /// </summary>
+        /// <param name="name">The name of the setting</param>
+        /// <param name="value">The value of the setting</param>
+        public AppletSettingEntry(string name, string value)
+        {
+            this.Name = name;
+            this.Value = value;
+        }
+
         /// <summary>
         /// The name of the property
         /// </summary>

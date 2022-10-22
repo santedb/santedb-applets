@@ -36,6 +36,16 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// </summary>
     public class AppletSubscriptionRepository : ISubscriptionRepository, IDaemonService
     {
+
+        /// <summary>
+        /// Applet subscription repository DI constructor
+        /// </summary>
+        public AppletSubscriptionRepository(IAppletManagerService appletManagerService, IAppletSolutionManagerService appletSolutionManagerService = null)
+        {
+            this.m_appletManagerService = appletManagerService;
+            this.m_appletSolutionManagerService = appletSolutionManagerService;
+        }
+
         // Subscription definitions
         private List<SubscriptionDefinition> m_subscriptionDefinitions;
 
@@ -44,6 +54,8 @@ namespace SanteDB.Core.Applets.Services.Impl
 
         // Tracer
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletSubscriptionRepository));
+        private readonly IAppletManagerService m_appletManagerService;
+        private readonly IAppletSolutionManagerService m_appletSolutionManagerService;
 
         /// <summary>
         /// Gets the service name
@@ -150,38 +162,46 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.Starting?.Invoke(this, EventArgs.Empty);
 
             this.m_subscriptionDefinitions = new List<SubscriptionDefinition>();
+            // Loader from applet manifest
+            Func<AppletManifest, IEnumerable<SubscriptionDefinition>> manifestLoader = (am) => am.Assets.Where(a => a.Name.StartsWith("subscription/")).Select<AppletAsset, SubscriptionDefinition>(a =>
+                {
+                    using (var ms = new MemoryStream(this.m_appletManagerService.Applets.RenderAssetContent(a)))
+                    {
+                        this.m_tracer.TraceVerbose("Attempting load of {0}", a.Name);
+                        try
+                        {
+                            return SubscriptionDefinition.Load(ms);
+                        }
+                        catch (Exception ex)
+                        {
+                            this.m_tracer.TraceError("Error loading {0} : {1}", a.Name, ex);
+                            return null;
+                        }
+                    }
+                }).OfType<SubscriptionDefinition>();
+            
             // Subscribe to the applet manager
             EventHandler loaderFn = (o, e) =>
             {
                 var retVal = new List<SubscriptionDefinition>(this.m_subscriptionDefinitions?.Count ?? 10);
-                var slns = ApplicationServiceContext.Current.GetService<IAppletSolutionManagerService>().Solutions.ToList();
-                slns.Add(new AppletSolution() { Meta = new AppletInfo() { Id = String.Empty } });
+                var slns = this.m_appletSolutionManagerService?.Solutions;
 
-                foreach (var s in slns)
-                {
-                    var slnMgr = ApplicationServiceContext.Current.GetService<IAppletSolutionManagerService>().GetApplets(s.Meta.Id);
-                    // Find and load all sub defn's
-                    foreach (var am in slnMgr)
+                if(slns != null) {
+                    foreach (var s in slns)
                     {
-                        var definitions = am.Assets.Where(a => a.Name.StartsWith("subscription/")).Select<AppletAsset, SubscriptionDefinition>(a =>
+                        var slnMgr = this.m_appletSolutionManagerService.GetApplets(s.Meta.Id);
+                        // Find and load all sub defn's
+                        foreach (var am in slnMgr)
                         {
-                            using (var ms = new MemoryStream(slnMgr.RenderAssetContent(a)))
-                            {
-                                this.m_tracer.TraceVerbose("Attempting load of {0}", a.Name);
-                                try
-                                {
-                                    return SubscriptionDefinition.Load(ms);
-                                }
-                                catch (Exception ex)
-                                {
-                                    this.m_tracer.TraceError("Error loading {0} : {1}", a.Name, ex);
-                                    return null;
-                                }
-                            }
-                        }).OfType<SubscriptionDefinition>();
-
-                        retVal.AddRange(definitions.Where(n => !retVal.Any(a => a.Key == n.Key)));
+                            retVal.AddRange(manifestLoader(am).Where(n => !retVal.Any(a => a.Key == n.Key)));
+                        }
                     }
+                }
+
+                // Load applets with no solution
+                foreach (var noSolnApp in this.m_appletManagerService.Applets)
+                {
+                    retVal.AddRange(manifestLoader(noSolnApp).Where(n => !retVal.Any(a => a.Key == n.Key)));
                 }
 
                 this.m_tracer.TraceInfo("Registering applet subscriptions");
@@ -197,18 +217,12 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 // Collection changed handler
                 this.m_tracer.TraceInfo("Binding to change events");
-                var appletService = ApplicationServiceContext.Current.GetService<IAppletManagerService>();
+                
+                this.m_appletManagerService.Changed += loaderFn;
 
-                if (appletService == null)
+                if (this.m_appletManagerService is IDaemonService ds && ds.IsRunning == false)
                 {
-                    throw new InvalidOperationException("No applet manager service has been loaded!!!!");
-                }
-
-                ApplicationServiceContext.Current.GetService<IAppletManagerService>().Changed += loaderFn;
-
-                if ((ApplicationServiceContext.Current.GetService<IAppletManagerService>() as IDaemonService)?.IsRunning == false)
-                {
-                    (ApplicationServiceContext.Current.GetService<IAppletManagerService>() as IDaemonService).Started += loaderFn;
+                    ds.Started += loaderFn;
                 }
                 else
                 {
