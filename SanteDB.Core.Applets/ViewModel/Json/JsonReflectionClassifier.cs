@@ -89,7 +89,13 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             foreach (var itm in copy)
             {
                 var classifier = this.GetClassifierObj(itm, this.m_classifierAttribute);
-                String classKey = classifier?.ToString() ?? "$other";
+                String classKey = classifier?.ToString();
+
+                if (string.IsNullOrEmpty(classKey))
+                {
+                    classKey = "$other";
+                }
+                
 
                 IList group = null;
                 if (!retVal.TryGetValue(classKey, out group))
