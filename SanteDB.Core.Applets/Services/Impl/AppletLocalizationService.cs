@@ -212,5 +212,10 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             this.m_stringCache.Clear();
         }
+
+        /// <summary>
+        /// Get all available locales
+        /// </summary>
+        public IEnumerable<string> GetAvailableLocales() => this.m_stringCache.Keys;
     }
 }
