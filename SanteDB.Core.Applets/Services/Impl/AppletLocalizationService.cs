@@ -216,6 +216,6 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get all available locales
         /// </summary>
-        public IEnumerable<string> GetAvailableLocales() => this.m_stringCache.Keys;
+        public IEnumerable<string> GetAvailableLocales() => this.m_appletManager.Applets.SelectMany(o=>o.Locales.Select(l=>l.Code)).Distinct();
     }
 }
