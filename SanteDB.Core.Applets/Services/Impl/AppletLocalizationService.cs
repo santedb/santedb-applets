@@ -26,6 +26,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -82,13 +83,13 @@ namespace SanteDB.Core.Applets.Services.Impl
                 return this.GetString(locale, stringKey);
             }
 
-            var template = this.GetString(locale, stringKey);
+            var template = this.GetString(locale ?? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, stringKey);
 
             // Dynamic properties can be passed (like new { foo = "Bar" }) so we want to use the type descriptor
             if (parameters != null)
             {
                 PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(parameters.GetType());
-                return Regex.Replace(template, @"(\{\w*?\})", (m) => properties[m.Value.Substring(1, m.Value.Length - 2)]?.GetValue(parameters));
+                return Regex.Replace(template, @"\{(\w*?)\}", (m) => properties[m.Groups[1].Value]?.GetValue(parameters));
             }
             else
             {
