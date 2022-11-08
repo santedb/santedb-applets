@@ -413,11 +413,15 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             IEnumerable association = null;
             if (!this.m_loadedAssociations.TryGetValue(sourceKey, out association))
             {
-                association = EntitySource.Current.Provider.GetRelations<TAssociation>(sourceKey);
-                if (this.m_loadedAssociations.ContainsKey(sourceKey))
+                try
                 {
-                    this.m_loadedAssociations.Add(sourceKey, association);
+                    association = EntitySource.Current.Provider.GetRelations<TAssociation>(sourceKey);
+                    if (this.m_loadedAssociations.ContainsKey(sourceKey))
+                    {
+                        this.m_loadedAssociations.Add(sourceKey, association);
+                    }
                 }
+                catch { }
             }
             return association as IEnumerable<TAssociation>;
         }
@@ -433,9 +437,13 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             IdentifiedData value = null;
             if (objectKey.HasValue && !this.m_loadedObjects.TryGetValue(objectKey.Value, out value))
             {
-                value = EntitySource.Current.Provider.Get<TRelated>(objectKey);
-                this.m_loadedObjects.Add(objectKey.Value, value);
-                return (TRelated)value;
+                try
+                {
+                    value = EntitySource.Current.Provider.Get<TRelated>(objectKey);
+                    this.m_loadedObjects.Add(objectKey.Value, value);
+                    return (TRelated)value;
+                }
+                catch { return null; }
             }
             else if (value != default(TRelated))
             {
