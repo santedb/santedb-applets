@@ -269,7 +269,7 @@ namespace SanteDB.Core.Applets.ViewModel
             {
                 retVal = false;
             }
-            else if (this.ElementDescription == null || !this.ElementDescription.All.HasValue) // This scope is not defined so use the parent
+            else if (subPropertyDescription == null && (this.ElementDescription == null || !this.ElementDescription.All.HasValue)) // This scope is not defined so use the parent
             {
                 // Parent is not set to all and does not explicitly call this property out
                 retVal &= this.Parent?.ElementDescription?.All == true;
