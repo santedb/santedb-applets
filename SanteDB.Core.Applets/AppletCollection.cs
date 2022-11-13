@@ -19,6 +19,7 @@
  * Date: 2022-5-30
  */
 using SanteDB.Core.Applets.Model;
+using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
@@ -216,10 +217,9 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Applet collection rewrite to alternate url
         /// </summary>
-        public AppletCollection(String baseUrl)
+        public AppletCollection(String baseUrl) : this()
         {
             this.m_baseUrl = baseUrl;
-            AppletCollection.ClearCaches();
         }
 
         /// <summary>
@@ -872,7 +872,7 @@ namespace SanteDB.Core.Applets
                     String retVal = sw.ToString();
                     if (!String.IsNullOrEmpty(preProcessLocalization))
                     {
-                        var localizationService = ApplicationServiceContext.Current?.GetService<ILocalizationService>();
+                        var localizationService = ApplicationServiceContext.Current.GetService<ILocalizationService>();
                         retVal = this.m_localizationRegex.Replace(retVal, (m) => localizationService?.GetString(preProcessLocalization, m.Groups[1].Value) ?? m.Groups[1].Value);
                     }
 
@@ -923,6 +923,7 @@ namespace SanteDB.Core.Applets
             Uri rewrite = new Uri(this.m_baseUrl);
             return String.Format("{0}/{1}/{2}", rewrite, appletUri.Host, appletUri.PathAndQuery);
         }
+
 
         /// <summary>
         /// Injection for HTML headers

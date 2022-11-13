@@ -204,7 +204,8 @@ namespace SanteDB.Core.Applets.Test
             Assert.IsFalse(html.Contains("{{ 'some_string' | i18n }}"));
             Assert.IsFalse(html.Contains("{{ ::'some_string' | i18n }}"));
 
-            Assert.IsTrue(html.Contains("SOME STRING!"));
+            // There is no ILocalizationService provided here - so the some_string should just exist
+            Assert.IsTrue(html.Contains("some_string"));
         }
 
         /// <summary>

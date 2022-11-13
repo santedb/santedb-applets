@@ -22,6 +22,8 @@ using SanteDB.Core.Applets.Services;
 using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Features;
+using SanteDB.Core.Model.Subscription;
+using SanteDB.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,7 +55,16 @@ namespace SanteDB.Core.Applets.Configuration
                 AppletDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "applets")
             };
 
-            yield return new GenericServiceFeature<FileSystemAppletManagerService>.InstallTask(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IAppletManagerService).IsAssignableFrom(t.Type)));  
+            yield return new InstallTask<FileSystemAppletManagerService>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IAppletManagerService).IsAssignableFrom(t.Type)));  
+            yield return new InstallTask<AppletSubscriptionRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IRepositoryService<SubscriptionDefinition>).IsAssignableFrom(t.Type)));  
+        }
+
+        /// <summary>
+        /// Create uninstall tasks
+        /// </summary>
+        public override IEnumerable<IConfigurationTask> CreateUninstallTasks()
+        {
+            yield return new UninstallTask<FileSystemAppletManagerService>(this);
         }
         /// <summary>
         /// Auto-setup the applet features
