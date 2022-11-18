@@ -21,6 +21,7 @@
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;
 using SanteDB.Core.Model.EntityLoader;
+using SanteDB.Core.Model.Interfaces;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -156,7 +157,18 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     if (itm.Key != "$other")
                     {
                         classifierProperty.SetValue(inst, itmClassifier);
+                        
+                        // Set the key property as well 
+                        if(itmClassifier is IIdentifiedResource irc)
+                        {
+                            var keyProperty = classifierProperty.GetSerializationRedirectProperty();
+                            if(keyProperty != null)
+                            {
+                                keyProperty.SetValue(inst, irc.Key);
+                            }
+                        }
                     }
+
 
                     retVal.Add(inst);
                 }

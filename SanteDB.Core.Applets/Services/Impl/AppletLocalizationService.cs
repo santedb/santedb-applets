@@ -89,7 +89,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             if (parameters != null)
             {
                 PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(parameters.GetType());
-                return Regex.Replace(template, @"\{(\w*?)\}", (m) => properties[m.Groups[1].Value]?.GetValue(parameters));
+                return Regex.Replace(template, @"\{(\w*?)\}", (m) => $"{properties[m.Groups[1].Value]?.GetValue(parameters)}");
             }
             else
             {
