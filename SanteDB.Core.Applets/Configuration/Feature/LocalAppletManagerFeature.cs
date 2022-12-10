@@ -23,6 +23,7 @@ using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Features;
 using SanteDB.Core.Model.Subscription;
+using SanteDB.Core.Notifications;
 using SanteDB.Core.Services;
 using System;
 using System.Collections.Generic;
@@ -57,6 +58,7 @@ namespace SanteDB.Core.Applets.Configuration
 
             yield return new InstallTask<FileSystemAppletManagerService>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IAppletManagerService).IsAssignableFrom(t.Type)));  
             yield return new InstallTask<AppletSubscriptionRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IRepositoryService<SubscriptionDefinition>).IsAssignableFrom(t.Type)));  
+            yield return new InstallTask<AppletNotificationTemplateRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(INotificationTemplateRepository).IsAssignableFrom(t.Type)));  
         }
 
         /// <summary>
@@ -69,7 +71,7 @@ namespace SanteDB.Core.Applets.Configuration
         /// <summary>
         /// Auto-setup the applet features
         /// </summary>
-        public override FeatureFlags Flags => FeatureFlags.AutoSetup;
+        public override FeatureFlags Flags => FeatureFlags.AutoSetup | FeatureFlags.AlwaysConfigure;
 
         /// <summary>
         /// Get the configuration type

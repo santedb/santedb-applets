@@ -1,10 +1,11 @@
 ﻿using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Data.Import.Definition;
 using SanteDB.Core.Diagnostics;
-using SanteDB.Core.Model.Query;
+using SanteDB.Core.Notifications;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -15,23 +16,22 @@ using System.Text;
 namespace SanteDB.Core.Applets.Services.Impl
 {
     /// <summary>
-    /// Applet foreign data map repository 
+    /// An implementation of the <see cref="INotificationTemplateRepository"/> which loads <see cref="NotificationTemplate"/> instances
+    /// from the <c>notification/</c> folder in applets
     /// </summary>
-    public class AppletForeignDataMapRepository : IRepositoryService<ForeignDataMap>
+    public class AppletNotificationTemplateRepository : INotificationTemplateRepository
     {
         private readonly IAppletManagerService m_appletManagerService;
         private readonly IAppletSolutionManagerService m_appletSolutionManagerService;
-        private List<ForeignDataMap> m_definitionCache = new List<ForeignDataMap>();
-
-        // Tracer
-        private Tracer m_tracer = Tracer.GetTracer(typeof(AppletForeignDataMapRepository));
+        private readonly ConcurrentDictionary<String, NotificationTemplate> m_definitionCache = new ConcurrentDictionary<String, NotificationTemplate>();
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletNotificationTemplateRepository));
 
         /// <summary>
-        /// Applet foreign data map repository
+        /// DI constructor
         /// </summary>
-        public AppletForeignDataMapRepository(IAppletManagerService appletManagerService, IAppletSolutionManagerService appletSolutionManagerService = null)
+        public AppletNotificationTemplateRepository(IAppletManagerService appletManager, IAppletSolutionManagerService appletSolutionManagerService)
         {
-            this.m_appletManagerService = appletManagerService;
+            this.m_appletManagerService = appletManager;
             this.m_appletSolutionManagerService = appletSolutionManagerService;
 
             // Re-scans the loaded applets for definitions when the collection has changed
@@ -51,13 +51,13 @@ namespace SanteDB.Core.Applets.Services.Impl
         }
 
         /// <summary>
-        /// Load all definitions
+        /// Loads all template definitions from the applet collection
         /// </summary>
         private void LoadAllDefinitions()
         {
             using (AuthenticationContext.EnterSystemContext())
             {
-                this.m_tracer.TraceInfo("Re-loading foreign data maps");
+                this.m_tracer.TraceInfo("Re-loading notification template");
                 // We only want to clear those assets which can be defined in applets
                 var solutions = this.m_appletSolutionManagerService?.Solutions.ToList();
 
@@ -79,72 +79,62 @@ namespace SanteDB.Core.Applets.Services.Impl
         }
 
         /// <summary>
-        /// Process applets - 
+        /// Process contents of the <paramref name="appletAssets"/> and register the notification templates
         /// </summary>
-        private void ProcessApplet(ReadonlyAppletCollection applets)
+        private void ProcessApplet(ReadonlyAppletCollection appletAssets)
         {
-            this.m_definitionCache = applets.SelectMany(o => o.Assets)
-                .Where(o => o.Name.StartsWith("alien/") && o.Name.EndsWith(".xml"))
-                .Select(o =>
+            if (appletAssets == null)
+            {
+                throw new ArgumentNullException(nameof(appletAssets));
+            }
+
+            foreach (var asset in appletAssets.SelectMany(o => o.Assets.Where(a => a.Name.StartsWith("notifications/"))))
+            {
+                try
                 {
-                    try
+                    using (var str = new MemoryStream(appletAssets.RenderAssetContent(asset)))
                     {
-                        this.m_tracer.TraceVerbose("Attempting to load {0}", o.Name);
-                        using (var ms = new MemoryStream(applets.RenderAssetContent(o)))
+                        var notification = NotificationTemplate.Load(str);
+                        if (!this.m_definitionCache.TryAdd($"{notification.Id}/{notification.Language}", notification))
                         {
-                            var fdm = ForeignDataMap.Load(ms);
-                            if(!fdm.Key.HasValue)
-                            {
-                                this.m_tracer.TraceWarning("Could not load {0} - missing UUID", fdm.Name ?? o.Name);
-                                return null;
-                            }
-                            else
-                            {
-                                return fdm;
-                            }
+                            this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Id);
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        this.m_tracer.TraceWarning("Could not load FDM Definition: {0} : {1}", o.Name, e);
-                        return null;
-                    }
-                })
-                .ToList();
 
+                    }
+                }
+                catch (Exception e)
+                {
+                    this.m_tracer.TraceError("Could not load notification template {0}", asset.Name);
+                }
+            }
         }
 
         /// <inheritdoc/>
-        public string ServiceName => "Applet Based Foreign Data Map";
+        public string ServiceName => "Applet Notification Repository";
 
         /// <inheritdoc/>
-        public ForeignDataMap Delete(Guid key)
+        public IEnumerable<NotificationTemplate> Find(Expression<Func<NotificationTemplate, bool>> filter) => this.m_definitionCache.Values.Where(filter.Compile());
+
+        /// <inheritdoc/>
+        public NotificationTemplate Get(string id, string lang)
         {
-            throw new NotSupportedException();
-        }
-
-        /// <inheritdoc/>
-        public IQueryResultSet<ForeignDataMap> Find(Expression<Func<ForeignDataMap, bool>> query) => this.m_definitionCache.Where(query.Compile()).AsResultSet();
-
-        /// <inheritdoc/>
-        public ForeignDataMap Get(Guid key) => this.Get(key, Guid.Empty);
-
-        /// <inheritdoc/>
-        public ForeignDataMap Get(Guid key, Guid versionKey)
-        {
-            return this.m_definitionCache.Find(o => o.Key == key);
+            if(this.m_definitionCache.TryGetValue($"{id}/{lang}", out var retVal))
+            {
+                return retVal;
+            }
+            return null;
         }
 
         /// <inheritdoc/>
         /// <exception cref="NotSupportedException">This template repository cannot be added to</exception>
-        public ForeignDataMap Insert(ForeignDataMap data)
+        public NotificationTemplate Insert(NotificationTemplate template)
         {
             throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
         /// <exception cref="NotSupportedException">This template repository cannot be added to</exception>
-        public ForeignDataMap Save(ForeignDataMap data)
+        public NotificationTemplate Update(NotificationTemplate template)
         {
             throw new NotSupportedException();
         }
