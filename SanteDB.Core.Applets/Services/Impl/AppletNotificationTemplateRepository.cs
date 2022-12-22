@@ -19,12 +19,17 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// An implementation of the <see cref="INotificationTemplateRepository"/> which loads <see cref="NotificationTemplate"/> instances
     /// from the <c>notification/</c> folder in applets
     /// </summary>
-    public class AppletNotificationTemplateRepository : INotificationTemplateRepository
+    public class AppletNotificationTemplateRepository : INotificationTemplateRepository, IDaemonService
     {
         private readonly IAppletManagerService m_appletManagerService;
         private readonly IAppletSolutionManagerService m_appletSolutionManagerService;
         private readonly ConcurrentDictionary<String, NotificationTemplate> m_definitionCache = new ConcurrentDictionary<String, NotificationTemplate>();
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletNotificationTemplateRepository));
+
+        public event EventHandler Starting;
+        public event EventHandler Started;
+        public event EventHandler Stopping;
+        public event EventHandler Stopped;
 
         /// <summary>
         /// DI constructor
@@ -112,6 +117,8 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <inheritdoc/>
         public string ServiceName => "Applet Notification Repository";
 
+        public bool IsRunning => throw new NotImplementedException();
+
         /// <inheritdoc/>
         public IEnumerable<NotificationTemplate> Find(Expression<Func<NotificationTemplate, bool>> filter) => this.m_definitionCache.Values.Where(filter.Compile());
 
@@ -137,6 +144,24 @@ namespace SanteDB.Core.Applets.Services.Impl
         public NotificationTemplate Update(NotificationTemplate template)
         {
             throw new NotSupportedException();
+        }
+
+        public bool Start()
+        {
+            Starting?.Invoke(this, EventArgs.Empty);
+
+            this.LoadAllDefinitions();
+
+            Started?.Invoke(this, EventArgs.Empty);
+            return true;
+        }
+
+        public bool Stop()
+        {
+            Stopping?.Invoke(this, EventArgs.Empty);
+
+            Stopped?.Invoke(this, EventArgs.Empty);
+            return true;
         }
     }
 }
