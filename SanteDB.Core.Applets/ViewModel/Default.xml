@@ -21,8 +21,6 @@
 <ViewModel xmlns="http://santedb.org/model/view">
 
   <type type="IdentifiedData" all="true">
-    <property name="id" />
-    <property name="etag" />
   </type>
 
 </ViewModel>

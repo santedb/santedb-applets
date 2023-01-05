@@ -22,6 +22,7 @@ using SanteDB.Core.Applets.Services;
 using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Configuration;
 using SanteDB.Core.Configuration.Features;
+using SanteDB.Core.Data.Import.Definition;
 using SanteDB.Core.Model.Subscription;
 using SanteDB.Core.Notifications;
 using SanteDB.Core.Services;
@@ -58,7 +59,8 @@ namespace SanteDB.Core.Applets.Configuration
 
             yield return new InstallTask<FileSystemAppletManagerService>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IAppletManagerService).IsAssignableFrom(t.Type)));  
             yield return new InstallTask<AppletSubscriptionRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IRepositoryService<SubscriptionDefinition>).IsAssignableFrom(t.Type)));  
-            yield return new InstallTask<AppletNotificationTemplateRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(INotificationTemplateRepository).IsAssignableFrom(t.Type)));  
+            yield return new InstallTask<AppletNotificationTemplateRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(INotificationTemplateRepository).IsAssignableFrom(t.Type)));
+            yield return new InstallTask<AppletForeignDataMapRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IRepositoryService<ForeignDataMap>).IsAssignableFrom(t.Type)));
         }
 
         /// <summary>
@@ -67,6 +69,8 @@ namespace SanteDB.Core.Applets.Configuration
         public override IEnumerable<IConfigurationTask> CreateUninstallTasks()
         {
             yield return new UninstallTask<FileSystemAppletManagerService>(this);
+            yield return new UninstallTask<AppletForeignDataMapRepository>(this);
+
         }
         /// <summary>
         /// Auto-setup the applet features

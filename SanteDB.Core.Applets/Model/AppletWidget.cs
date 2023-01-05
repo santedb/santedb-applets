@@ -79,8 +79,8 @@ namespace SanteDB.Core.Applets.Model
     /// <summary>
     /// Identifies the size of the widget
     /// </summary>
-    [XmlType(nameof(AppletWidgetView), Namespace = "http://santedb.org/applet")]
-    public enum AppletWidgetView : short
+    [XmlType(nameof(AppletWidgetViewType), Namespace = "http://santedb.org/applet")]
+    public enum AppletWidgetViewType : short
     {
         /// <summary>
         /// There is no special widget view
@@ -102,6 +102,29 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlEnum("setting")]
         Settings = 0x4
+    }
+
+    /// <summary>
+    /// Widget view type
+    /// </summary>
+    [XmlType(nameof(AppletWidgetView), Namespace = "http://santedb.org/applet")]
+    [JsonObject]
+    [ExcludeFromCodeCoverage]
+    public class AppletWidgetView
+    {
+
+        /// <summary>
+        /// Gets or sets the type of view
+        /// </summary>
+        [XmlAttribute("type"), JsonProperty("type")]
+        public AppletWidgetViewType ViewType { get; set; }
+
+        /// <summary>
+        /// Get or sets the demand for this view
+        /// </summary>
+        [XmlElement("demand"), JsonProperty("demand")]
+        public List<String> Policies { get; set; }
+
     }
 
     /// <summary>
@@ -135,10 +158,10 @@ namespace SanteDB.Core.Applets.Model
         public AppletWidgetSize Size { get; set; }
 
         /// <summary>
-        /// Gets or sets the action button to apply to the panel header
+        /// Alternate views
         /// </summary>
-        [XmlAttribute("altViews"), QueryParameter("altViews"), JsonProperty("altViews")]
-        public AppletWidgetView View { get; set; }
+        [XmlArray("views"), XmlArrayItem("view"), JsonProperty("views")]
+        public List<AppletWidgetView> AlternateViews { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the widget
