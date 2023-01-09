@@ -53,10 +53,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         private ObservableCollection<AppletSolution> m_solutions = new ObservableCollection<AppletSolution>();
 
         // Applet collection
-        private Dictionary<String, AppletCollection> m_appletCollection = new Dictionary<string, AppletCollection>();
-
-        // RO applet collection
-        private Dictionary<String, ReadonlyAppletCollection> m_readonlyAppletCollection = new Dictionary<string, ReadonlyAppletCollection>();
+        protected Dictionary<String, AppletCollection> m_appletCollection = new Dictionary<string, AppletCollection>();
 
         // Map of package id to file
         private Dictionary<String, String> m_fileDictionary = new Dictionary<string, string>();
@@ -78,8 +75,6 @@ namespace SanteDB.Core.Applets.Services.Impl
         public FileSystemAppletManagerService()
         {
             this.m_appletCollection.Add(String.Empty, new AppletCollection()); // Default applet
-            this.m_readonlyAppletCollection.Add(String.Empty, this.m_appletCollection[String.Empty].AsReadonly());
-            this.m_readonlyAppletCollection.First().Value.CollectionChanged += (o, e) => this.Changed?.Invoke(o, e);
         }
 
         /// <summary>
@@ -89,7 +84,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             get
             {
-                return this.m_readonlyAppletCollection[String.Empty];
+                return this.m_appletCollection[String.Empty].AsReadonly();
             }
         }
 
@@ -160,7 +155,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Uninstall the applet package
         /// </summary>
-        public bool UnInstall(String packageId)
+        public virtual bool UnInstall(String packageId)
         {
             this.m_tracer.TraceInfo("Un-installing {0}", packageId);
             // Applet check
@@ -212,7 +207,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Install package
         /// </summary>
-        public bool Install(AppletPackage package, bool isUpgrade = false)
+        public virtual bool Install(AppletPackage package, bool isUpgrade = false)
         {
             return this.Install(package, isUpgrade, null);
         }
@@ -220,7 +215,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Performs an installation
         /// </summary>
-        public bool Install(AppletPackage package, bool isUpgrade, AppletSolution owner)
+        public virtual bool Install(AppletPackage package, bool isUpgrade, AppletSolution owner)
         {
             this.m_tracer.TraceInfo("Installing {0}", package.Meta);
 
@@ -468,12 +463,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 this.m_tracer.TraceEvent(EventLevel.Warning, "Skipping duplicate package {0}", pkg.Meta.Id);
                                 continue;
                             }
-                            else if (this.Install(pkg, true))
-                            {
-                                //this.m_appletCollection.Add(pkg.Unpack());
-                                //this.m_fileDictionary.Add(pkg.Meta.Id, f);
-                            }
-                            else
+                            else if (!this.Install(pkg, true))
                             {
                                 this.m_tracer.TraceEvent(EventLevel.Critical, "Cannot proceed while untrusted applets are present");
                                 throw new SecurityException("Cannot proceed while untrusted applets are present");
@@ -531,7 +521,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public ReadonlyAppletCollection GetApplets(string solutionId)
         {
-            return this.m_readonlyAppletCollection[solutionId];
+            return this.m_appletCollection[solutionId].AsReadonly();
         }
 
         /// <summary>
@@ -548,7 +538,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <param name="solution"></param>
         /// <param name="isUpgrade"></param>
         /// <returns></returns>
-        public bool Install(AppletSolution solution, bool isUpgrade = false)
+        public virtual bool Install(AppletSolution solution, bool isUpgrade = false)
         {
             this.m_tracer.TraceInfo("Installing solution {0}", solution.Meta);
 
@@ -559,8 +549,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             }
 
             this.m_appletCollection.Add(solution.Meta.Id, new AppletCollection());
-            this.m_readonlyAppletCollection.Add(solution.Meta.Id, this.m_appletCollection[solution.Meta.Id].AsReadonly());
-            this.m_readonlyAppletCollection[solution.Meta.Id].CollectionChanged += (o, e) => this.Changed?.Invoke(o, e);
+            this.m_appletCollection[solution.Meta.Id].CollectionChanged += (o, e) => this.Changed?.Invoke(o, e);
 
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
@@ -611,7 +600,6 @@ namespace SanteDB.Core.Applets.Services.Impl
                 {
                     this.m_appletCollection[String.Empty].Remove(apl);
                     this.m_appletCollection[String.Empty].Add(apl);
-                    this.m_readonlyAppletCollection[String.Empty] = this.m_appletCollection[String.Empty].AsReadonly();
                 }
             }
             return true;
