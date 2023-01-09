@@ -529,7 +529,20 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public bool LoadApplet(AppletManifest applet)
         {
-            throw new SecurityException("Loading applet manifests directly is disabled for security reasons");
+            if(ApplicationServiceContext.Current.HostType == SanteDBHostType.Server)
+            {
+                throw new InvalidOperationException("Cannot directly load applets on the server - call Install instead");
+            }
+
+            if (applet.Info.Id == (this.m_configuration.DefaultApplet ?? "org.santedb.uicore"))
+            {
+                this.m_appletCollection[String.Empty].DefaultApplet = applet;
+            }
+
+            applet.Initialize();
+            this.m_appletCollection[String.Empty].Add(applet);
+            AppletCollection.ClearCaches();
+            return true;
         }
 
         /// <summary>
