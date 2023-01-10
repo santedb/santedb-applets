@@ -59,7 +59,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         private Dictionary<String, String> m_fileDictionary = new Dictionary<string, string>();
 
         // Config file
-        private AppletConfigurationSection m_configuration = ApplicationServiceContext.Current.GetService<IConfigurationManager>().GetSection<AppletConfigurationSection>();
+        private readonly AppletConfigurationSection m_configuration ;
 
         // Tracer
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(FileSystemAppletManagerService));
@@ -72,9 +72,10 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Local applet manager ctor
         /// </summary>
-        public FileSystemAppletManagerService()
+        public FileSystemAppletManagerService(IConfigurationManager configurationManager)
         {
             this.m_appletCollection.Add(String.Empty, new AppletCollection()); // Default applet
+            this.m_configuration = configurationManager.GetSection<AppletConfigurationSection>();
 
             try
             {
