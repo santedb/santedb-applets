@@ -42,7 +42,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// Represents an applet manager service that uses the local file system
     /// </summary>
     [ServiceProvider("Local Applet Repository/Manager", Configuration = typeof(AppletConfigurationSection))]
-    public class FileSystemAppletManagerService : IAppletManagerService, IAppletSolutionManagerService, IDaemonService
+    public class FileSystemAppletManagerService : IAppletManagerService, IAppletSolutionManagerService
     {
         /// <summary>
         /// Gets the service name
@@ -75,6 +75,70 @@ namespace SanteDB.Core.Applets.Services.Impl
         public FileSystemAppletManagerService()
         {
             this.m_appletCollection.Add(String.Empty, new AppletCollection()); // Default applet
+
+            try
+            {
+                // Load packages from applets/ filesystem directory
+                var appletDir = this.m_configuration.AppletDirectory;
+                if (!Path.IsPathRooted(appletDir))
+                {
+                    var location = Assembly.GetEntryAssembly()?.Location ?? Assembly.GetExecutingAssembly().Location;
+
+                    appletDir = Path.Combine(Path.GetDirectoryName(location), this.m_configuration.AppletDirectory);
+                }
+
+                if (!Directory.Exists(appletDir))
+                {
+                    this.m_tracer.TraceWarning("Applet directory {0} doesn't exist, no applets will be loaded", appletDir);
+                }
+                else
+                {
+                    this.m_tracer.TraceEvent(EventLevel.Verbose, "Scanning {0} for applets...", appletDir);
+                    foreach (var f in Directory.GetFiles(appletDir).OrderBy(o => o.EndsWith(".sln.pak") ? 0 : 1))
+                    {
+                        // Try to open the file
+                        this.m_tracer.TraceInfo("Loading {0}...", f);
+                        using (var fs = File.OpenRead(f))
+                        {
+                            var pkg = AppletPackage.Load(fs);
+
+                            if (pkg is AppletSolution) // We have loaded a solution
+                            {
+                                if (this.m_solutions.Any(o => o.Meta.Id == pkg.Meta.Id))
+                                {
+                                    this.m_tracer.TraceEvent(EventLevel.Critical, "Duplicate solution {0} is not permitted", pkg.Meta.Id);
+                                    throw new DuplicateNameException(pkg.Meta.Id);
+                                }
+                                else if (!this.Install(pkg as AppletSolution, true) && ApplicationServiceContext.Current.HostType != SanteDBHostType.Configuration)
+                                {
+                                    throw new InvalidOperationException($"Could not install applet solution {pkg.Meta.Id}");
+                                }
+                            }
+                            else if (this.m_fileDictionary.ContainsKey(pkg.Meta.Id))
+                            {
+                                this.m_tracer.TraceEvent(EventLevel.Warning, "Skipping duplicate package {0}", pkg.Meta.Id);
+                                continue;
+                            }
+                            else if (!this.Install(pkg, true))
+                            {
+                                this.m_tracer.TraceEvent(EventLevel.Critical, "Cannot proceed while untrusted applets are present");
+                                throw new SecurityException("Cannot proceed while untrusted applets are present");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SecurityException e)
+            {
+                this.m_tracer.TraceEvent(EventLevel.Error, "Error loading applets: {0}", e);
+                throw new InvalidOperationException("Cannot proceed while untrusted applets are present - Run `santedb --install-certs` or install the publisher certificate into `TrustedPublishers` certificate store", e);
+            }
+            catch (Exception ex)
+            {
+                this.m_tracer.TraceEvent(EventLevel.Error, "Error loading applets: {0}", ex);
+                throw;
+            }
+
         }
 
         /// <summary>
@@ -92,26 +156,6 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// Get the solutions
         /// </summary>
         public IEnumerable<AppletSolution> Solutions => this.m_solutions;
-
-        /// <summary>
-        /// The daemon has started
-        /// </summary>
-        public event EventHandler Started;
-
-        /// <summary>
-        /// The daemon is starting
-        /// </summary>
-        public event EventHandler Starting;
-
-        /// <summary>
-        /// The daemon has stopped
-        /// </summary>
-        public event EventHandler Stopped;
-
-        /// <summary>
-        /// The daemon is stopping
-        /// </summary>
-        public event EventHandler Stopping;
 
         /// <summary>
         /// Applet has changed
@@ -412,92 +456,12 @@ namespace SanteDB.Core.Applets.Services.Impl
         }
 
         /// <summary>
-        /// Starts the daemon service
-        /// </summary>
-        public bool Start()
-        {
-            this.m_tracer.TraceInfo("Starting applet manager service...");
-
-            this.Starting?.Invoke(this, EventArgs.Empty);
-
-            try
-            {
-                // Load packages from applets/ filesystem directory
-                var appletDir = this.m_configuration.AppletDirectory;
-                if (!Path.IsPathRooted(appletDir))
-                {
-                    var location = Assembly.GetEntryAssembly()?.Location ?? Assembly.GetExecutingAssembly().Location;
-
-                    appletDir = Path.Combine(Path.GetDirectoryName(location), this.m_configuration.AppletDirectory);
-                }
-
-                if (!Directory.Exists(appletDir))
-                {
-                    this.m_tracer.TraceWarning("Applet directory {0} doesn't exist, no applets will be loaded", appletDir);
-                }
-                else
-                {
-                    this.m_tracer.TraceEvent(EventLevel.Verbose, "Scanning {0} for applets...", appletDir);
-                    foreach (var f in Directory.GetFiles(appletDir).OrderBy(o => o.EndsWith(".sln.pak") ? 0 : 1))
-                    {
-                        // Try to open the file
-                        this.m_tracer.TraceInfo("Loading {0}...", f);
-                        using (var fs = File.OpenRead(f))
-                        {
-                            var pkg = AppletPackage.Load(fs);
-
-                            if (pkg is AppletSolution) // We have loaded a solution
-                            {
-                                if (this.m_solutions.Any(o => o.Meta.Id == pkg.Meta.Id))
-                                {
-                                    this.m_tracer.TraceEvent(EventLevel.Critical, "Duplicate solution {0} is not permitted", pkg.Meta.Id);
-                                    throw new DuplicateNameException(pkg.Meta.Id);
-                                }
-                                else if (!this.Install(pkg as AppletSolution, true) && ApplicationServiceContext.Current.HostType != SanteDBHostType.Configuration)
-                                {
-                                    throw new InvalidOperationException($"Could not install applet solution {pkg.Meta.Id}");
-                                }
-                            }
-                            else if (this.m_fileDictionary.ContainsKey(pkg.Meta.Id))
-                            {
-                                this.m_tracer.TraceEvent(EventLevel.Warning, "Skipping duplicate package {0}", pkg.Meta.Id);
-                                continue;
-                            }
-                            else if (!this.Install(pkg, true))
-                            {
-                                this.m_tracer.TraceEvent(EventLevel.Critical, "Cannot proceed while untrusted applets are present");
-                                throw new SecurityException("Cannot proceed while untrusted applets are present");
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SecurityException e)
-            {
-                this.m_tracer.TraceEvent(EventLevel.Error, "Error loading applets: {0}", e);
-                throw new InvalidOperationException("Cannot proceed while untrusted applets are present - Run `santedb --install-certs` or install the publisher certificate into `TrustedPublishers` certificate store", e);
-            }
-            catch (Exception ex)
-            {
-                this.m_tracer.TraceEvent(EventLevel.Error, "Error loading applets: {0}", ex);
-                throw;
-            }
-
-            this.Started?.Invoke(this, EventArgs.Empty);
-            return true;
-        }
-
-        /// <summary>
         /// Stop the service
         /// </summary>
-        public bool Stop()
+        public void Dispose()
         {
-            this.Stopping?.Invoke(this, EventArgs.Empty);
-
             this.m_solutions.Clear();
             this.m_appletCollection.Clear();
-            this.Stopped?.Invoke(this, EventArgs.Empty);
-            return true;
         }
 
         /// <summary>
