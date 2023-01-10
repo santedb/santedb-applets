@@ -49,11 +49,17 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public string ServiceName => "Local Applet Repository/Manager";
 
+        // Lock object
+        private object m_lockObject = new object();
+
         // Solutions registered
         private ObservableCollection<AppletSolution> m_solutions = new ObservableCollection<AppletSolution>();
 
         // Applet collection
         protected Dictionary<String, AppletCollection> m_appletCollection = new Dictionary<string, AppletCollection>();
+
+        // Applet collection for readonly applets
+        private Dictionary<String, ReadonlyAppletCollection> m_readonlyAppletCollection = new Dictionary<string, ReadonlyAppletCollection>();
 
         // Map of package id to file
         private Dictionary<String, String> m_fileDictionary = new Dictionary<string, string>();
@@ -75,7 +81,14 @@ namespace SanteDB.Core.Applets.Services.Impl
         public FileSystemAppletManagerService(IConfigurationManager configurationManager)
         {
             var defaultApplet = new AppletCollection();
-            defaultApplet.CollectionChanged += (o, e) => this.Changed?.Invoke(o, e);
+            defaultApplet.CollectionChanged += (o, e) => {
+                lock (this.m_lockObject)
+                {
+                    this.m_readonlyAppletCollection.Clear();
+                }
+                this.Changed?.Invoke(o, e);
+            };
+
             this.m_appletCollection.Add(String.Empty, defaultApplet); // Default applet
             this.m_configuration = configurationManager.GetSection<AppletConfigurationSection>();
 
@@ -89,7 +102,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             get
             {
-                return this.m_appletCollection[String.Empty].AsReadonly();
+                return this.GetApplets(String.Empty);
             }
         }
 
@@ -430,7 +443,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public virtual AppletManifest GetApplet(string solutionId, string appletId)
         {
-            return this.m_appletCollection[solutionId].FirstOrDefault(o => o.Info.Id == appletId);
+            return this.GetApplets(solutionId).FirstOrDefault(o => o.Info.Id == appletId);
         }
 
         /// <summary>
@@ -438,7 +451,18 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public virtual ReadonlyAppletCollection GetApplets(string solutionId)
         {
-            return this.m_appletCollection[solutionId].AsReadonly();
+            if (!this.m_readonlyAppletCollection.TryGetValue(solutionId, out var retVal))
+            {
+                lock (this.m_lockObject)
+                {
+                    if (!this.m_readonlyAppletCollection.TryGetValue(solutionId, out retVal))
+                    {
+                        retVal = this.m_appletCollection[solutionId].AsReadonly();
+                        this.m_readonlyAppletCollection.Add(solutionId, retVal);
+                    }
+                }
+            }
+            return retVal;
         }
 
         /// <summary>
@@ -467,7 +491,14 @@ namespace SanteDB.Core.Applets.Services.Impl
             }
 
             this.m_appletCollection.Add(solution.Meta.Id, new AppletCollection());
-            this.m_appletCollection[solution.Meta.Id].CollectionChanged += (o, e) => this.Changed?.Invoke(o, e);
+            this.m_appletCollection[solution.Meta.Id].CollectionChanged += (o, e) =>
+            {
+                lock (this.m_lockObject)
+                {
+                    this.m_readonlyAppletCollection.Clear();
+                }
+                this.Changed?.Invoke(o, e);
+            };
 
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;

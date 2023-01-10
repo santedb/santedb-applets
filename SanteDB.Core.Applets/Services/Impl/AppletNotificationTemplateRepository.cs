@@ -117,7 +117,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <inheritdoc/>
         public string ServiceName => "Applet Notification Repository";
 
-        public bool IsRunning => throw new NotImplementedException();
+        public bool IsRunning => true;
 
         /// <inheritdoc/>
         public IEnumerable<NotificationTemplate> Find(Expression<Func<NotificationTemplate, bool>> filter) => this.m_definitionCache.Values.Where(filter.Compile());
