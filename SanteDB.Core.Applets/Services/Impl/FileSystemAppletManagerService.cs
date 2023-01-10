@@ -73,7 +73,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Indicates whether the service is running
         /// </summary>
-        public bool IsRunning => true;
+        public bool IsRunning { get; private set;  }
 
         /// <summary>
         /// Local applet manager ctor
@@ -620,6 +620,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                 this.m_tracer.TraceEvent(EventLevel.Error, "Error loading applets: {0}", ex);
                 throw;
             }
+            this.IsRunning = true;
             this.Started?.Invoke(this, EventArgs.Empty);
             return true;
         }

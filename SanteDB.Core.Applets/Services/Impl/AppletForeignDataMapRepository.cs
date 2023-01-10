@@ -55,6 +55,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         private void LoadAllDefinitions()
         {
+            this.m_definitionCache.Clear();
             using (AuthenticationContext.EnterSystemContext())
             {
                 this.m_tracer.TraceInfo("Re-loading foreign data maps");
@@ -62,7 +63,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                 var solutions = this.m_appletSolutionManagerService?.Solutions.ToList();
 
                 // Doesn't have a solution manager
-                if (solutions == null)
+                if (!solutions.Any())
                 {
                     this.ProcessApplet(this.m_appletManagerService.Applets);
                 }
@@ -83,7 +84,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         private void ProcessApplet(ReadonlyAppletCollection applets)
         {
-            this.m_definitionCache = applets.SelectMany(o => o.Assets)
+            this.m_definitionCache = this.m_definitionCache.Union(applets.SelectMany(o => o.Assets)
                 .Where(o => o.Name.StartsWith("alien/") && o.Name.EndsWith(".xml"))
                 .Select(o =>
                 {
@@ -109,7 +110,9 @@ namespace SanteDB.Core.Applets.Services.Impl
                         this.m_tracer.TraceWarning("Could not load FDM Definition: {0} : {1}", o.Name, e);
                         return null;
                     }
-                })
+                }))
+                .GroupBy(o => o.Key)
+                .Select(o=>o.First())
                 .ToList();
 
         }
