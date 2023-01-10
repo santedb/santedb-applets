@@ -418,13 +418,13 @@ namespace SanteDB.Core.Applets
                 throw new InvalidOperationException("Collection is readonly");
             }
 
-            var retVal = this.m_appletManifest.Remove(item);
-            if (retVal)
+            var existingObject = this.m_appletManifest.FirstOrDefault(o => o.Info.Id == item.Info.Id);
+            if(existingObject != null)
             {
+                this.m_appletManifest.Remove(existingObject);
                 this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
             }
-
-            return retVal;
+            return existingObject != null;
         }
 
         /// <summary>
