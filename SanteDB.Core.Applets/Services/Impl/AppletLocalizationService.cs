@@ -66,6 +66,8 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             this.m_appletManager = appletManager;
             this.m_solutionManager = solutionManagerService;
+            appletManager.Changed += (o, e) => this.m_stringCache.Clear();
+            
         }
 
         /// <summary>
