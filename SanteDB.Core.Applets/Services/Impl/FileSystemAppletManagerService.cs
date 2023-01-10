@@ -59,7 +59,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         private Dictionary<String, String> m_fileDictionary = new Dictionary<string, string>();
 
         // Config file
-        private readonly AppletConfigurationSection m_configuration ;
+        protected readonly AppletConfigurationSection m_configuration ;
 
         // Tracer
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(FileSystemAppletManagerService));
