@@ -121,7 +121,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get the specified applet
         /// </summary>
-        public byte[] GetPackage(String appletId)
+        public virtual byte[] GetPackage(String appletId)
         {
             return this.GetPackage(String.Empty, appletId);
         }
@@ -129,7 +129,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get the specified package data
         /// </summary>
-        public byte[] GetPackage(String solutionId, String appletId)
+        public virtual byte[] GetPackage(String solutionId, String appletId)
         {
             this.m_tracer.TraceInfo("Retrieving package {0}", appletId);
 
@@ -503,7 +503,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get applet
         /// </summary>
-        public AppletManifest GetApplet(string appletId)
+        public virtual AppletManifest GetApplet(string appletId)
         {
             return this.GetApplet(String.Empty, appletId);
         }
@@ -511,7 +511,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Gets the specified applet manifest
         /// </summary>
-        public AppletManifest GetApplet(string solutionId, string appletId)
+        public virtual AppletManifest GetApplet(string solutionId, string appletId)
         {
             return this.m_appletCollection[solutionId].FirstOrDefault(o => o.Info.Id == appletId);
         }
@@ -519,7 +519,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Gets the specified applet manifest
         /// </summary>
-        public ReadonlyAppletCollection GetApplets(string solutionId)
+        public virtual ReadonlyAppletCollection GetApplets(string solutionId)
         {
             return this.m_appletCollection[solutionId].AsReadonly();
         }
@@ -527,22 +527,10 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Load an applet
         /// </summary>
-        public bool LoadApplet(AppletManifest applet)
+        public virtual bool LoadApplet(AppletManifest applet)
         {
-            if(ApplicationServiceContext.Current.HostType == SanteDBHostType.Server)
-            {
-                throw new InvalidOperationException("Cannot directly load applets on the server - call Install instead");
-            }
+                throw new SecurityException("Cannot directly load applets on the server - call Install instead");
 
-            if (applet.Info.Id == (this.m_configuration.DefaultApplet ?? "org.santedb.uicore"))
-            {
-                this.m_appletCollection[String.Empty].DefaultApplet = applet;
-            }
-
-            applet.Initialize();
-            this.m_appletCollection[String.Empty].Add(applet);
-            AppletCollection.ClearCaches();
-            return true;
         }
 
         /// <summary>
