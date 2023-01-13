@@ -193,7 +193,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                             {
                                 Key = externString.Key,
                                 Value = externString.Value.Replace("\\'", "'"),
-                                Priority = 1
+                                Priority = res.String.FirstOrDefault()?.Priority ?? 1
                             };
                         }
                     }
