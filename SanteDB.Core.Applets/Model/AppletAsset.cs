@@ -18,9 +18,13 @@
  * User: fyfej
  * Date: 2022-5-30
  */
+using SharpCompress.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -34,6 +38,10 @@ namespace SanteDB.Core.Applets.Model
     [ExcludeFromCodeCoverage]
     public class AppletAsset
     {
+
+        // Decompressed content
+        private object m_decompressedContent = null;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SanteDB.Core.Applets.Model.AppletAsset"/> class.
         /// </summary>
@@ -101,8 +109,43 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("virtual", Type = typeof(AppletAssetVirtual))]
         public Object Content
         {
-            get;
-            set;
+            get => this.m_decompressedContent;
+            set
+            {
+                switch (value)
+                {
+                    case byte[] bytea:
+                        // is the content compressed?
+                        if (Encoding.UTF8.GetString(bytea, 0, 4) == "LZIP")
+                        {
+                            using (var ms = new MemoryStream(bytea))
+                            using (var ls = new SharpCompress.Compressors.LZMA.LZipStream(NonDisposingStream.Create(ms), SharpCompress.Compressors.CompressionMode.Decompress))
+                            using (var oms = new MemoryStream())
+                            {
+                                ls.CopyTo(oms);
+                                this.m_decompressedContent = oms.ToArray();
+                            }
+                        }
+                        else
+                        {
+                            this.m_decompressedContent = bytea;
+                        }
+                        break;
+                    case XElement xe:
+                        using (MemoryStream ms = new MemoryStream())
+                        using (XmlWriter xw = XmlWriter.Create(ms))
+                        {
+                            xe.WriteTo(xw);
+                            xw.Flush();
+                            ms.Flush();
+                            this.m_decompressedContent = ms.ToArray();
+                        }
+                        break;
+                    default:
+                        this.m_decompressedContent = value;
+                        break;
+                }
+            }
         }
 
 

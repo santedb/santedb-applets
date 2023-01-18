@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -34,6 +35,7 @@ namespace SanteDB.Core.Applets.Model
     /// Applet asset XML 
     /// </summary>
     [XmlType(nameof(AppletAssetHtml), Namespace = "http://santedb.org/applet")]
+    [XmlRoot(nameof(AppletAssetHtml), Namespace = "http://santedb.org/applet")]
     [ExcludeFromCodeCoverage]
     public class AppletAssetHtml
     {
@@ -71,12 +73,6 @@ namespace SanteDB.Core.Applets.Model
 
             return str?.Value;
         }
-
-        /// <summary>
-        /// Gets or sets the master asset for this asset
-        /// </summary>
-        [XmlElement("layout"), JsonIgnore]
-        public string Layout { get; set; }
 
         /// <summary>
         /// Gets or sets the references for the assets
