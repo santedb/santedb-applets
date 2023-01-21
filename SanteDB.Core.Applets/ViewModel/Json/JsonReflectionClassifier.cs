@@ -91,6 +91,10 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             {
                 var classifier = this.GetClassifierObj(itm, this.m_classifierAttribute);
                 String classKey = classifier?.ToString() ?? "$other";
+                if (String.IsNullOrEmpty(classKey))
+                {
+                    classKey = "$other";
+                }
 
                 IList group = null;
                 if (!retVal.TryGetValue(classKey, out group))
@@ -157,12 +161,12 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     if (itm.Key != "$other")
                     {
                         classifierProperty.SetValue(inst, itmClassifier);
-                        
+
                         // Set the key property as well 
-                        if(itmClassifier is IIdentifiedResource irc)
+                        if (itmClassifier is IIdentifiedResource irc)
                         {
                             var keyProperty = classifierProperty.GetSerializationRedirectProperty();
-                            if(keyProperty != null)
+                            if (keyProperty != null)
                             {
                                 keyProperty.SetValue(inst, irc.Key);
                             }

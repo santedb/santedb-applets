@@ -128,7 +128,14 @@ namespace SanteDB.Core.Applets.ViewModel
 
                     if (!String.IsNullOrEmpty(elementDescription?.Ref))
                     {
-                        elementDescription = this.ViewModelDescription?.FindDescription(elementDescription.Ref) ?? elementDescription;
+                        if (elementDescription.Ref.Equals("$type"))
+                        {
+                            elementDescription = this.ViewModelDescription?.FindDescription(this.Instance.GetType().GetSerializationName()) ?? elementDescription;
+                        }
+                        else
+                        {
+                            elementDescription = this.ViewModelDescription?.FindDescription(elementDescription.Ref) ?? elementDescription;
+                        }
                     }
 
                     this.m_elementDescription = elementDescription;
@@ -175,6 +182,11 @@ namespace SanteDB.Core.Applets.ViewModel
         public bool ShouldForceLoad(string childProperty, Guid? key)
         {
             var propertyDescription = this.ElementDescription?.FindProperty(childProperty) as PropertyModelDescription;
+            if(propertyDescription == null)
+            {
+                var masterDescription = this.ViewModelDescription.FindDescription(this.Instance.GetType().GetSerializationName());
+                propertyDescription = masterDescription?.FindProperty(childProperty);
+            }
             if (propertyDescription?.Action != SerializationBehaviorType.Always)
             {
                 return false;
