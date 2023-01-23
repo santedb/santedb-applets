@@ -365,9 +365,9 @@ namespace SanteDB.Core.Applets.Services.Impl
                     }
 
                     // Verify signature
-                    RSACryptoServiceProvider rsa = cert[0].PublicKey.Key as RSACryptoServiceProvider;
+                    RSA rsa = cert[0].PublicKey.Key as RSA;
 
-                    var retVal = rsa.VerifyData(verifyBytes, CryptoConfig.MapNameToOID("SHA1"), package.Meta.Signature);
+                    var retVal = rsa.VerifyData(verifyBytes, package.Meta.Signature, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1); //rsa.VerifyData(verifyBytes, CryptoConfig.MapNameToOID("SHA1"), package.Meta.Signature);
 
                     // Verify timestamp
                     var timestamp = package.Unpack().Info.TimeStamp;
