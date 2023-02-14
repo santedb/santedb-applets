@@ -60,6 +60,7 @@ namespace SanteDB.Core.Applets.Model.Extern
         /// </summary>
         [XmlType(nameof(ExternalStringResource))]
         [ExcludeFromCodeCoverage]
+        [System.Diagnostics.DebuggerDisplay("{Key} -> {Value}")]
         public class ExternalStringResource
         {
 
