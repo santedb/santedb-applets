@@ -608,10 +608,11 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         public void LoadSerializerAssembly(Assembly asm)
         {
-            var typeFormatters = asm.ExportedTypes.Where(o => typeof(IJsonViewModelTypeFormatter).IsAssignableFrom(o) && o.IsClass)
+            
+            var typeFormatters = asm.GetExportedTypesSafe().Where(o => typeof(IJsonViewModelTypeFormatter).IsAssignableFrom(o) && o.IsClass)
                 .Select(o => Activator.CreateInstance(o) as IJsonViewModelTypeFormatter)
                 .Where(o => !this.m_formatters.ContainsKey(o.HandlesType));
-            var classifiers = asm.ExportedTypes.Where(o => typeof(IViewModelClassifier).IsAssignableFrom(o) && o.IsClass)
+            var classifiers = asm.GetExportedTypesSafe().Where(o => typeof(IViewModelClassifier).IsAssignableFrom(o) && o.IsClass)
                 .Select(o => Activator.CreateInstance(o) as IViewModelClassifier)
                 .Where(o => !this.m_classifiers.ContainsKey(o.HandlesType));
             foreach (var fmtr in typeFormatters)
