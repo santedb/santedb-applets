@@ -84,36 +84,43 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         private void ProcessApplet(ReadonlyAppletCollection applets)
         {
-            this.m_definitionCache = this.m_definitionCache.Union(applets.SelectMany(o => o.Assets)
-                .Where(o => o.Name.StartsWith("alien/") && o.Name.EndsWith(".xml"))
-                .Select(o =>
-                {
-                    try
+            try
+            {
+                this.m_definitionCache = this.m_definitionCache.Union(applets.SelectMany(o => o.Assets)
+                    .Where(o => o.Name.StartsWith("alien/") && o.Name.EndsWith(".xml"))
+                    .Select(o =>
                     {
-                        this.m_tracer.TraceVerbose("Attempting to load {0}", o.Name);
-                        using (var ms = new MemoryStream(applets.RenderAssetContent(o)))
+                        try
                         {
-                            var fdm = ForeignDataMap.Load(ms);
-                            if(!fdm.Key.HasValue)
+                            this.m_tracer.TraceVerbose("Attempting to load {0}", o.Name);
+                            using (var ms = new MemoryStream(applets.RenderAssetContent(o)))
                             {
-                                this.m_tracer.TraceWarning("Could not load {0} - missing UUID", fdm.Name ?? o.Name);
-                                return null;
-                            }
-                            else
-                            {
-                                return fdm;
+                                var fdm = ForeignDataMap.Load(ms);
+                                if (!fdm.Key.HasValue)
+                                {
+                                    this.m_tracer.TraceWarning("Could not load {0} - missing UUID", fdm.Name ?? o.Name);
+                                    return null;
+                                }
+                                else
+                                {
+                                    return fdm;
+                                }
                             }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        this.m_tracer.TraceWarning("Could not load FDM Definition: {0} : {1}", o.Name, e);
-                        return null;
-                    }
-                }))
-                .GroupBy(o => o.Key)
-                .Select(o=>o.First())
-                .ToList();
+                        catch (Exception e)
+                        {
+                            this.m_tracer.TraceWarning("Could not load FDM Definition: {0} : {1}", o.Name, e);
+                            return null;
+                        }
+                    }))
+                    .GroupBy(o => o.Key)
+                    .Select(o => o.First())
+                    .ToList();
+            }
+            catch(Exception e)
+            {
+                this.m_tracer.TraceError("Error processing applet definitions - {0}", e);
+            }
 
         }
 
