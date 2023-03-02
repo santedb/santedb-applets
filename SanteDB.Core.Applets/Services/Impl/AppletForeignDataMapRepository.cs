@@ -142,7 +142,13 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <inheritdoc/>
         public ForeignDataMap Get(Guid key, Guid versionKey)
         {
-            return this.m_definitionCache.Find(o => o.Key == key);
+            using (var ms = new MemoryStream())
+            {
+                var map = this.m_definitionCache.Find(o => o.Key == key);
+                map.Save(ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                return ForeignDataMap.Load(ms);
+            }
         }
 
         /// <inheritdoc/>
