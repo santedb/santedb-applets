@@ -16,49 +16,42 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
 {
-    /// <summary>
-    /// Represents a configuration of an applet
-    /// </summary>
-    [XmlType(nameof(AppletInitialConfiguration), Namespace = "http://santedb.org/applet")]
-    public class AppletInitialConfiguration
-    {
-
-        /// <summary>
-        /// Gets or sets the applet id
-        /// </summary>
-        [XmlAttribute("applet")]
-        public String AppletId
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Applet configuration entry
-        /// </summary>
-        [XmlArray("appSettings"), XmlArrayItem("add")]
-        public List<AppletConfigurationEntry> AppSettings
-        {
-            get;
-            set;
-        }
-
-    }
 
     /// <summary>
     /// Applet configuration entry
     /// </summary>
-    [XmlType(nameof(AppletConfigurationEntry), Namespace = "http://santedb.org/applet")]
-    public class AppletConfigurationEntry
+    [XmlType(nameof(AppletSettingEntry), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
+    public class AppletSettingEntry
     {
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public AppletSettingEntry()
+        {
+        }
+
+        /// <summary>
+        /// Create a new setting entry
+        /// </summary>
+        /// <param name="name">The name of the setting</param>
+        /// <param name="value">The value of the setting</param>
+        public AppletSettingEntry(string name, string value)
+        {
+            this.Name = name;
+            this.Value = value;
+        }
+
         /// <summary>
         /// The name of the property
         /// </summary>

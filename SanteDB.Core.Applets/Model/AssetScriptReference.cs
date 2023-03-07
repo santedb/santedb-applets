@@ -16,9 +16,10 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -28,6 +29,7 @@ namespace SanteDB.Core.Applets.Model
     /// </summary>
     [XmlType(nameof(AssetScriptReference), Namespace = "http://santedb.org/applet")]
     [JsonObject(nameof(AssetScriptReference))]
+    [ExcludeFromCodeCoverage]
     public class AssetScriptReference
     {
         /// <summary>
@@ -44,9 +46,13 @@ namespace SanteDB.Core.Applets.Model
             set
             {
                 if (value == null)
+                {
                     this.IsStatic = null;
+                }
                 else
+                {
                     this.IsStatic = bool.Parse(value);
+                }
             }
         }
 

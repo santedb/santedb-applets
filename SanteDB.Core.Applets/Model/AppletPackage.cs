@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Model.Serialization;
@@ -25,6 +25,8 @@ using SharpCompress.Compressors.Deflate;
 using SharpCompress.Compressors.LZMA;
 using SharpCompress.IO;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -36,6 +38,7 @@ namespace SanteDB.Core.Applets.Model
     /// </summary>
     [XmlType(nameof(AppletPackage), Namespace = "http://santedb.org/applet")]
     [XmlRoot(nameof(AppletPackage), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletPackage
     {
 
@@ -58,7 +61,9 @@ namespace SanteDB.Core.Applets.Model
         public static AppletPackage Load(byte[] resourceData)
         {
             using (MemoryStream ms = new MemoryStream(resourceData))
+            {
                 return AppletPackage.Load(ms);
+            }
         }
 
         /// <summary>
@@ -72,9 +77,14 @@ namespace SanteDB.Core.Applets.Model
                 {
                     AppletPackage retVal = null;
                     if (s_packageSerializer.CanDeserialize(xr))
+                    {
                         retVal = s_packageSerializer.Deserialize(xr) as AppletPackage;
+                    }
                     else if (s_solutionSerializer.CanDeserialize(xr))
+                    {
                         retVal = s_solutionSerializer.Deserialize(xr) as AppletSolution;
+                    }
+
                     return retVal;
                 }
             }
@@ -114,13 +124,26 @@ namespace SanteDB.Core.Applets.Model
         public byte[] PublicKey { get; set; }
 
         /// <summary>
+        /// Initial applet configuration
+        /// </summary>
+        /// <value>The configuration.</value>
+        [XmlArray("settings"), XmlArrayItem("add")]
+        public List<AppletSettingEntry> Settings
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Unpack the package
         /// </summary>
         public AppletManifest Unpack()
         {
             using (MemoryStream ms = new MemoryStream(this.Manifest))
-            using (LZipStream gs = new LZipStream(new NonDisposingStream(ms), CompressionMode.Decompress))
+            using (LZipStream gs = new LZipStream(NonDisposingStream.Create(ms), CompressionMode.Decompress))
+            {
                 return AppletManifest.Load(gs);
+            }
         }
 
         /// <summary>
@@ -128,12 +151,16 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         public void Save(Stream stream)
         {
-            using (GZipStream gzs = new GZipStream(new NonDisposingStream(stream), CompressionMode.Compress))
+            using (GZipStream gzs = new GZipStream(NonDisposingStream.Create(stream), CompressionMode.Compress))
             {
                 if (this is AppletSolution)
+                {
                     s_solutionSerializer.Serialize(gzs, this);
+                }
                 else
+                {
                     s_packageSerializer.Serialize(gzs, this);
+                }
             }
         }
     }

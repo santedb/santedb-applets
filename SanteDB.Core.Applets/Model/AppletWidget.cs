@@ -16,12 +16,13 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Model.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -52,9 +53,9 @@ namespace SanteDB.Core.Applets.Model
     [XmlType(nameof(AppletWidgetSize), Namespace = "http://santedb.org/applet")]
     public enum AppletWidgetSize
     {
-       /// <summary>
-       /// The applet widget should spen the entire width of screen
-       /// </summary>
+        /// <summary>
+        /// The applet widget should spen the entire width of screen
+        /// </summary>
         [XmlEnum("l")]
         Large,
         /// <summary>
@@ -78,8 +79,8 @@ namespace SanteDB.Core.Applets.Model
     /// <summary>
     /// Identifies the size of the widget
     /// </summary>
-    [XmlType(nameof(AppletWidgetView), Namespace = "http://santedb.org/applet")]
-    public enum AppletWidgetView : short
+    [XmlType(nameof(AppletWidgetViewType), Namespace = "http://santedb.org/applet")]
+    public enum AppletWidgetViewType : short
     {
         /// <summary>
         /// There is no special widget view
@@ -104,11 +105,35 @@ namespace SanteDB.Core.Applets.Model
     }
 
     /// <summary>
+    /// Widget view type
+    /// </summary>
+    [XmlType(nameof(AppletWidgetView), Namespace = "http://santedb.org/applet")]
+    [JsonObject]
+    [ExcludeFromCodeCoverage]
+    public class AppletWidgetView
+    {
+
+        /// <summary>
+        /// Gets or sets the type of view
+        /// </summary>
+        [XmlAttribute("type"), JsonProperty("type")]
+        public AppletWidgetViewType ViewType { get; set; }
+
+        /// <summary>
+        /// Get or sets the demand for this view
+        /// </summary>
+        [XmlElement("demand"), JsonProperty("demand")]
+        public List<String> Policies { get; set; }
+
+    }
+
+    /// <summary>
     /// Represents a widget. A widget is a special pointer which has a title and content which can be rendered
     /// in a container 
     /// </summary>
     [XmlType(nameof(AppletWidget), Namespace = "http://santedb.org/applet")]
     [JsonObject]
+    [ExcludeFromCodeCoverage]
     public class AppletWidget : AppletAssetHtml
     {
         /// <summary>
@@ -133,10 +158,10 @@ namespace SanteDB.Core.Applets.Model
         public AppletWidgetSize Size { get; set; }
 
         /// <summary>
-        /// Gets or sets the action button to apply to the panel header
+        /// Alternate views
         /// </summary>
-        [XmlAttribute("altViews"), QueryParameter("altViews"), JsonProperty("altViews")]
-        public AppletWidgetView View { get; set; }
+        [XmlArray("views"), XmlArrayItem("view"), JsonProperty("views")]
+        public List<AppletWidgetView> AlternateViews { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the widget
@@ -208,7 +233,10 @@ namespace SanteDB.Core.Applets.Model
         {
             var str = this.Description?.Find(o => o.Language == language);
             if (str == null && returnNuetralIfNotFound)
+            {
                 str = this.Description?.Find(o => o.Language == null);
+            }
+
             return str?.Value;
         }
     }

@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <!--
- - Copyright 2019-2020 SanteSuite Contributors (See NOTICE)
+ - Copyright 2021-2022 SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ - Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
+ - Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  - 
  - Licensed under the Apache License, Version 2.0 (the "License"); you 
  - may not use this file except in compliance with the License. You may 
@@ -15,7 +17,7 @@
  - the License.
  - 
  - User: fyfej
- - Date: 2020-5-1
+ - Date: 2022-5-30
  -->
 
 <!-- An applet is a collection of HTML pages, Java Script snippets, and other data which represent a sub-unit of

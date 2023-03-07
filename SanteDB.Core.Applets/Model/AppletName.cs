@@ -16,10 +16,11 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -28,6 +29,7 @@ namespace SanteDB.Core.Applets.Model
     /// Applet reference
     /// </summary>
     [XmlType(nameof(AppletName), Namespace = "http://santedb.org/applet"), JsonObject]
+    [ExcludeFromCodeCoverage]
     public class AppletName
     {
         /// <summary>
@@ -100,6 +102,34 @@ namespace SanteDB.Core.Applets.Model
         public override string ToString()
         {
             return string.Format("Id={0}, Version={1}, PublicKeyToken={2}", Id, Version, PublicKeyToken);
+        }
+
+        /// <summary>
+        /// Parse a reference string 
+        /// </summary>
+        /// <param name="appletNameString">The name of the string in format id:version</param>
+        /// <returns>The constructed applet name</returns>
+        public static AppletName Parse(string appletNameString)
+        {
+            var nameParts = appletNameString.Split(':');
+            if(nameParts.Length == 1)
+            {
+                return new AppletName(nameParts[0], null, null);
+            }
+            else
+            {
+                return new AppletName(nameParts[0], nameParts[1] == "*" ? null : nameParts[1], null);
+            }
+        }
+
+        /// <summary>
+        /// Get the <see cref="Version"/> property as a <see cref="System.Version"/> instance
+        /// </summary>
+        /// <returns>The <see cref="System.Version"/> of the parsed <see cref="Version"/> property</returns>
+        public Version GetVersion()
+        {
+            System.Version.TryParse(this.Version, out var result);
+            return result;
         }
     }
 }

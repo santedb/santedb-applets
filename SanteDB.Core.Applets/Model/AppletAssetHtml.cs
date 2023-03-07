@@ -16,11 +16,13 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -33,6 +35,8 @@ namespace SanteDB.Core.Applets.Model
     /// Applet asset XML 
     /// </summary>
     [XmlType(nameof(AppletAssetHtml), Namespace = "http://santedb.org/applet")]
+    [XmlRoot(nameof(AppletAssetHtml), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletAssetHtml
     {
 
@@ -63,15 +67,12 @@ namespace SanteDB.Core.Applets.Model
         {
             var str = this.Titles?.Find(o => o.Language == language);
             if (str == null && returnNuetralIfNotFound)
+            {
                 str = this.Titles?.Find(o => o.Language == null);
+            }
+
             return str?.Value;
         }
-
-        /// <summary>
-        /// Gets or sets the master asset for this asset
-        /// </summary>
-        [XmlElement("layout"), JsonIgnore]
-        public string Layout { get; set; }
 
         /// <summary>
         /// Gets or sets the references for the assets
@@ -115,9 +116,13 @@ namespace SanteDB.Core.Applets.Model
             {
                 // HACK: In mono XElement is serialized differently than .NET let's detect that
                 if (value.Name.LocalName == "content" && value.Name.Namespace == "http://santedb.org/applet")
+                {
                     this.m_html = value.Elements().FirstOrDefault(o => o.Name.Namespace == "http://www.w3.org/1999/xhtml");
+                }
                 else
+                {
                     this.m_html = value;
+                }
             }
         }
 

@@ -16,8 +16,9 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.ViewModel.Description
@@ -27,6 +28,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
     /// Represents model descriptions
     /// </summary>
     [XmlType(nameof(TypeModelDescription), Namespace = "http://santedb.org/model/view")]
+    [ExcludeFromCodeCoverage]
     public class TypeModelDescription : PropertyContainerDescription
     {
 
@@ -36,7 +38,9 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         public void Initialize()
         {
             for (int i = 0; i < this.Properties?.Count; i++)
+            {
                 this.Properties[i]?.Initialize(this);
+            }
         }
 
         /// <summary>

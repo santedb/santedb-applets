@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Diagnostics;
@@ -35,13 +35,13 @@ using System.Reflection;
 namespace SanteDB.Core.Applets.ViewModel.Null
 {
     /// <summary>
-    /// Represents a serializer that 
+    /// Represents a serializer that
     /// </summary>
     public class NullViewModelSerializer : IViewModelSerializer
     {
-
         // Tracer for the class
-        private Tracer m_tracer = Tracer.GetTracer(typeof(NullViewModelSerializer));
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(NullViewModelSerializer));
+
         // Sync lock
         private Object m_syncLock = new object();
 
@@ -50,17 +50,18 @@ namespace SanteDB.Core.Applets.ViewModel.Null
 
         // Related load methods
         private static Dictionary<Type, MethodInfo> m_relatedLoadMethods = new Dictionary<Type, MethodInfo>();
+
         // Classifiers
         private static Dictionary<Type, IViewModelClassifier> m_classifiers = new Dictionary<Type, IViewModelClassifier>();
 
         // Reloated load association
         private static Dictionary<Type, MethodInfo> m_relatedLoadAssociations = new Dictionary<Type, MethodInfo>();
+
         private Dictionary<Guid, IEnumerable> m_loadedAssociations = new Dictionary<Guid, IEnumerable>();
         private Dictionary<Guid, IdentifiedData> m_loadedObjects = new Dictionary<Guid, IdentifiedData>();
 
         // Formatters
         private Dictionary<Type, INullTypeFormatter> m_formatters = new Dictionary<Type, INullTypeFormatter>();
-
 
         /// <summary>
         /// Gets or sets the view model definnition
@@ -95,9 +96,12 @@ namespace SanteDB.Core.Applets.ViewModel.Null
             {
                 methodInfo = this.GetType().GetRuntimeMethod(nameof(LoadRelated), new Type[] { typeof(Guid) }).MakeGenericMethod(propertyType);
                 lock (m_relatedLoadMethods)
+                {
                     if (!m_relatedLoadMethods.ContainsKey(propertyType))
+                    {
                         m_relatedLoadMethods.Add(propertyType, methodInfo);
-
+                    }
+                }
             }
             return methodInfo.Invoke(this, new object[] { key });
         }
@@ -114,19 +118,23 @@ namespace SanteDB.Core.Applets.ViewModel.Null
             {
                 methodInfo = this.GetType().GetRuntimeMethod(nameof(LoadCollection), new Type[] { typeof(Guid) }).MakeGenericMethod(propertyType.StripGeneric());
                 lock (m_relatedLoadAssociations)
+                {
                     if (!m_relatedLoadAssociations.ContainsKey(propertyType))
+                    {
                         m_relatedLoadAssociations.Add(propertyType, methodInfo);
-
+                    }
+                }
             }
             var listValue = methodInfo.Invoke(this, new object[] { key }) as IList;
             if (propertyType.IsAssignableFrom(listValue.GetType()))
+            {
                 return listValue;
+            }
             else
             {
                 var retVal = Activator.CreateInstance(propertyType, listValue);
                 return retVal as IList;
             }
-
         }
 
         /// <summary>
@@ -143,7 +151,9 @@ namespace SanteDB.Core.Applets.ViewModel.Null
             {
                 association = EntitySource.Current.Provider.GetRelations<TAssociation>(sourceKey);
                 if (this.m_loadedAssociations.ContainsKey(sourceKey))
+                {
                     this.m_loadedAssociations.Add(sourceKey, association);
+                }
             }
             return association as IEnumerable<TAssociation>;
         }
@@ -164,9 +174,13 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 return (TRelated)value;
             }
             else if (value != default(TRelated))
+            {
                 return (TRelated)value;
+            }
             else
+            {
                 return default(TRelated);
+            }
         }
 
         /// <summary>
@@ -178,7 +192,9 @@ namespace SanteDB.Core.Applets.ViewModel.Null
               .Select(o => Activator.CreateInstance(o) as INullTypeFormatter)
               .Where(o => !m_formatters.ContainsKey(o.HandlesType));
             foreach (var fmtr in typeFormatters)
+            {
                 m_formatters.Add(fmtr.HandlesType, fmtr);
+            }
         }
 
         /// <summary>
@@ -192,8 +208,12 @@ namespace SanteDB.Core.Applets.ViewModel.Null
             {
                 typeFormatter = new NullReflectionTypeFormatter(type);
                 lock (this.m_syncLock)
+                {
                     if (!this.m_formatters.ContainsKey(type))
+                    {
                         this.m_formatters.Add(type, typeFormatter);
+                    }
+                }
             }
             return typeFormatter;
         }
@@ -208,10 +228,17 @@ namespace SanteDB.Core.Applets.ViewModel.Null
             {
                 var classifierAtt = type.StripGeneric().GetCustomAttribute<ClassifierAttribute>();
                 if (classifierAtt != null)
+                {
                     retVal = new Json.JsonReflectionClassifier(type, this);
+                }
+
                 lock (m_classifiers)
+                {
                     if (!m_classifiers.ContainsKey(type))
+                    {
                         m_classifiers.Add(type, retVal);
+                    }
+                }
             }
             return retVal;
         }
@@ -221,12 +248,16 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         /// </summary>
         public void WritePropertyUtil(String propertyName, Object instance, SerializationContext context, bool noSubContext = false)
         {
-
-            if (instance == null) return;
+            if (instance == null)
+            {
+                return;
+            }
 
             // first write the property
             if (!String.IsNullOrEmpty(propertyName) && context?.ShouldSerialize(propertyName) == false)
+            {
                 return;
+            }
 
             // Instance data
             if (instance is IdentifiedData)
@@ -247,7 +278,9 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                 if (classifier == null) // no classifier
                 {
                     foreach (var itm in instance as IList)
+                    {
                         this.WritePropertyUtil(null, itm, new NullSerializationContext(propertyName, this, instance, context as NullSerializationContext), noSubContext);
+                    }
                 }
                 else
                 {
@@ -255,13 +288,14 @@ namespace SanteDB.Core.Applets.ViewModel.Null
                     {
                         Object value = new List<Object>(cls.Value as IEnumerable<Object>);
                         if (cls.Value.Count == 1)
+                        {
                             value = cls.Value[0];
+                        }
                         // Now write
                         this.WritePropertyUtil(cls.Key, value, new NullSerializationContext(propertyName, this, instance, context as NullSerializationContext), value is IList);
                     }
                 }
             }
-
         }
 
         /// <summary>
@@ -326,7 +360,9 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         public void AddLoadedObject(Guid key, IdentifiedData classifierObj)
         {
             if (!this.m_loadedObjects.ContainsKey(key))
+            {
                 this.m_loadedObjects.Add(key, classifierObj);
+            }
         }
 
         /// <summary>

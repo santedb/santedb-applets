@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Applets.ViewModel.Description;
@@ -48,7 +48,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         private Dictionary<Type, IViewModelClassifier> m_classifiers = new Dictionary<Type, IViewModelClassifier>();
 
         // Tracer
-        private Tracer m_tracer = Tracer.GetTracer(typeof(JsonViewModelSerializer));
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(JsonViewModelSerializer));
 
         // Sync lock
         private Object m_syncLock = new object();
@@ -112,7 +112,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         public TModel DeSerialize<TModel>(String s)
         {
             using (var sr = new StringReader(s))
+            {
                 return (TModel)this.DeSerialize(sr, typeof(TModel));
+            }
         }
 
         /// <summary>
@@ -121,7 +123,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         public Object DeSerialize(Stream s, Type t)
         {
             using (StreamReader sr = new StreamReader(s))
+            {
                 return this.DeSerialize(sr, t);
+            }
         }
 
         /// <summary>
@@ -139,12 +143,19 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 using (JsonReader jr = new JsonTextReader(r))
                 {
                     // Seek to the start object token
-                    while (jr.TokenType != JsonToken.StartObject && jr.Read()) ;
+                    while (jr.TokenType != JsonToken.StartObject && jr.Read())
+                    {
+                        ;
+                    }
 
                     if (jr.TokenType == JsonToken.StartObject)
+                    {
                         return this.ReadElementUtil(jr, t, new JsonSerializationContext(null, this, null));
+                    }
                     else
+                    {
                         return null;
+                    }
                 }
             }
             catch (Exception ex)
@@ -184,7 +195,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                                 return retVal;
                             }
                             else
+                            {
                                 return formatter.Deserialize(r, t, context);
+                            }
                         }
                         else
                         {
@@ -194,7 +207,11 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                             while (r.Read() && !(r.TokenType == JsonToken.EndObject && r.Depth == depth))
                             {
                                 // Classifier
-                                if (r.TokenType != JsonToken.PropertyName) throw new JsonException($"Expected PropertyName token got {r.TokenType}");
+                                if (r.TokenType != JsonToken.PropertyName)
+                                {
+                                    throw new JsonException($"Expected PropertyName token got {r.TokenType}");
+                                }
+
                                 string propertyName = (String)r.Value;
                                 r.Read(); // Read proeprty name
                                 values.Add(propertyName, this.ReadElementUtil(r, r.TokenType == JsonToken.StartObject ? nonGenericT : t, new JsonSerializationContext(propertyName, this, values, context)));
@@ -206,11 +223,17 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 case JsonToken.StartArray:
                     {
                         if (!typeof(IList).IsAssignableFrom(t))
+                        {
                             throw new JsonSerializationException($"{t} does not implement IList at {r.Path}");
+                        }
+
                         int depth = r.Depth;
                         var listInstance = Activator.CreateInstance(t) as IList;
                         while (r.Read() && !(r.TokenType == JsonToken.EndArray && r.Depth == depth))
+                        {
                             listInstance.Add(this.ReadElementUtil(r, nonGenericT, context));
+                        }
+
                         return listInstance;
                     }
                 case JsonToken.Null:
@@ -239,44 +262,75 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 
                             case JsonToken.Float:
                                 if (t.StripNullable() == typeof(Decimal))
+                                {
                                     return Convert.ToDecimal(r.Value);
+                                }
                                 else if (t.StripNullable() == typeof(Int32))
+                                {
                                     return Convert.ToInt32(r.Value);
+                                }
                                 else if (t.StripNullable().IsEnum)
+                                {
                                     return Enum.ToObject(t.StripNullable(), Convert.ToInt32(r.Value));
+                                }
                                 else
+                                {
                                     return (Double)r.Value;
+                                }
 
                             case JsonToken.Date:
                                 t = t.StripNullable();
                                 if (t == typeof(DateTime))
+                                {
                                     return (DateTime)r.Value;
+                                }
                                 else if (t == typeof(String))
+                                {
                                     return ((DateTime)r.Value).ToString("o");
+                                }
                                 else
+                                {
                                     return new DateTimeOffset((DateTime)r.Value);
+                                }
 
                             case JsonToken.Integer:
                                 t = t.StripNullable();
                                 if (t.StripNullable().IsEnum)
+                                {
                                     return Enum.ToObject(t.StripNullable(), r.Value);
+                                }
+
                                 return Convert.ChangeType(r.Value, t);
 
                             case JsonToken.String:
                                 if (String.IsNullOrEmpty((string)r.Value))
+                                {
                                     return null;
+                                }
                                 else if (t.StripNullable() == typeof(Guid))
+                                {
                                     return Guid.Parse((string)r.Value);
+                                }
                                 else if (t.StripNullable() == typeof(Int32))
+                                {
                                     return "NaN".Equals(r.Value) ? 0 : Int32.Parse((String)r.Value);
+                                }
                                 else if (t.StripNullable() == typeof(Decimal))
+                                {
                                     return Decimal.Parse((String)r.Value);
+                                }
                                 else if (t.StripNullable() == typeof(byte[]))
+                                {
                                     return Convert.FromBase64String((String)r.Value);
+                                }
                                 else if (t.StripNullable().IsEnum && r.ValueType == typeof(String))
+                                {
                                     return Enum.Parse(t.StripNullable(), (string)r.Value);
+                                }
                                 else
+                                {
                                     return r.Value;
+                                }
 
                             default:
                                 return r.Value;
@@ -306,8 +360,12 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             {
                 methodInfo = this.GetType().GetRuntimeMethod(nameof(LoadRelated), new Type[] { typeof(Guid) }).MakeGenericMethod(propertyType);
                 lock (this.m_syncLock)
+                {
                     if (!this.m_relatedLoadMethods.ContainsKey(propertyType))
+                    {
                         this.m_relatedLoadMethods.Add(propertyType, methodInfo);
+                    }
+                }
             }
             return methodInfo.Invoke(this, new object[] { key });
         }
@@ -324,12 +382,18 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             {
                 methodInfo = this.GetType().GetRuntimeMethod(nameof(LoadCollection), new Type[] { typeof(Guid) }).MakeGenericMethod(propertyType.StripGeneric());
                 lock (this.m_syncLock)
+                {
                     if (!this.m_relatedLoadAssociations.ContainsKey(propertyType))
+                    {
                         this.m_relatedLoadAssociations.Add(propertyType, methodInfo);
+                    }
+                }
             }
             var listValue = methodInfo.Invoke(this, new object[] { key }) as IEnumerable;
             if (propertyType.IsAssignableFrom(listValue.GetType()))
+            {
                 return listValue;
+            }
             else
             {
                 var retVal = Activator.CreateInstance(propertyType, listValue);
@@ -349,9 +413,15 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             IEnumerable association = null;
             if (!this.m_loadedAssociations.TryGetValue(sourceKey, out association))
             {
-                association = EntitySource.Current.Provider.GetRelations<TAssociation>(sourceKey);
-                if (this.m_loadedAssociations.ContainsKey(sourceKey))
-                    this.m_loadedAssociations.Add(sourceKey, association);
+                try
+                {
+                    association = EntitySource.Current.Provider.GetRelations<TAssociation>(sourceKey);
+                    if (this.m_loadedAssociations.ContainsKey(sourceKey))
+                    {
+                        this.m_loadedAssociations.Add(sourceKey, association);
+                    }
+                }
+                catch { }
             }
             return association as IEnumerable<TAssociation>;
         }
@@ -367,14 +437,22 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             IdentifiedData value = null;
             if (objectKey.HasValue && !this.m_loadedObjects.TryGetValue(objectKey.Value, out value))
             {
-                value = EntitySource.Current.Provider.Get<TRelated>(objectKey);
-                this.m_loadedObjects.Add(objectKey.Value, value);
-                return (TRelated)value;
+                try
+                {
+                    value = EntitySource.Current.Provider.Get<TRelated>(objectKey);
+                    this.m_loadedObjects.Add(objectKey.Value, value);
+                    return (TRelated)value;
+                }
+                catch { return null; }
             }
             else if (value != default(TRelated))
+            {
                 return (TRelated)value;
+            }
             else
+            {
                 return default(TRelated);
+            }
         }
 
         /// <summary>
@@ -382,15 +460,23 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         public void WritePropertyUtil(JsonWriter w, String propertyName, Object instance, SerializationContext context, bool noSubContext = false)
         {
-            if (instance == null) return;
+            if (instance == null)
+            {
+                return;
+            }
 
             // first write the property
             if (!String.IsNullOrEmpty(propertyName))  // In an array so don't emit the property name
             {
                 // Are we to never serialize this?
-                if (context?.ShouldSerialize(propertyName) == false && !noSubContext)
+                if (context?.ShouldSerialize(propertyName) == false)
+                {
                     return;
-                else w.WritePropertyName(propertyName);
+                }
+                else
+                {
+                    w.WritePropertyName(propertyName);
+                }
             }
 
             if (instance is IdentifiedData identifiedData)
@@ -400,7 +486,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 
                 var simpleValue = typeFormatter.GetSimpleValue(instance);
                 if (simpleValue != null && propertyName != "$other" && context != null) // Special case for $other
+                {
                     w.WriteValue(simpleValue);
+                }
                 else
                 {
                     w.WriteStartObject();
@@ -412,14 +500,18 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     // Write ref
                     var parentObjectId = context?.GetParentObjectId(identifiedData);
                     if (parentObjectId.HasValue) // Recursive
+                    {
                         this.WriteSimpleProperty(w, "$ref", String.Format("#obj{0}", parentObjectId.Value));
+                    }
                     else
+                    {
                         typeFormatter.Serialize(w, instance as IdentifiedData, subContext);
+                    }
 
                     w.WriteEndObject();
                 }
             }
-            else if (instance is IList && !instance.GetType().IsArray)
+            else if (instance is IList ilst && !instance.GetType().IsArray)
             {
                 // Classifications?
                 var classifier = this.GetClassifier(instance.GetType().StripNullable());
@@ -427,7 +519,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 if (classifier == null) // no classifier
                 {
                     w.WriteStartArray();
-                    foreach (var itm in instance as IList)
+                    foreach (var itm in ilst)
                     {
                         this.WritePropertyUtil(w, null, itm, new JsonSerializationContext(propertyName, this, instance, context as JsonSerializationContext), noSubContext);
                     }
@@ -463,10 +555,17 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             {
                 var classifierAtt = type.StripGeneric().GetCustomAttribute<ClassifierAttribute>();
                 if (classifierAtt != null)
+                {
                     retVal = new JsonReflectionClassifier(type, this);
+                }
+
                 lock (this.m_syncLock)
+                {
                     if (!this.m_classifiers.ContainsKey(type))
+                    {
                         this.m_classifiers.Add(type, retVal);
+                    }
+                }
             }
             return retVal;
         }
@@ -494,8 +593,12 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             {
                 typeFormatter = new JsonReflectionTypeFormatter(type);
                 lock (this.m_syncLock)
+                {
                     if (!this.m_formatters.ContainsKey(type))
+                    {
                         this.m_formatters.Add(type, typeFormatter);
+                    }
+                }
             }
             return typeFormatter;
         }
@@ -505,16 +608,22 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         public void LoadSerializerAssembly(Assembly asm)
         {
-            var typeFormatters = asm.ExportedTypes.Where(o => typeof(IJsonViewModelTypeFormatter).IsAssignableFrom(o) && o.IsClass)
+            
+            var typeFormatters = asm.GetExportedTypesSafe().Where(o => typeof(IJsonViewModelTypeFormatter).IsAssignableFrom(o) && o.IsClass)
                 .Select(o => Activator.CreateInstance(o) as IJsonViewModelTypeFormatter)
                 .Where(o => !this.m_formatters.ContainsKey(o.HandlesType));
-            var classifiers = asm.ExportedTypes.Where(o => typeof(IViewModelClassifier).IsAssignableFrom(o) && o.IsClass)
+            var classifiers = asm.GetExportedTypesSafe().Where(o => typeof(IViewModelClassifier).IsAssignableFrom(o) && o.IsClass)
                 .Select(o => Activator.CreateInstance(o) as IViewModelClassifier)
                 .Where(o => !this.m_classifiers.ContainsKey(o.HandlesType));
             foreach (var fmtr in typeFormatters)
+            {
                 this.m_formatters.Add(fmtr.HandlesType, fmtr);
+            }
+
             foreach (var cls in classifiers)
+            {
                 this.m_classifiers.Add(cls.HandlesType, cls);
+            }
         }
 
         /// <summary>
@@ -535,7 +644,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         public void Serialize(Stream s, IdentifiedData data)
         {
             using (StreamWriter tw = new StreamWriter(s))
+            {
                 this.Serialize(tw, data);
+            }
         }
 
         /// <summary>
@@ -585,7 +696,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         public void AddLoadedObject(Guid key, IdentifiedData classifierObj)
         {
             if (!this.m_loadedObjects.ContainsKey(key))
+            {
                 this.m_loadedObjects.Add(key, classifierObj);
+            }
         }
 
         /// <summary>

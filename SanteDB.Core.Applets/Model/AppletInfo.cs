@@ -16,11 +16,12 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -30,6 +31,7 @@ namespace SanteDB.Core.Applets.Model
     /// </summary>
     [XmlType(nameof(AppletInfo), Namespace = "http://santedb.org/applet")]
     [JsonObject]
+    [ExcludeFromCodeCoverage]
     public class AppletInfo : AppletName
     {
 
@@ -40,7 +42,10 @@ namespace SanteDB.Core.Applets.Model
         {
             var str = this.Names?.Find(o => o.Language == language);
             if (str == null && returnNuetralIfNotFound)
+            {
                 str = this.Names?.Find(o => o.Language == null);
+            }
+
             return str?.Value;
         }
 
@@ -51,7 +56,10 @@ namespace SanteDB.Core.Applets.Model
         {
             var str = this.GroupNames?.Find(o => o.Language == language);
             if (str == null && returnNuetralIfNotFound)
+            {
                 str = this.GroupNames?.Find(o => o.Language == null);
+            }
+
             return str?.Value;
         }
 

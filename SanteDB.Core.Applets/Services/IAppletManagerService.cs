@@ -16,9 +16,10 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using SanteDB.Core.Applets.Model;
+using SanteDB.Core.Services;
 using System;
 
 namespace SanteDB.Core.Applets.Services
@@ -26,7 +27,7 @@ namespace SanteDB.Core.Applets.Services
     /// <summary>
     /// Represents a service which manages applets in the host environment
     /// </summary>
-    public interface IAppletManagerService
+    public interface IAppletManagerService : IServiceImplementation
     {
 
         /// <summary>

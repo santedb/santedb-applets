@@ -16,8 +16,10 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
+using System.Diagnostics.CodeAnalysis;
+
 namespace SanteDB.Core.Applets.Model.Extern
 {
     using System.Collections.Generic;
@@ -31,6 +33,7 @@ namespace SanteDB.Core.Applets.Model.Extern
         /// </summary>
         [XmlRoot("resources")]
         [XmlType(nameof(ResourceFile))]
+        [ExcludeFromCodeCoverage]
         public class ResourceFile
         {
 
@@ -56,6 +59,8 @@ namespace SanteDB.Core.Applets.Model.Extern
         /// Represents the string data
         /// </summary>
         [XmlType(nameof(ExternalStringResource))]
+        [ExcludeFromCodeCoverage]
+        [System.Diagnostics.DebuggerDisplay("{Key} -> {Value}")]
         public class ExternalStringResource
         {
 

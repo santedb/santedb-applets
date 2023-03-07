@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Model.Extern.SanteDB.Core.Applets.Model;
@@ -26,10 +26,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -42,7 +41,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     public class AppletLocalizationService : ILocalizationService
     {
         // Applet localization service
-        private Tracer m_tracer = Tracer.GetTracer(typeof(AppletLocalizationService));
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletLocalizationService));
 
         /// <summary>
         /// String cache
@@ -67,30 +66,32 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             this.m_appletManager = appletManager;
             this.m_solutionManager = solutionManagerService;
+            appletManager.Changed += (o, e) => this.m_stringCache.Clear();
+            
         }
 
         /// <summary>
         /// Format the specified string
         /// </summary>
-        public string FormatString(string stringKey, dynamic parameters) => this.FormatString(null, stringKey, parameters);
+        public string GetString(string stringKey, dynamic parameters) => this.GetString(null, stringKey, parameters);
 
         /// <summary>
         /// Format the string
         /// </summary>
-        public string FormatString(string locale, string stringKey, dynamic parameters)
+        public string GetString(string locale, string stringKey, dynamic parameters)
         {
             if (parameters == null)
             {
                 return this.GetString(locale, stringKey);
             }
 
-            var template = this.GetString(locale, stringKey);
+            var template = this.GetString(locale ?? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, stringKey);
 
             // Dynamic properties can be passed (like new { foo = "Bar" }) so we want to use the type descriptor
             if (parameters != null)
             {
                 PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(parameters.GetType());
-                return Regex.Replace(template, @"(\{\w*?\})", (m) => properties[m.Value.Substring(1, m.Value.Length - 2)]?.GetValue(parameters));
+                return Regex.Replace(template, @"\{(\w*?)\}", (m) => $"{properties[m.Groups[1].Value]?.GetValue(parameters)}");
             }
             else
             {
@@ -122,9 +123,9 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get all strings for the specified locale
         /// </summary>
-        public KeyValuePair<String, String>[] GetStrings(string locale)
+        public IEnumerable<KeyValuePair<String, String>> GetStrings(string locale)
         {
-            return this.GetOrLoadStringData(locale).ToArray();
+            return this.GetOrLoadStringData(locale);
         }
 
         /// <summary>
@@ -192,7 +193,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                             {
                                 Key = externString.Key,
                                 Value = externString.Value.Replace("\\'", "'"),
-                                Priority = 1
+                                Priority = res.String.FirstOrDefault()?.Priority ?? 1
                             };
                         }
                     }
@@ -214,5 +215,10 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             this.m_stringCache.Clear();
         }
+
+        /// <summary>
+        /// Get all available locales
+        /// </summary>
+        public IEnumerable<string> GetAvailableLocales() => this.m_appletManager.Applets.SelectMany(o=>o.Locales.Select(l=>l.Code)).Distinct();
     }
 }

@@ -16,8 +16,9 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -26,6 +27,7 @@ namespace SanteDB.Core.Applets.Model
     /// Applet error definitions
     /// </summary>
     [XmlType(nameof(AppletErrorAssetDefinition), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletErrorAssetDefinition
     {
 

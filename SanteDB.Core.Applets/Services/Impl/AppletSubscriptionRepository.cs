@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
@@ -34,8 +34,17 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// <summary>
     /// An implementation of the <see cref="ISubscriptionRepository"/> that loads definitions from applets
     /// </summary>
-    public class AppletSubscriptionRepository : ISubscriptionRepository,  IDaemonService
+    public class AppletSubscriptionRepository : ISubscriptionRepository, IDaemonService
     {
+
+        /// <summary>
+        /// Applet subscription repository DI constructor
+        /// </summary>
+        public AppletSubscriptionRepository(IAppletManagerService appletManagerService, IAppletSolutionManagerService appletSolutionManagerService = null)
+        {
+            this.m_appletManagerService = appletManagerService;
+            this.m_appletSolutionManagerService = appletSolutionManagerService;
+        }
 
         // Subscription definitions
         private List<SubscriptionDefinition> m_subscriptionDefinitions;
@@ -44,7 +53,9 @@ namespace SanteDB.Core.Applets.Services.Impl
         private object m_lockObject = new object();
 
         // Tracer
-        private Tracer m_tracer = Tracer.GetTracer(typeof(AppletSubscriptionRepository));
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletSubscriptionRepository));
+        private readonly IAppletManagerService m_appletManagerService;
+        private readonly IAppletSolutionManagerService m_appletSolutionManagerService;
 
         /// <summary>
         /// Gets the service name
@@ -60,14 +71,17 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// Fired when the service is starting
         /// </summary>
         public event EventHandler Starting;
+
         /// <summary>
         /// Fired when the service has started
         /// </summary>
         public event EventHandler Started;
+
         /// <summary>
         /// Fired when the service is about to stop
         /// </summary>
         public event EventHandler Stopping;
+
         /// <summary>
         /// Fired when the service has stopped
         /// </summary>
@@ -76,15 +90,15 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Find the specified object
         /// </summary>
-        public IEnumerable<SubscriptionDefinition> Find(Expression<Func<SubscriptionDefinition, bool>> query)
+        public IQueryResultSet<SubscriptionDefinition> Find(Expression<Func<SubscriptionDefinition, bool>> query)
         {
-            int tr;
-            return this.Find(query, 0, 100, out tr);
+            return new MemoryQueryResultSet<SubscriptionDefinition>(this.m_subscriptionDefinitions?.Where(query.Compile()));
         }
 
         /// <summary>
         /// Find the specified subscription definitions
         /// </summary>
+        [Obsolete("Use Find(Expression<Func<SubscriptionDefinition, bool>>)")]
         public IEnumerable<SubscriptionDefinition> Find(Expression<Func<SubscriptionDefinition, bool>> query, int offset, int? count, out int totalResults, params ModelSort<SubscriptionDefinition>[] orderBy)
         {
             var results = this.m_subscriptionDefinitions?.Where(query.Compile());
@@ -125,6 +139,14 @@ namespace SanteDB.Core.Applets.Services.Impl
         }
 
         /// <summary>
+        /// Obsolete the specified definition
+        /// </summary>
+        public SubscriptionDefinition Delete(Guid key)
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
         /// Save the specified definition
         /// </summary>
         public SubscriptionDefinition Save(SubscriptionDefinition data)
@@ -140,40 +162,46 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.Starting?.Invoke(this, EventArgs.Empty);
 
             this.m_subscriptionDefinitions = new List<SubscriptionDefinition>();
+            // Loader from applet manifest
+            Func<AppletManifest, IEnumerable<SubscriptionDefinition>> manifestLoader = (am) => am.Assets.Where(a => a.Name.StartsWith("subscription/")).Select<AppletAsset, SubscriptionDefinition>(a =>
+                {
+                    using (var ms = new MemoryStream(this.m_appletManagerService.Applets.RenderAssetContent(a)))
+                    {
+                        this.m_tracer.TraceVerbose("Attempting load of {0}", a.Name);
+                        try
+                        {
+                            return SubscriptionDefinition.Load(ms);
+                        }
+                        catch (Exception ex)
+                        {
+                            this.m_tracer.TraceError("Error loading {0} : {1}", a.Name, ex);
+                            return null;
+                        }
+                    }
+                }).OfType<SubscriptionDefinition>();
+            
             // Subscribe to the applet manager
             EventHandler loaderFn = (o, e) =>
             {
-
                 var retVal = new List<SubscriptionDefinition>(this.m_subscriptionDefinitions?.Count ?? 10);
-                var slns = ApplicationServiceContext.Current.GetService<IAppletSolutionManagerService>().Solutions.ToList();
-                slns.Add(new AppletSolution() { Meta = new AppletInfo() { Id = String.Empty } });
+                var slns = this.m_appletSolutionManagerService?.Solutions;
 
-                foreach (var s in slns)
-                {
-                    var slnMgr = ApplicationServiceContext.Current.GetService<IAppletSolutionManagerService>().GetApplets(s.Meta.Id);
-                    // Find and load all sub defn's
-                    foreach (var am in slnMgr)
+                if(slns != null) {
+                    foreach (var s in slns)
                     {
-
-                        var definitions = am.Assets.Where(a => a.Name.StartsWith("subscription/")).Select<AppletAsset, SubscriptionDefinition>(a =>
+                        var slnMgr = this.m_appletSolutionManagerService.GetApplets(s.Meta.Id);
+                        // Find and load all sub defn's
+                        foreach (var am in slnMgr)
                         {
-                            using (var ms = new MemoryStream(slnMgr.RenderAssetContent(a)))
-                            {
-                                this.m_tracer.TraceInfo("Attempting load of {0}", a.Name);
-                                try
-                                {
-                                    return SubscriptionDefinition.Load(ms);
-                                }
-                                catch (Exception ex)
-                                {
-                                    this.m_tracer.TraceError("Error loading {0} : {1}", a.Name, ex);
-                                    return null;
-                                }
-                            }
-                        }).OfType<SubscriptionDefinition>();
-
-                        retVal.AddRange(definitions.Where(n => !retVal.Any(a => a.Key == n.Key)));
+                            retVal.AddRange(manifestLoader(am).Where(n => !retVal.Any(a => a.Key == n.Key)));
+                        }
                     }
+                }
+
+                // Load applets with no solution
+                foreach (var noSolnApp in this.m_appletManagerService.Applets)
+                {
+                    retVal.AddRange(manifestLoader(noSolnApp).Where(n => !retVal.Any(a => a.Key == n.Key)));
                 }
 
                 this.m_tracer.TraceInfo("Registering applet subscriptions");
@@ -183,25 +211,23 @@ namespace SanteDB.Core.Applets.Services.Impl
                     this.m_subscriptionDefinitions.Clear();
                     this.m_subscriptionDefinitions.AddRange(retVal);
                 }
-
             };
-
 
             ApplicationServiceContext.Current.Started += (o, e) =>
             {
                 // Collection changed handler
                 this.m_tracer.TraceInfo("Binding to change events");
-                var appletService = ApplicationServiceContext.Current.GetService<IAppletManagerService>();
+                
+                this.m_appletManagerService.Changed += loaderFn;
 
-                if (appletService == null)
-                    throw new InvalidOperationException("No applet manager service has been loaded!!!!");
-
-                ApplicationServiceContext.Current.GetService<IAppletManagerService>().Changed += loaderFn;
-
-                if ((ApplicationServiceContext.Current.GetService<IAppletManagerService>() as IDaemonService)?.IsRunning == false)
-                    (ApplicationServiceContext.Current.GetService<IAppletManagerService>() as IDaemonService).Started += loaderFn;
+                if (this.m_appletManagerService is IDaemonService ds && ds.IsRunning == false)
+                {
+                    ds.Started += loaderFn;
+                }
                 else
+                {
                     loaderFn(this, EventArgs.Empty);
+                }
             };
             return true;
         }

@@ -16,11 +16,13 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.ViewModel.Description
@@ -29,6 +31,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
     /// Property container description
     /// </summary>
     [XmlType(nameof(PropertyContainerDescription), Namespace = "http://santedb.org/model/view")]
+    [ExcludeFromCodeCoverage]
     public abstract class PropertyContainerDescription
     {
 
@@ -63,10 +66,31 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         public List<PropertyModelDescription> Properties { get; set; }
 
         /// <summary>
-        /// Whether to retrieve all children
+        /// Whether to retrieve all children serialized for XML
         /// </summary>
+        // HACK: This is done because XML serializer can't handle nullables
         [XmlAttribute("all")]
-        public bool All { get; set; }
+        public string AllXml
+        {
+            get => this.All.HasValue ? XmlConvert.ToString(this.All.Value) : null;
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    this.All = null;
+                }
+                else
+                {
+                    this.All = XmlConvert.ToBoolean(value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Property for nullable value of all
+        /// </summary>
+        [XmlIgnore]
+        public bool? All { get; set; }
 
         /// <summary>
         /// Gets the reference to use
@@ -85,8 +109,12 @@ namespace SanteDB.Core.Applets.ViewModel.Description
                 var arrSearch = this.Properties.ToArray();
                 model = arrSearch.FirstOrDefault(o => o.Name == name);
                 lock (this.m_properties)
+                {
                     if (!this.m_properties.ContainsKey(name))
+                    {
                         this.m_properties.Add(name, model);
+                    }
+                }
             }
             return model;
         }

@@ -16,12 +16,13 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using SanteDB.Core.Model.Serialization;
 using SharpCompress.Compressors.LZMA;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Xml.Serialization;
 
@@ -32,8 +33,20 @@ namespace SanteDB.Core.Applets.Model
     /// </summary>
     [XmlType(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
     [XmlRoot(nameof(AppletManifest), Namespace = "http://santedb.org/applet")]
+    [ExcludeFromCodeCoverage]
     public class AppletManifest : IEquatable<AppletManifest>
     {
+
+        /// <summary>
+        /// Applet configuration setting
+        /// </summary>
+        [XmlType(nameof(AppletConfigurationSettings), Namespace = "http://santedb.org/applet")]
+        [Obsolete]
+        public class AppletConfigurationSettings
+        {
+            [XmlArray("appSettings"), XmlArrayItem("add")]
+            public List<AppletSettingEntry> Settings { get; set; }
+        }
 
         private static XmlSerializer x_xsz = XmlModelSerializerFactory.Current.CreateSerializer(typeof(AppletManifest));
 
@@ -62,9 +75,14 @@ namespace SanteDB.Core.Applets.Model
         public void Initialize()
         {
             foreach (var ast in this.Assets)
+            {
                 ast.Manifest = this;
+            }
+
             foreach (var mnu in this.Menus)
+            {
                 mnu.Initialize(this);
+            }
         }
 
         /// <summary>
@@ -90,12 +108,6 @@ namespace SanteDB.Core.Applets.Model
         }
 
         /// <summary>
-        /// Gets or sets the data operations to be performed
-        /// </summary>
-        [XmlElement("data")]
-        public AssetData DataSetup { get; set; }
-
-        /// <summary>
         /// Applet information itself
         /// </summary>
         [XmlElement("info")]
@@ -118,6 +130,13 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("startupAsset")]
         public String StartAsset { get; set; }
 
+
+        /// <summary>
+        /// Instructs the host which asset can be used as a starting point
+        /// </summary>
+        [XmlElement("loginAsset")]
+        public String LoginAsset { get; set; }
+
         /// <summary>
         /// Instructs the host which asset can be used as a starting point
         /// </summary>
@@ -125,14 +144,35 @@ namespace SanteDB.Core.Applets.Model
         public List<AppletErrorAssetDefinition> ErrorAssets { get; set; }
 
         /// <summary>
+        /// Attempt to retrieve the assets <paramref name="assetPath"/>
+        /// </summary>
+        /// <param name="assetPath">The path to the asset name in this collection</param>
+        /// <param name="asset">The resolved asset</param>
+        /// <returns>True if the asset was successfully retrieved</returns>
+        public bool TryGetAsset(string assetPath, out AppletAsset asset)
+        {
+            asset = this.Assets.Find(o => o.Name == assetPath);
+            return asset != null;
+        }
+
+        /// <summary>
         /// Initial applet configuration
         /// </summary>
         /// <value>The configuration.</value>
-        [XmlElement("configuration")]
-        public AppletInitialConfiguration Configuration
+        [XmlArray("settings"), XmlArrayItem("add")]
+        public List<AppletSettingEntry> Settings
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// Applet configuration settings legacy
+        /// </summary>
+        [XmlElement("configuration")]
+        public AppletConfigurationSettings ConfigurationSettingsObsolete {
+            get => null;
+            set => this.Settings = value.Settings;
         }
 
         /// <summary>
@@ -192,5 +232,34 @@ namespace SanteDB.Core.Applets.Model
 
             return this.Info?.Id == other.Info?.Id;
         }
+
+        /// <summary>
+        /// Add a setting to the applet
+        /// </summary>
+        /// <param name="name">The name of the setting</param>
+        /// <param name="value">The value of the setting</param>
+        public void AddSetting(string name, string value)
+        {
+            if(this.Settings == null)
+            {
+                this.Settings = new List<AppletSettingEntry>();
+            }
+            var existingSetting = this.Settings.Find(o => o.Name == name);
+            if(existingSetting != null)
+            {
+                existingSetting.Value = value;
+            }
+            else
+            {
+                this.Settings.Add(new AppletSettingEntry(name, value));
+            }
+        }
+
+        /// <summary>
+        /// Gets the specified applet setting
+        /// </summary>
+        /// <param name="name">The name of the setting</param>
+        /// <returns>The setting</returns>
+        public String GetSetting(string name) => this.Settings?.Find(o => o.Name == name)?.Value;
     }
 }

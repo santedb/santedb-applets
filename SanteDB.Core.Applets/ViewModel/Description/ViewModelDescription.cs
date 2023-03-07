@@ -16,12 +16,13 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-27
+ * Date: 2022-5-30
  */
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -34,6 +35,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
     /// </summary>
     [XmlType(nameof(ViewModelDescription), Namespace = "http://santedb.org/model/view")]
     [XmlRoot("ViewModel", Namespace = "http://santedb.org/model/view")]
+    [ExcludeFromCodeCoverage]
     public class ViewModelDescription
     {
 
@@ -95,8 +97,12 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         public void Initialize()
         {
             if (!this.m_isInitialized)
+            {
                 foreach (var itm in this.Model)
+                {
                     itm.Initialize();
+                }
+            }
         }
 
         /// <summary>
@@ -109,8 +115,12 @@ namespace SanteDB.Core.Applets.ViewModel.Description
             {
                 value = this.Model.Find(o => o.TypeName == name);
                 lock (this.m_lockObject)
+                {
                     if (!this.m_description.ContainsKey(name))
+                    {
                         this.m_description.Add(name, value);
+                    }
+                }
             }
             return value;
         }
@@ -132,16 +142,26 @@ namespace SanteDB.Core.Applets.ViewModel.Description
                 while (rootType != typeof(IdentifiedData) && retVal == null)
                 {
                     rootType = rootType.BaseType;
-                    if (rootType == null) break;
+                    if (rootType == null)
+                    {
+                        break;
+                    }
+
                     typeName = this.GetTypeName(rootType);
 
                     if (!this.m_description.TryGetValue(typeName, out retVal))
+                    {
                         retVal = this.Model.FirstOrDefault(o => o.TypeName == typeName);
+                    }
                 }
 
                 lock (this.m_lockObject)
+                {
                     if (!this.m_description.ContainsKey(rootTypeName))
+                    {
                         this.m_description.Add(rootTypeName, retVal);
+                    }
+                }
             }
             return retVal;
         }
@@ -157,8 +177,12 @@ namespace SanteDB.Core.Applets.ViewModel.Description
                 rootTypeName = rootType.GetCustomAttribute<XmlTypeAttribute>()?.TypeName ??
                                            rootType.Name;
                 lock (m_rootTypeNames)
+                {
                     if (!m_rootTypeNames.ContainsKey(rootType))
+                    {
                         m_rootTypeNames.Add(rootType, rootTypeName);
+                    }
+                }
             }
             return rootTypeName;
         }
@@ -169,7 +193,10 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         public PropertyContainerDescription FindDescription(String propertyName, PropertyContainerDescription context)
         {
             if (propertyName == null)
+            {
                 return null;
+            }
+
             PropertyContainerDescription retVal = null;
             String pathName = propertyName;
             var pathContext = context;
@@ -185,10 +212,17 @@ namespace SanteDB.Core.Applets.ViewModel.Description
                 // Find the property information
                 retVal = context?.FindProperty(propertyName);
                 if (retVal == null)
+                {
                     retVal = context?.FindProperty("*");
+                }
+
                 lock (this.m_lockObject)
+                {
                     if (!this.m_description.ContainsKey(pathName))
+                    {
                         this.m_description.Add(pathName, retVal);
+                    }
+                }
             }
             return retVal;
         }
@@ -200,10 +234,16 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         {
             ViewModelDescription retVal = null;
             foreach (var itm in viewModels)
+            {
                 if (retVal == null)
+                {
                     retVal = itm;
+                }
                 else
+                {
                     MergeInternal(itm, retVal);
+                }
+            }
 
             return retVal;
         }
@@ -218,9 +258,13 @@ namespace SanteDB.Core.Applets.ViewModel.Description
             {
                 var mergeModel = merged.Model.FirstOrDefault(o => o.TypeName == td.TypeName);
                 if (mergeModel == null)
+                {
                     merged.Model.Add(td);
+                }
                 else
+                {
                     MergeInternal(td, mergeModel);
+                }
             }
         }
 
@@ -229,22 +273,34 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         /// </summary>
         private static void MergeInternal(PropertyContainerDescription victim, PropertyContainerDescription merged)
         {
-            if (victim.All && !merged.All)
+            if (victim.All.GetValueOrDefault() && !merged.All.GetValueOrDefault())
+            {
                 merged.All = victim.All;
+            }
+
             if (victim.Ref != merged.Ref && merged.Ref == null)
+            {
                 merged.Ref = victim.Ref;
+            }
+
             if ((victim is PropertyModelDescription) &&
                 (victim as PropertyModelDescription).Action != SerializationBehaviorType.Default &&
                 (victim as PropertyModelDescription).Action < (merged as PropertyModelDescription)?.Action)
+            {
                 (merged as PropertyModelDescription).Action = (victim as PropertyModelDescription).Action;
+            }
 
             foreach (var td in victim.Properties)
             {
                 var mergeModel = merged.FindProperty(td.Name);
                 if (mergeModel == null)
+                {
                     merged.Properties.Add(td);
+                }
                 else
+                {
                     MergeInternal(td, mergeModel);
+                }
             }
 
         }
