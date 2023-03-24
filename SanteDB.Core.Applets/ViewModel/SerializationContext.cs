@@ -37,6 +37,19 @@ namespace SanteDB.Core.Applets.ViewModel
         // Serialization checks already created
         private static ConcurrentDictionary<Type, Object> m_cachedSerializationChecks = new ConcurrentDictionary<Type, object>();
 
+        private readonly String[] ALWAYS_SERIALIZE =
+        {
+            "id",
+            "classConcept",
+            "negationInd",
+            "statusConcept",
+            "sequence",
+            "version",
+            "determinerConcept",
+            "moodConcept"
+        };
+
+
         // Object identifier
         private int m_objectId = 0;
         private int m_masterObjectId = 0;
@@ -270,7 +283,7 @@ namespace SanteDB.Core.Applets.ViewModel
         public bool ShouldSerialize(String childProperty)
         {
             var retVal = true;
-            if (childProperty == "id")
+            if (ALWAYS_SERIALIZE.Contains(childProperty))
             {
                 return retVal;
             }
@@ -287,13 +300,7 @@ namespace SanteDB.Core.Applets.ViewModel
                 retVal &= this.Parent?.ElementDescription?.All == true;
             }
 
-            // Get the member
-            MethodInfo serializationCheck = null;
-            if (this.m_serializationCheck.TryGetValue(childProperty, out serializationCheck))
-            {
-                retVal &= (bool)serializationCheck.Invoke(this.Instance, new object[0]);
-            }
-
+           
             return retVal;
         }
 
