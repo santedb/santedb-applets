@@ -46,7 +46,8 @@ namespace SanteDB.Core.Applets.ViewModel
             "sequence",
             "version",
             "determinerConcept",
-            "moodConcept"
+            "moodConcept",
+            "operation"
         };
 
 
