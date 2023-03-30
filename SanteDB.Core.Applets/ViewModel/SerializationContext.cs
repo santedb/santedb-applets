@@ -137,7 +137,15 @@ namespace SanteDB.Core.Applets.ViewModel
                     var elementDescription = this.ViewModelDescription?.FindDescription(this.PropertyName, this.Parent?.ElementDescription);
                     if (elementDescription == null)
                     {
-                        elementDescription = this.ViewModelDescription?.FindDescription(this.Instance?.GetType().StripGeneric());
+                        // Is the parent's applicable to this type?
+                        if (this.Parent?.Instance.GetType().StripGeneric() == this.Instance.GetType())
+                        {
+                            elementDescription = this.Parent.ElementDescription;
+                        }
+                        else
+                        {
+                            elementDescription = this.ViewModelDescription?.FindDescription(this.Instance?.GetType().StripGeneric());
+                        }
                     }
 
                     if (!String.IsNullOrEmpty(elementDescription?.Ref))

@@ -150,6 +150,12 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     }
                 }
 
+
+                if (classifierProperty.PropertyType.IsEnum)
+                {
+                    itmClassifier = Enum.Parse(classifierProperty.PropertyType, (String)itmClassifier);
+                }
+
                 // Now set the classifiers
                 foreach (var inst in itm.Value as IList ?? new List<Object>() { itm.Value })
                 {
