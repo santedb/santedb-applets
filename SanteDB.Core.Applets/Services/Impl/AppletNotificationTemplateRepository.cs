@@ -46,9 +46,13 @@ namespace SanteDB.Core.Applets.Services.Impl
         private readonly ConcurrentDictionary<String, NotificationTemplate> m_definitionCache = new ConcurrentDictionary<String, NotificationTemplate>();
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletNotificationTemplateRepository));
 
+        /// <inheritdoc/>
         public event EventHandler Starting;
+        /// <inheritdoc/>
         public event EventHandler Started;
+        /// <inheritdoc/>
         public event EventHandler Stopping;
+        /// <inheritdoc/>
         public event EventHandler Stopped;
 
         /// <summary>
@@ -137,6 +141,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <inheritdoc/>
         public string ServiceName => "Applet Notification Repository";
 
+        /// <inheritdoc/>
         public bool IsRunning => true;
 
         /// <inheritdoc/>
@@ -166,6 +171,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc/>
         public bool Start()
         {
             Starting?.Invoke(this, EventArgs.Empty);
@@ -176,6 +182,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             return true;
         }
 
+        /// <inheritdoc/>
         public bool Stop()
         {
             Stopping?.Invoke(this, EventArgs.Empty);

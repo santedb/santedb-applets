@@ -45,6 +45,9 @@ namespace SanteDB.Core.Applets.Model
         [Obsolete]
         public class AppletConfigurationSettings
         {
+            /// <summary>
+            /// Gets the applet configuraiton settings to be added
+            /// </summary>
             [XmlArray("appSettings"), XmlArrayItem("add")]
             public List<AppletSettingEntry> Settings { get; set; }
         }

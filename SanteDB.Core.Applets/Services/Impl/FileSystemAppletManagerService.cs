@@ -55,7 +55,9 @@ namespace SanteDB.Core.Applets.Services.Impl
         // Solutions registered
         private ObservableCollection<AppletSolution> m_solutions = new ObservableCollection<AppletSolution>();
 
-        // Applet collection
+        /// <summary>
+        /// The applet collection 
+        /// </summary>
         protected Dictionary<String, AppletCollection> m_appletCollection = new Dictionary<string, AppletCollection>();
 
         // Applet collection for readonly applets
@@ -64,7 +66,9 @@ namespace SanteDB.Core.Applets.Services.Impl
         // Map of package id to file
         private Dictionary<String, String> m_fileDictionary = new Dictionary<string, string>();
 
-        // Config file
+        /// <summary>
+        /// The configuration injected into the service
+        /// </summary>
         protected readonly AppletConfigurationSection m_configuration;
 
         // Tracer
