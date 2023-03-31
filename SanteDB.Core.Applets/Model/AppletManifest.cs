@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Xml.Serialization;
+#pragma warning disable CS0612
 
 namespace SanteDB.Core.Applets.Model
 {
@@ -263,3 +264,4 @@ namespace SanteDB.Core.Applets.Model
         public String GetSetting(string name) => this.Settings?.Find(o => o.Name == name)?.Value;
     }
 }
+#pragma warning restore

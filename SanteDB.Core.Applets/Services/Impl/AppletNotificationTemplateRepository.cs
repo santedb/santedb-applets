@@ -127,7 +127,7 @@ namespace SanteDB.Core.Applets.Services.Impl
 
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     this.m_tracer.TraceError("Could not load notification template {0}", asset.Name);
                 }

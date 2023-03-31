@@ -66,6 +66,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// Returns true if this service is running
         /// </summary>
         public bool IsRunning => this.m_subscriptionDefinitions != null;
+#pragma warning disable CS0067
 
         /// <summary>
         /// Fired when the service is starting
@@ -86,6 +87,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// Fired when the service has stopped
         /// </summary>
         public event EventHandler Stopped;
+#pragma warning restore
 
         /// <summary>
         /// Find the specified object
