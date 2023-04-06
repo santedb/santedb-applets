@@ -140,8 +140,8 @@ namespace SanteDB.Core.Applets
         private static List<AppletAsset> s_widgetAssets = null;
 
         private AssetContentResolver m_resolver = null;
-        private Regex m_localizationRegex = new Regex("{{\\s?:?:?'([A-Za-z0-9\\._\\-]*?)'\\s?\\|\\s?i18n\\s?}}");
-        private Regex m_bindingRegex = new Regex("{{\\s?\\$([A-Za-z0-9_]*?)\\s?}}");
+        private Regex m_localizationRegex = new Regex("{{\\s{0,}:?:?['\"]([A-Za-z0-9\\._\\-]*?)['\"]\\s{0,}\\|\\s?i18n\\s{0,}}}", RegexOptions.Compiled);
+        private Regex m_bindingRegex = new Regex("{{\\s?\\$([A-Za-z0-9_]*?)\\s?}}", RegexOptions.Compiled);
 
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletCollection));
 

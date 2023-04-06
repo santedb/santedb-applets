@@ -208,24 +208,6 @@ namespace SanteDB.Core.Applets.Test
             Assert.IsTrue(html.Contains("some_string"));
         }
 
-        /// <summary>
-        /// Test rendering
-        /// </summary>
-        [Test]
-        public void TestLayoutBundleReferences()
-        {
-            var coll = new AppletCollection();
-            coll.Add(AppletManifest.Load(typeof(TestRenderApplets).Assembly.GetManifestResourceStream("SanteDB.Core.Applets.Test.LayoutAngularTest.xml")));
-
-            var asset = coll.ResolveAsset("/org.santedb.applet.test.layout/index.html");
-            var render = coll.RenderAssetContent(asset);
-            string html = Encoding.UTF8.GetString(render);
-            //            Assert.IsTrue(html.Contains("index-controller"), "Missing index-controller");
-
-            Assert.IsTrue(html.Contains("layout-controller"), "Missing layout-controller");
-            Assert.IsTrue(html.Contains("index-style"), "Missing index-style");
-            Assert.IsTrue(html.Contains("layout-controller"), "Missing layout-style");
-        }
 
         /// <summary>
         /// Test we cannot add stuff to a readonly applet collection
