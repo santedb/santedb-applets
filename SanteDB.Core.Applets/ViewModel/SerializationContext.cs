@@ -206,7 +206,7 @@ namespace SanteDB.Core.Applets.ViewModel
             var propertyDescription = this.ElementDescription?.FindProperty(childProperty) as PropertyModelDescription;
             if(propertyDescription == null)
             {
-                var masterDescription = this.ViewModelDescription.FindDescription(this.Instance.GetType().GetSerializationName());
+                var masterDescription = this.ViewModelDescription?.FindDescription(this.Instance.GetType().GetSerializationName());
                 propertyDescription = masterDescription?.FindProperty(childProperty);
             }
             if (propertyDescription?.Action != SerializationBehaviorType.Always)
