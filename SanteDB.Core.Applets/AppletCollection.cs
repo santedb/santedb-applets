@@ -786,6 +786,7 @@ namespace SanteDB.Core.Applets
                         if (!String.IsNullOrEmpty(preProcessLocalization))
                         {
                             var localizationService = ApplicationServiceContext.Current.GetService<ILocalizationService>();
+                            
                             retVal = this.m_localizationRegex.Replace(retVal, (m) => localizationService?.GetString(preProcessLocalization, m.Groups[1].Value) ?? m.Groups[1].Value);
                         }
 
