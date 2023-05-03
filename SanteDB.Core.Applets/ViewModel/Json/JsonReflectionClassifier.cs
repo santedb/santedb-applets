@@ -24,6 +24,7 @@ using SanteDB.Core.Model.EntityLoader;
 using SanteDB.Core.Model.Interfaces;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -40,9 +41,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         private ClassifierAttribute m_classifierAttribute;
 
         // Classifier hash map
-        private static Dictionary<Type, ClassifierAttribute> m_classifierCache = new Dictionary<Type, ClassifierAttribute>();
+        private static ConcurrentDictionary<Type, ClassifierAttribute> m_classifierCache = new ConcurrentDictionary<Type, ClassifierAttribute>();
 
-        private static Dictionary<Type, Dictionary<String, Object>> m_classifierObjectCache = new Dictionary<Type, Dictionary<string, object>>();
+        private static ConcurrentDictionary<Type, Dictionary<String, Object>> m_classifierObjectCache = new ConcurrentDictionary<Type, Dictionary<string, object>>();
 
         // Type
         private Type m_type;
@@ -200,7 +201,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 {
                     if (!m_classifierObjectCache.ContainsKey(type))
                     {
-                        m_classifierObjectCache.Add(type, classValue);
+                        m_classifierObjectCache.TryAdd(type, classValue);
                     }
                 }
             }
@@ -288,7 +289,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                         if (!m_classifierCache.ContainsKey(classifierObj.GetType()))
                         {
                             classifierAttribute = classifierObj?.GetType().GetCustomAttribute<ClassifierAttribute>();
-                            m_classifierCache.Add(classifierObj.GetType(), classifierObj.GetType().GetCustomAttribute<ClassifierAttribute>());
+                            m_classifierCache.TryAdd(classifierObj.GetType(), classifierObj.GetType().GetCustomAttribute<ClassifierAttribute>());
                         }
                     }
                 }
