@@ -355,7 +355,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                             X509Certificate2 embCert = new X509Certificate2(package.PublicKey);
                             if (!embCert.IsTrustedIntern(new X509Certificate2Collection(), out IEnumerable<X509ChainStatus> chainStatus))
                             {
-                                throw new SecurityException($"Cannot verify identity of publisher {embCert.Subject} - {String.Join(",", chainStatus.Select(o => o.Status))}");
+                                throw new SecurityException($"Cannot verify identity of publisher: \r\n {embCert.Subject} thb: {embCert.Thumbprint} issued by {embCert.Issuer} \r\n- {String.Join(",", chainStatus.Select(o => o.Status))}");
                             }
                             else
                             {
