@@ -181,14 +181,15 @@ namespace SanteDB.Core.Applets.Services.Impl
                         }
                     }
                 }).OfType<SubscriptionDefinition>();
-            
+
             // Subscribe to the applet manager
             EventHandler loaderFn = (o, e) =>
             {
                 var retVal = new List<SubscriptionDefinition>(this.m_subscriptionDefinitions?.Count ?? 10);
                 var slns = this.m_appletSolutionManagerService?.Solutions;
 
-                if(slns != null) {
+                if (slns != null)
+                {
                     foreach (var s in slns)
                     {
                         var slnMgr = this.m_appletSolutionManagerService.GetApplets(s.Meta.Id);
@@ -215,22 +216,11 @@ namespace SanteDB.Core.Applets.Services.Impl
                 }
             };
 
-            ApplicationServiceContext.Current.Started += (o, e) =>
-            {
-                // Collection changed handler
-                this.m_tracer.TraceInfo("Binding to change events");
-                
-                this.m_appletManagerService.Changed += loaderFn;
+            // Collection changed handler
+            this.m_tracer.TraceInfo("Binding to change events");
 
-                if (this.m_appletManagerService is IDaemonService ds && ds.IsRunning == false)
-                {
-                    ds.Started += loaderFn;
-                }
-                else
-                {
-                    loaderFn(this, EventArgs.Empty);
-                }
-            };
+            this.m_appletManagerService.Changed += loaderFn;
+            loaderFn(this, EventArgs.Empty);
             return true;
         }
 
