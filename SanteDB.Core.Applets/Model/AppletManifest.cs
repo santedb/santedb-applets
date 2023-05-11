@@ -155,7 +155,7 @@ namespace SanteDB.Core.Applets.Model
         /// <returns>True if the asset was successfully retrieved</returns>
         public bool TryGetAsset(string assetPath, out AppletAsset asset)
         {
-            asset = this.Assets.Find(o => o.Name == assetPath);
+            asset = this.Assets.Find(o => o.Name == assetPath || $"/{this.Info.Id}/{o.Name}" == assetPath);
             return asset != null;
         }
 

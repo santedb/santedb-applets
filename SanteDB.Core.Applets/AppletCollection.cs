@@ -603,7 +603,7 @@ namespace SanteDB.Core.Applets
                 assetPath += "index.html";
             }
 
-            assetPath = assetPath.ToLower(); // case insensitive
+            //assetPath = assetPath.ToLower(); // case insensitive
             return searchManifest?.Assets.FirstOrDefault(o => o.Name == assetPath);
         }
 
