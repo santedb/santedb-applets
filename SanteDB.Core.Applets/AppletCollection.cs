@@ -19,7 +19,6 @@
  * Date: 2023-3-10
  */
 using SanteDB.Core.Applets.Model;
-using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
@@ -27,7 +26,6 @@ using SanteDB.Core.Model;
 using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Model.Interfaces;
 using SanteDB.Core.Services;
-using SharpCompress.IO;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -786,7 +784,7 @@ namespace SanteDB.Core.Applets
                         if (!String.IsNullOrEmpty(preProcessLocalization))
                         {
                             var localizationService = ApplicationServiceContext.Current.GetService<ILocalizationService>();
-                            
+
                             retVal = this.m_localizationRegex.Replace(retVal, (m) => localizationService?.GetString(preProcessLocalization, m.Groups[1].Value) ?? m.Groups[1].Value);
                         }
 

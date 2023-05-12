@@ -57,8 +57,8 @@ namespace SanteDB.Core.Applets.Configuration
                 AppletDirectory = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "applets")
             };
 
-            yield return new InstallTask<FileSystemAppletManagerService>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IAppletManagerService).IsAssignableFrom(t.Type)));  
-            yield return new InstallTask<AppletSubscriptionRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IRepositoryService<SubscriptionDefinition>).IsAssignableFrom(t.Type)));  
+            yield return new InstallTask<FileSystemAppletManagerService>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IAppletManagerService).IsAssignableFrom(t.Type)));
+            yield return new InstallTask<AppletSubscriptionRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IRepositoryService<SubscriptionDefinition>).IsAssignableFrom(t.Type)));
             yield return new InstallTask<AppletNotificationTemplateRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(INotificationTemplateRepository).IsAssignableFrom(t.Type)));
             yield return new InstallTask<AppletForeignDataMapRepository>(this, (c) => !c.GetSection<ApplicationServiceContextConfigurationSection>().ServiceProviders.Any(t => typeof(IRepositoryService<ForeignDataMap>).IsAssignableFrom(t.Type)));
         }

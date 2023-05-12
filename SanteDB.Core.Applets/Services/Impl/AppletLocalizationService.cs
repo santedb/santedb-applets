@@ -67,7 +67,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_appletManager = appletManager;
             this.m_solutionManager = solutionManagerService;
             appletManager.Changed += (o, e) => this.m_stringCache.Clear();
-            
+
         }
 
         /// <summary>
@@ -219,6 +219,6 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get all available locales
         /// </summary>
-        public IEnumerable<string> GetAvailableLocales() => this.m_appletManager.Applets.SelectMany(o=>o.Locales.Select(l=>l.Code)).Distinct();
+        public IEnumerable<string> GetAvailableLocales() => this.m_appletManager.Applets.SelectMany(o => o.Locales.Select(l => l.Code)).Distinct();
     }
 }

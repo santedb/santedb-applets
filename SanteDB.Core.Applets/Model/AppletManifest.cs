@@ -174,7 +174,8 @@ namespace SanteDB.Core.Applets.Model
         /// Applet configuration settings legacy
         /// </summary>
         [XmlElement("configuration")]
-        public AppletConfigurationSettings ConfigurationSettingsObsolete {
+        public AppletConfigurationSettings ConfigurationSettingsObsolete
+        {
             get => null;
             set => this.Settings = value.Settings;
         }
@@ -244,12 +245,12 @@ namespace SanteDB.Core.Applets.Model
         /// <param name="value">The value of the setting</param>
         public void AddSetting(string name, string value)
         {
-            if(this.Settings == null)
+            if (this.Settings == null)
             {
                 this.Settings = new List<AppletSettingEntry>();
             }
             var existingSetting = this.Settings.Find(o => o.Name == name);
-            if(existingSetting != null)
+            if (existingSetting != null)
             {
                 existingSetting.Value = value;
             }

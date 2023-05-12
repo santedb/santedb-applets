@@ -18,8 +18,6 @@
  * User: fyfej
  * Date: 2023-3-10
  */
-using SanteDB.Core.Applets.Configuration;
-using SanteDB.Core.Data.Import.Definition;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Notifications;
 using SanteDB.Core.Security;
@@ -31,7 +29,6 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace SanteDB.Core.Applets.Services.Impl
 {
@@ -150,7 +147,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <inheritdoc/>
         public NotificationTemplate Get(string id, string lang)
         {
-            if(this.m_definitionCache.TryGetValue($"{id}/{lang}", out var retVal))
+            if (this.m_definitionCache.TryGetValue($"{id}/{lang}", out var retVal))
             {
                 return retVal;
             }

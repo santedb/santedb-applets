@@ -204,7 +204,7 @@ namespace SanteDB.Core.Applets.ViewModel
         public bool ShouldForceLoad(string childProperty, Guid? key)
         {
             var propertyDescription = this.ElementDescription?.FindProperty(childProperty) as PropertyModelDescription;
-            if(propertyDescription == null)
+            if (propertyDescription == null)
             {
                 var masterDescription = this.ViewModelDescription?.FindDescription(this.Instance.GetType().GetSerializationName());
                 propertyDescription = masterDescription?.FindProperty(childProperty);
@@ -309,7 +309,7 @@ namespace SanteDB.Core.Applets.ViewModel
                 retVal &= this.Parent?.ElementDescription?.All == true;
             }
 
-           
+
             return retVal;
         }
 

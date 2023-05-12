@@ -112,7 +112,7 @@ namespace SanteDB.Core.Applets.Model
         public static AppletName Parse(string appletNameString)
         {
             var nameParts = appletNameString.Split(':');
-            if(nameParts.Length == 1)
+            if (nameParts.Length == 1)
             {
                 return new AppletName(nameParts[0], null, null);
             }

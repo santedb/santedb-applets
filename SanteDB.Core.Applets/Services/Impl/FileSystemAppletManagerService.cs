@@ -77,7 +77,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Indicates whether the service is running
         /// </summary>
-        public bool IsRunning { get; private set;  }
+        public bool IsRunning { get; private set; }
 
         /// <summary>
         /// Local applet manager ctor
@@ -85,7 +85,8 @@ namespace SanteDB.Core.Applets.Services.Impl
         public FileSystemAppletManagerService(IConfigurationManager configurationManager)
         {
             var defaultApplet = new AppletCollection();
-            defaultApplet.CollectionChanged += (o, e) => {
+            defaultApplet.CollectionChanged += (o, e) =>
+            {
                 lock (this.m_lockObject)
                 {
                     this.m_readonlyAppletCollection.Clear();
@@ -474,7 +475,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public virtual bool LoadApplet(AppletManifest applet)
         {
-                throw new SecurityException("Cannot directly load applets on the server - call Install instead");
+            throw new SecurityException("Cannot directly load applets on the server - call Install instead");
 
         }
 

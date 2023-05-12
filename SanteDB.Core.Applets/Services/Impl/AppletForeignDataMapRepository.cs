@@ -18,7 +18,6 @@
  * User: fyfej
  * Date: 2023-3-10
  */
-using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Data.Import.Definition;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model.Query;
@@ -30,7 +29,6 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace SanteDB.Core.Applets.Services.Impl
 {
@@ -137,7 +135,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     .Select(o => o.First())
                     .ToList();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 this.m_tracer.TraceError("Error processing applet definitions - {0}", e);
             }

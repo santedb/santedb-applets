@@ -608,7 +608,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         public void LoadSerializerAssembly(Assembly asm)
         {
-            
+
             var typeFormatters = asm.GetExportedTypesSafe().Where(o => typeof(IJsonViewModelTypeFormatter).IsAssignableFrom(o) && o.IsClass)
                 .Select(o => Activator.CreateInstance(o) as IJsonViewModelTypeFormatter)
                 .Where(o => !this.m_formatters.ContainsKey(o.HandlesType));

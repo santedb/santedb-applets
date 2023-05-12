@@ -18,15 +18,12 @@
  * User: fyfej
  * Date: 2023-3-10
  */
-using Newtonsoft.Json;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Http;
 using SanteDB.Core.Model;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
-using System.Text;
 
 namespace SanteDB.Core.Applets.ViewModel
 {
