@@ -26,6 +26,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -121,6 +122,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     using (var str = new MemoryStream(appletAssets.RenderAssetContent(asset)))
                     {
                         var notification = NotificationTemplate.Load(str);
+                        this.m_definitionCache.TryAdd(notification.Id, notification); // set the default with no language
                         if (!this.m_definitionCache.TryAdd($"{notification.Id}/{notification.Language}", notification))
                         {
                             this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Id);
@@ -147,7 +149,8 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <inheritdoc/>
         public NotificationTemplate Get(string id, string lang)
         {
-            if (this.m_definitionCache.TryGetValue($"{id}/{lang}", out var retVal))
+            if (this.m_definitionCache.TryGetValue($"{id}/{lang}", out var retVal) ||
+                this.m_definitionCache.TryGetValue(id, out retVal))
             {
                 return retVal;
             }
