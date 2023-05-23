@@ -768,8 +768,8 @@ namespace SanteDB.Core.Applets
                     String retVal = sw.ToString();
                     if (!String.IsNullOrEmpty(preProcessLocalization))
                     {
-                        var assetString = ApplicationServiceContext.Current.GetService<ILocalizationService>().GetStrings(preProcessLocalization);
-                        retVal = this.m_localizationRegex.Replace(retVal, (m) => assetString.FirstOrDefault(o => o.Key == m.Groups[1].Value).Value ?? m.Groups[1].Value);
+                        var assetString = ApplicationServiceContext.Current.GetService<ILocalizationService>()?.GetStrings(preProcessLocalization);
+                        retVal = this.m_localizationRegex.Replace(retVal, (m) => assetString?.FirstOrDefault(o => o.Key == m.Groups[1].Value).Value ?? m.Groups[1].Value);
                     }
 
                     // Binding objects
