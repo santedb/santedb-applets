@@ -1,42 +1,39 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
- * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
- * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you 
- * may not use this file except in compliance with the License. You may 
- * obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
+ * Copyright (C) 2019 - 2020, Fyfe Software Inc. and the SanteSuite Contributors (See NOTICE.md)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations under 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * User: fyfej
- * Date: 2023-3-10
+ * Date: 2019-11-27
  */
-using NUnit.Framework;
-using SanteDB.Core.Applets.Model;
-using SanteDB.Core.Model;
-using SanteDB.Core.Model.DataTypes;
-using SanteDB.Core.Model.EntityLoader;
-using SanteDB.Core.Model.Interfaces;
-using SanteDB.Core.Model.Query;
+
 using System;
-using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SanteDB.Core.Applets.Model;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
+using System.IO;
+using SanteDB.Core.Model.EntityLoader;
+using SanteDB.Core.Model;
+using SanteDB.Core.Model.Interfaces;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using SanteDB.Core.Model.DataTypes;
+using System.Linq;
 
 namespace SanteDB.Core.Applets.Test
 {
-    [TestFixture]
-    [ExcludeFromCodeCoverage]
+    [TestClass]
     public class TestRenderApplets
     {
         // Applet collection
@@ -45,7 +42,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Initialize the test
         /// </summary>
-        [OneTimeSetUp]
+        [TestInitialize]
         public void Initialize()
         {
             this.m_appletCollection.Add(AppletManifest.Load(typeof(TestRenderApplets).Assembly.GetManifestResourceStream("SanteDB.Core.Applets.Test.HelloWorldApplet.xml")));
@@ -69,31 +66,25 @@ namespace SanteDB.Core.Applets.Test
                 return new TObject() { Key = key };
             }
 
-            public IQueryResultSet<TObject> GetRelations<TObject>(Guid? sourceKey, int? sourceVersionSequence) where TObject : IdentifiedData, IVersionedAssociation, new()
+            public IEnumerable<TObject> GetRelations<TObject>(Guid? sourceKey, int? sourceVersionSequence) where TObject : IdentifiedData, IVersionedAssociation, new()
             {
                 throw new NotImplementedException();
             }
 
-            public IQueryResultSet<TObject> GetRelations<TObject>(params Guid?[] sourceKey) where TObject : IdentifiedData, ISimpleAssociation, new()
+            public IEnumerable<TObject> GetRelations<TObject>(params Guid?[] sourceKey) where TObject : IdentifiedData, ISimpleAssociation, new()
             {
-                return new MemoryQueryResultSet<TObject>(new TObject[0]);
-            }
-
-
-            public IQueryResultSet GetRelations(Type tmodel, params Guid?[] sourceKey)
-            {
-                return new MemoryQueryResultSet(new Object[0]);
+                return new List<TObject>();
             }
 
             /// <summary>
             /// Query the specified object
             /// </summary>
-            public IQueryResultSet<TObject> Query<TObject>(Expression<Func<TObject, bool>> query) where TObject : IdentifiedData, new()
+            public IEnumerable<TObject> Query<TObject>(Expression<Func<TObject, bool>> query) where TObject : IdentifiedData, new()
             {
                 if (typeof(TObject) == typeof(Concept))
                 {
                     // Add list of concepts
-                    return new MemoryQueryResultSet<TObject>(new List<Concept>()
+                    return new List<Concept>()
                     {
                         new Concept()
                         {
@@ -115,14 +106,14 @@ namespace SanteDB.Core.Applets.Test
                                 new ConceptName() { Language = "sw" , Name = "Kike" }
                             }
                         },
-                    }.OfType<TObject>());
+                    }.OfType<TObject>();
                 }
 
-                if (typeof(TObject) == typeof(IdentityDomain))
+                if (typeof(TObject) == typeof(AssigningAuthority))
                 {
-                    return new MemoryQueryResultSet<TObject>(new List<IdentityDomain>
+                    return new List<AssigningAuthority>
                     {
-                        new IdentityDomain
+                        new AssigningAuthority
                         {
                             Key = Guid.NewGuid(),
                             IsUnique = false,
@@ -130,7 +121,7 @@ namespace SanteDB.Core.Applets.Test
                             Name = "Testing Identifier",
                             ValidationRegex = "^[0-9]{10}$"
                         }
-                    }.OfType<TObject>());
+                    }.OfType<TObject>();
                 }
 
                 Assert.Fail();
@@ -138,20 +129,20 @@ namespace SanteDB.Core.Applets.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TestCreatePackage()
         {
             var package = this.m_appletCollection[1].CreatePackage();
             Assert.IsNotNull(package);
         }
 
-        [Test]
+        [TestMethod]
         public void TestResolveAbsolute()
         {
             Assert.IsNotNull(this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/layout"));
         }
 
-        [Test]
+        [TestMethod]
         public void TestResolveIndex()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/");
@@ -160,7 +151,7 @@ namespace SanteDB.Core.Applets.Test
             Assert.AreEqual("en", asset.Language);
         }
 
-        [Test]
+        [TestMethod]
         public void TestResolveRelative()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/index.html");
@@ -168,14 +159,14 @@ namespace SanteDB.Core.Applets.Test
             Assert.IsNotNull(this.m_appletCollection.ResolveAsset("layout", relativeAsset: asset));
         }
 
-        [Test]
+        [TestMethod]
         public void TestResolveSettingLanguage()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.applets.core.settings/");
             Assert.IsNotNull(asset);
         }
 
-        [Test]
+        [TestMethod]
         public void TestRenderSettingsHtml()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.applets.core.settings/");
@@ -183,7 +174,7 @@ namespace SanteDB.Core.Applets.Test
             Trace.WriteLine(Encoding.UTF8.GetString(render));
         }
 
-        [Test]
+        [TestMethod]
         public void TestRenderHtml()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/index.html");
@@ -194,7 +185,7 @@ namespace SanteDB.Core.Applets.Test
         /// <summary>
         /// Test pre-processing of localization
         /// </summary>
-        [Test]
+        [TestMethod]
         public void TestPreProcessLocalization()
         {
             var asset = this.m_appletCollection.ResolveAsset("/org.santedb.applet.test.layout/index.html");
@@ -204,38 +195,25 @@ namespace SanteDB.Core.Applets.Test
             Assert.IsFalse(html.Contains("{{ 'some_string' | i18n }}"));
             Assert.IsFalse(html.Contains("{{ ::'some_string' | i18n }}"));
 
-            // There is no ILocalizationService provided here - so the some_string should just exist
             Assert.IsTrue(html.Contains("some_string"));
         }
 
-
         /// <summary>
-        /// Test we cannot add stuff to a readonly applet collection
+        /// Test rendering
         /// </summary>
-        [Test]
-        public void TestCannotAddToReadonly()
+        [TestMethod]
+        public void TestLayoutBundleReferences()
         {
             var coll = new AppletCollection();
-            var am = AppletManifest.Load(
-                typeof(TestRenderApplets).Assembly.GetManifestResourceStream(
-                    "SanteDB.Core.Applets.Test.LayoutAngularTest.xml"));
-            coll.Add(am);
+            coll.Add(AppletManifest.Load(typeof(TestRenderApplets).Assembly.GetManifestResourceStream("SanteDB.Core.Applets.Test.LayoutAngularTest.xml")));
 
-            // cannot add to readonly 
-            var ro = coll.AsReadonly();
-            Assert.Throws<InvalidOperationException>(() => ro.Add(am));
-            Assert.Throws<InvalidOperationException>(() => ro.Remove((am)));
-            Assert.Throws<InvalidOperationException>(() => ro.Insert(0, am));
-            Assert.Throws<InvalidOperationException>(() => ro.RemoveAt(0));
-            Assert.Throws<InvalidOperationException>(() => ro.Clear());
-
-            coll.Remove(am);
-            coll.Insert(0, am);
-            coll.RemoveAt(0);
-            coll.Add(am);
-            var asf = coll.ResolveAsset("/org.santedb.applet.test.layout/index.html");
-            Assert.IsNotNull(asf);
-            Assert.AreEqual(1, coll.GetLazyScripts(asf).Count);
+            var asset = coll.ResolveAsset("/org.santedb.applet.test.layout/index.html");
+            var render = coll.RenderAssetContent(asset);
+            string html = Encoding.UTF8.GetString(render);
+            Assert.IsTrue(html.Contains("index-controller"), "Missing index-controller");
+            Assert.IsTrue(html.Contains("layout-controller"), "Missing layout-controller");
+            Assert.IsTrue(html.Contains("index-style"), "Missing index-style");
+            Assert.IsTrue(html.Contains("layout-controller"), "Missing layout-style");
         }
     }
 }

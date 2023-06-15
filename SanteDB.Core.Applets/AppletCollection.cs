@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2022, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-3-10
+ * Date: 2021-8-27
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.ViewModel.Description;
@@ -26,15 +26,14 @@ using SanteDB.Core.Model;
 using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Model.Interfaces;
 using SanteDB.Core.Services;
+using SharpCompress.IO;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -42,6 +41,7 @@ using System.Xml.Linq;
 
 namespace SanteDB.Core.Applets
 {
+
     /// <summary>
     /// Represents a asset content resolver
     /// </summary>
@@ -52,6 +52,7 @@ namespace SanteDB.Core.Applets
     /// </summary>
     public class ReadonlyAppletCollection : AppletCollection
     {
+
         /// <summary>
         /// Fired when the collection has changed
         /// </summary>
@@ -129,19 +130,19 @@ namespace SanteDB.Core.Applets
     /// </summary>
     public class AppletCollection : IList<AppletManifest>, INotifyCollectionChanged
     {
+
         // A cache of rendered assets
         private static ConcurrentDictionary<String, Byte[]> s_cache = new ConcurrentDictionary<string, byte[]>();
-
         private static ConcurrentDictionary<String, AppletTemplateDefinition> s_templateCache = new ConcurrentDictionary<string, AppletTemplateDefinition>();
         private static ConcurrentDictionary<String, ViewModelDescription> s_viewModelCache = new ConcurrentDictionary<string, ViewModelDescription>();
         private static List<AppletAsset> s_viewStateAssets = null;
         private static List<AppletAsset> s_widgetAssets = null;
 
         private AssetContentResolver m_resolver = null;
-        private Regex m_localizationRegex = new Regex("{{\\s{0,}:?:?['\"]([A-Za-z0-9\\._\\-]*?)['\"]\\s{0,}\\|\\s?i18n\\s{0,}}}", RegexOptions.Compiled);
-        private Regex m_bindingRegex = new Regex("{{\\s?\\$([A-Za-z0-9_]*?)\\s?}}", RegexOptions.Compiled);
+        private Regex m_localizationRegex = new Regex("{{\\s?:?:?'([A-Za-z0-9\\._\\-]*?)'\\s?\\|\\s?i18n\\s?}}");
+        private Regex m_bindingRegex = new Regex("{{\\s?\\$([A-Za-z0-9_]*?)\\s?}}");
 
-        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletCollection));
+        private Tracer m_tracer = Tracer.GetTracer(typeof(AppletCollection));
 
         /// <summary>
         /// Represetns the applet scheme
@@ -153,29 +154,23 @@ namespace SanteDB.Core.Applets
 
         // XMLNS stuff
         private readonly XNamespace xs_xhtml = "http://www.w3.org/1999/xhtml";
-
         private readonly XNamespace xs_binding = "http://santedb.org/applet/binding";
 
         /// <summary>
         /// Gets or sets whether caching is enabled
         /// </summary>
-        public virtual Boolean CachePages
-        { get { return this.m_cachePages; } set { this.m_cachePages = value; } }
+        public virtual Boolean CachePages { get { return this.m_cachePages; } set { this.m_cachePages = value; } }
 
         /// <summary>
         /// Gets or sets the base url
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public virtual String BaseUrl
         {
             get { return this.m_baseUrl; }
             set
             {
                 if (this.IsReadOnly)
-                {
                     throw new InvalidOperationException("Collection is readonly");
-                }
-
                 this.m_baseUrl = value;
             }
         }
@@ -183,17 +178,13 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Asset content resolver called when asset content is null
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public virtual AssetContentResolver Resolver
         {
             get { return this.m_resolver; }
             set
             {
                 if (this.IsReadOnly)
-                {
                     throw new InvalidOperationException("Collection is readonly");
-                }
-
                 this.m_resolver = value;
             }
         }
@@ -211,19 +202,19 @@ namespace SanteDB.Core.Applets
             AppletCollection.ClearCaches();
         }
 
-
         /// <summary>
         /// Applet collection rewrite to alternate url
         /// </summary>
-        public AppletCollection(String baseUrl) : this()
+        public AppletCollection(String baseUrl)
         {
             this.m_baseUrl = baseUrl;
+            AppletCollection.ClearCaches();
+
         }
 
         /// <summary>
         /// Clear all caches
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public static void ClearCaches()
         {
             s_viewStateAssets?.Clear();
@@ -253,7 +244,6 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Gets or sets the item at the specified element
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public AppletManifest this[int index]
         {
             get { return this.m_appletManifest[index]; }
@@ -261,13 +251,13 @@ namespace SanteDB.Core.Applets
             {
                 this.m_appletManifest[index] = value;
                 this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, value, index));
+
             }
         }
 
         /// <summary>
         /// Return the count of applets in the collection
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public int Count
         {
             get
@@ -284,10 +274,7 @@ namespace SanteDB.Core.Applets
             get
             {
                 if (s_viewStateAssets == null)
-                {
-                    s_viewStateAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(a => ((this.Resolver != null ? this.Resolver(a) : a.Content) as AppletAssetHtml)?.ViewState != null).ToList();
-                }
-
+                    s_viewStateAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(a => ((a.Content == null && this.Resolver != null ? this.Resolver(a) : a.Content) as AppletAssetHtml)?.ViewState != null).ToList();
                 return s_viewStateAssets;
             }
         }
@@ -300,24 +287,21 @@ namespace SanteDB.Core.Applets
             get
             {
                 if (s_widgetAssets == null)
-                {
                     s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets)
                         .Where(o => o.MimeType == "text/html")
-                        .Select(o => new { asset = o, content = (this.Resolver != null ? this.Resolver(o) : o.Content) as AppletWidget })
+                        .Select(o => new { asset = o, content = (o.Content == null && this.Resolver != null ? this.Resolver(o) : o.Content) as AppletWidget })
                         .Where(o => o.content != null)
                         .GroupBy(o => o.content.Name)
                         .Select(o => o.OrderByDescending(d => d.content.Priority).First().asset)
                         .ToList();
-                }
-
                 return s_widgetAssets;
             }
         }
 
+
         /// <summary>
         /// Return true if the collection is readonly
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public virtual bool IsReadOnly
         {
             get
@@ -332,11 +316,7 @@ namespace SanteDB.Core.Applets
         /// <param name="item"></param>
         public void Add(AppletManifest item)
         {
-            if (this.IsReadOnly)
-            {
-                throw new InvalidOperationException("Collection is readonly");
-            }
-
+            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
             this.m_appletManifest.Add(item);
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
             AppletCollection.ClearCaches();
@@ -347,20 +327,16 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public void Clear()
         {
-            if (this.IsReadOnly)
-            {
-                throw new InvalidOperationException("Collection is readonly");
-            }
+            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
 
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, this.m_appletManifest));
             this.m_appletManifest.Clear();
-        }
 
+        }
 
         /// <summary>
         /// Returns true if the collection contains the specified item
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public bool Contains(AppletManifest item)
         {
             return this.m_appletManifest.Contains(item);
@@ -369,7 +345,6 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Copies the specified collection to the array
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public void CopyTo(AppletManifest[] array, int arrayIndex)
         {
             this.m_appletManifest.CopyTo(array, arrayIndex);
@@ -386,7 +361,6 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Get the index of the specified item
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public int IndexOf(AppletManifest item)
         {
             return this.m_appletManifest.IndexOf(item);
@@ -397,13 +371,10 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public void Insert(int index, AppletManifest item)
         {
-            if (this.IsReadOnly)
-            {
-                throw new InvalidOperationException("Collection is readonly");
-            }
-
+            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
             this.m_appletManifest.Insert(index, item);
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+
         }
 
         /// <summary>
@@ -411,18 +382,11 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public bool Remove(AppletManifest item)
         {
-            if (this.IsReadOnly)
-            {
-                throw new InvalidOperationException("Collection is readonly");
-            }
+            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
 
-            var existingObject = this.m_appletManifest.FirstOrDefault(o => o.Info.Id == item.Info.Id);
-            if (existingObject != null)
-            {
-                this.m_appletManifest.Remove(existingObject);
-                this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
-            }
-            return existingObject != null;
+            var retVal = this.m_appletManifest.Remove(item);
+            if (retVal) this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            return retVal;
         }
 
         /// <summary>
@@ -430,14 +394,12 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public void RemoveAt(int index)
         {
-            if (this.IsReadOnly)
-            {
-                throw new InvalidOperationException("Collection is readonly");
-            }
+            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
 
             var item = this.m_appletManifest[index];
             this.m_appletManifest.RemoveAt(index);
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+
         }
 
         /// <summary>
@@ -454,13 +416,11 @@ namespace SanteDB.Core.Applets
         /// <param name="bundle"></param>
         public void RegisterBundle(RenderBundle bundle)
         {
-            if (this.IsReadOnly)
-            {
-                throw new InvalidOperationException("Collection is readonly");
-            }
+            if (this.IsReadOnly) throw new InvalidOperationException("Collection is readonly");
 
             this.m_referenceBundles.Add(bundle);
         }
+
 
         /// <summary>
         /// Gets the template definition
@@ -494,75 +454,36 @@ namespace SanteDB.Core.Applets
                     FirstOrDefault(o => o.ViewModelId.ToLowerInvariant() == viewModelName);
 
                 if (viewModelDefinition != null)
-                {
                     viewModelDefinition.DefinitionContent = this.RenderAssetContent(this.ResolveAsset(viewModelDefinition.Definition));
-                }
 
                 // De-serialize
                 if (viewModelDefinition != null)
-                {
                     using (MemoryStream ms = new MemoryStream(viewModelDefinition.DefinitionContent))
                     {
                         retVal = ViewModelDescription.Load(ms);
                         foreach (var itm in retVal.Include)
-                        {
                             retVal.Model.AddRange(this.GetViewModelDescription(itm).Model);
-                        }
 
-                        // caching
+                        // caching 
                         if (this.CachePages)
                         {
                             s_viewModelCache.TryAdd(viewModelName, retVal);
                         }
                     }
-                }
+
             }
             return retVal;
         }
 
 
         /// <summary>
-        /// Get the configured error asset from the applet collection
-        /// </summary>
-        /// <param name="httpStatusCode">The error for which the applet asset should be retrieved</param>
-        /// <returns>The resolved asset (if any)</returns>
-        public AppletAsset GetErrorAsset(HttpStatusCode httpStatusCode)
-        {
-            var assetData = this.SelectMany(o => o.ErrorAssets.Select(e => new { Applet = o, Error = e })).FirstOrDefault(o => o.Error.ErrorCode == (int)httpStatusCode);
-            if (assetData == null)
-            {
-                return null;
-            }
-            else
-            {
-                return this.ResolveAsset(assetData.Error.Asset, assetData.Applet);
-            }
-        }
-
-        /// <summary>
-        /// Try to resolve the specified asset
-        /// </summary>
-        public bool TryResolveApplet(String assetPath, out AppletAsset asset)
-        {
-            asset = this.ResolveAsset(assetPath);
-            return asset != null;
-        }
-
-
-        /// <summary>
-        /// Get the configured login asset for this collection
-        /// </summary>
-        public String GetLoginAssetPath() => this.Select(o => o.LoginAsset).FirstOrDefault();
-
-        /// <summary>
-        /// Resolve the asset
+        /// Resolve the asset 
         /// </summary>
         public AppletAsset ResolveAsset(String assetPath, AppletManifest relativeManifest = null, AppletAsset relativeAsset = null)
         {
+
             if (assetPath == null)
-            {
                 return null;
-            }
 
             // Manifest to search for asset
             AppletManifest searchManifest = null;
@@ -576,6 +497,7 @@ namespace SanteDB.Core.Applets
                 {
                     searchManifest = this.FirstOrDefault(o => o.Info.Id == pathData.Groups[1].Value);
                     assetPath = pathData.Groups[2].Value;
+
                 }
                 else
                 {
@@ -597,12 +519,10 @@ namespace SanteDB.Core.Applets
             }
 
             if (assetPath.EndsWith("/") || String.IsNullOrEmpty(assetPath))
-            {
                 assetPath += "index.html";
-            }
-
-            //assetPath = assetPath.ToLower(); // case insensitive
+            assetPath = assetPath.ToLower(); // case insensitive
             return searchManifest?.Assets.FirstOrDefault(o => o.Name == assetPath);
+
         }
 
         /// <summary>
@@ -610,6 +530,7 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public byte[] RenderAssetContent(AppletAsset asset, string preProcessLocalization = null, bool staticScriptRefs = true, bool allowCache = true, IDictionary<String, String> bindingParameters = null)
         {
+
             // TODO: This method needs to be cleaned up since it exists from the old/early OpenIZ days
             // First, is there an object already
             byte[] cacheObject = null;
@@ -623,188 +544,255 @@ namespace SanteDB.Core.Applets
 
             // Resolve content
             var content = asset.Content;
-            if (this.Resolver != null)
-            {
+            if (content == null && this.Resolver != null)
                 content = this.Resolver(asset);
-            }
 
-            switch (content)
+            if (content is String) // Content is a string
             {
-                case String str:
-                    if (asset.MimeType == "text/javascript" || asset.MimeType == "application/json")
+
+                // Inject CSP 
+                if (asset.MimeType == "text/javascript" || asset.MimeType == "application/json")
+                {
+                    var retVal = content as String;
+                    if (bindingParameters != null)
+                        retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
+                    cacheObject = Encoding.UTF8.GetBytes(retVal);
+                    if (allowCache)
                     {
-                        if (bindingParameters != null)
+                        s_cache.TryAdd(cacheKey, cacheObject);
+                    }
+                    return cacheObject;
+                }
+                else
+                    return Encoding.UTF8.GetBytes(content as String);
+            }
+            else if (content is byte[]) // Content is a binary asset 
+            {
+                // is the content compressed? 
+                if (Encoding.UTF8.GetString(content as byte[], 0, 4) == "LZIP")
+                {
+                    using (var ms = new MemoryStream(content as byte[]))
+                    using (var ls = new SharpCompress.Compressors.LZMA.LZipStream(new NonDisposingStream(ms), SharpCompress.Compressors.CompressionMode.Decompress))
+                    using (var oms = new MemoryStream())
+                    {
+                        byte[] buffer = new byte[2048];
+                        int br = 1;
+                        while (br > 0)
                         {
-                            str = this.m_bindingRegex.Replace(str, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
+                            br = ls.Read(buffer, 0, 2048);
+                            oms.Write(buffer, 0, br);
                         }
 
-                        cacheObject = Encoding.UTF8.GetBytes(str);
+                        content = oms.ToArray();
                         if (allowCache)
                         {
-                            s_cache.TryAdd(cacheKey, cacheObject);
+                            s_cache.TryAdd(cacheKey, content as byte[]);
                         }
-                        return cacheObject;
+                        return content as byte[];
                     }
-                    else
-                    {
-                        return Encoding.UTF8.GetBytes(str);
-                    }
-                case byte[] bytea:
-                    return bytea;
-                case AppletAssetHtml html:
-                    // Clone the asset HTML so we can manipulate it for this locale without messing up the original
-                    var htmlAsset = new AppletAssetHtml()
-                    {
-                        Html = new XElement(html.Html),
-                        Script = new List<AssetScriptReference>(html.Script),
-                        Titles = new List<LocaleString>(html.Titles),
-                        Style = new List<string>(html.Style)
-                    };
-                    XElement htmlContent = htmlAsset.Html;
+                }
+                else
+                    return content as byte[];
+            }
+            else if (content is XElement) // Content is XML
+            {
+                using (MemoryStream ms = new MemoryStream())
+                using (XmlWriter xw = XmlWriter.Create(ms))
+                {
+                    (content as XElement).WriteTo(xw);
+                    xw.Flush();
+                    ms.Flush();
+                    return ms.ToArray();
+                }
+            }
+            else if (content is AppletAssetHtml) // Content is HTML
+            {
+                // Is the content HTML?
+                var sourceAsset = content as AppletAssetHtml;
+                var htmlAsset = new AppletAssetHtml()
+                {
+                    Html = new XElement(sourceAsset.Html),
+                    Layout = sourceAsset.Layout,
+                    Script = new List<AssetScriptReference>(sourceAsset.Script),
+                    Titles = new List<LocaleString>(sourceAsset.Titles),
+                    Style = new List<string>(sourceAsset.Style)
+                };
+                XElement htmlContent = null;
 
-                    if (!htmlAsset.Static)
+                if (htmlAsset.Static)
+                    htmlContent = htmlAsset.Html as XElement;
+                else
+                {
+                    // Type of tag to render basic content
+                    switch (htmlAsset.Html.Name.LocalName)
                     {
-                        // Type of tag to render basic content
-                        switch (htmlAsset.Html.Name.LocalName)
-                        {
-                            case "html": // The content is a complete HTML page
+                        case "html": // The content is a complete HTML page
+                            {
+                                htmlContent = htmlAsset.Html as XElement;
+                                var headerInjection = this.GetInjectionHeaders(asset, htmlContent.DescendantNodes().OfType<XElement>().Any(o => o.Name == xs_xhtml + "ui-view"));
+
+                                // STRIP - SanteDBJS references
+                                var xel = htmlContent.Descendants().OfType<XElement>().Where(o => o.Name == xs_xhtml + "script" && o.Attribute("src")?.Value.Contains("SanteDB") == true).ToArray();
+                                var head = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "head");
+                                if (head == null)
                                 {
-                                    htmlContent = htmlAsset.Html;
-                                    var headerInjection = this.GetInjectionHeaders(asset, htmlContent.DescendantNodes().OfType<XElement>().Any(o => o.Name == xs_xhtml + "ui-view"));
-
-                                    // STRIP - SanteDBJS references
-                                    var head = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "head");
-                                    if (head == null)
-                                    {
-                                        head = new XElement(xs_xhtml + "head");
-                                        htmlContent.Add(head);
-                                    }
-
-                                    head.Add(headerInjection.Where(o => !head.Elements(o.Name).Any(e => (e.Attributes("src") != null && (e.Attributes("src") == o.Attributes("src"))) || (e.Attributes("href") != null && (e.Attributes("href") == o.Attributes("href"))))));
-
-                                    // Inject any business rules as static refs
-                                    var body = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "body");
-                                    if (body != null)
-                                    {
-                                        body.Add(
-                                            this.SelectMany(o => o.Assets.Where(a => a.Name.StartsWith("rules/"))).Select(o => new XElement(xs_xhtml + "script", new XAttribute("src", $"/{o.Manifest.Info.Id}/{o.Name}"), new XAttribute("type", "text/javascript"), new XAttribute("nonce", bindingParameters.TryGetValue("csp_nonce", out string nonce) ? nonce : ""), new XText("// Script reference")))
-                                        );
-                                    }
-                                    break;
+                                    head = new XElement(xs_xhtml + "head");
+                                    htmlContent.Add(head);
                                 }
-                            case "body": // The content is an HTML Body element, we must inject the HTML header
+
+                                head.Add(headerInjection.Where(o => !head.Elements(o.Name).Any(e => (e.Attributes("src") != null && (e.Attributes("src") == o.Attributes("src"))) || (e.Attributes("href") != null && (e.Attributes("href") == o.Attributes("href"))))));
+
+                                // Inject any business rules as static refs
+                                var body = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "body");
+                                if (body != null)
                                 {
-                                    htmlContent = htmlAsset.Html;
-
-                                    // Inject special headers
-                                    var headerInjection = this.GetInjectionHeaders(asset, htmlContent.DescendantNodes().OfType<XElement>().Any(o => o.Name == xs_xhtml + "ui-view"));
-
-                                    // Render the bundles
-                                    var bodyElement = htmlAsset.Html as XElement;
-                                    htmlContent = new XElement(xs_xhtml + "html", new XAttribute("ng-app", asset.Name), new XElement(xs_xhtml + "head", headerInjection), bodyElement);
+                                    body.Add(
+                                        this.SelectMany(o => o.Assets.Where(a => a.Name.StartsWith("rules/"))).Select(o => new XElement(xs_xhtml + "script", new XAttribute("src", $"/{o.Manifest.Info.Id}/{o.Name}"), new XAttribute("type", "text/javascript"), new XAttribute("nonce", bindingParameters.TryGetValue("csp_nonce", out string nonce) ? nonce : ""), new XText("// Script reference")))
+                                    );
                                 }
+                                //                            head.Add(headerInjection);
                                 break;
-                        } // switch
-
-                        // Now process SSI directives - <!--#include virtual="XXXXXXX" -->
-                        var includes = htmlContent.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
-                        foreach (var inc in includes)
-                        {
-                            String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
-                            if (assetName.EndsWith("\""))
-                            {
-                                assetName = assetName.Substring(0, assetName.Length - 1);
                             }
+                        case "body": // The content is an HTML Body element, we must inject the HTML header
+                            {
+                                htmlContent = htmlAsset.Html as XElement;
 
-                            if (assetName == "content")
-                            {
-                                continue;
-                            }
+                                // Inject special headers
+                                var headerInjection = this.GetInjectionHeaders(asset, htmlContent.DescendantNodes().OfType<XElement>().Any(o => o.Name == xs_xhtml + "ui-view"));
 
-                            var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
-                            if (includeAsset == null)
-                            {
-                                inc.AddAfterSelf(new XElement(xs_xhtml + "strong", new XText(String.Format("{0} NOT FOUND", assetName))));
-                                inc.Remove();
+                                // Render the bundles
+                                var bodyElement = htmlAsset.Html as XElement;
+
+                                htmlContent = new XElement(xs_xhtml + "html", new XAttribute("ng-app", asset.Name), new XElement(xs_xhtml + "head", headerInjection), bodyElement);
                             }
-                            else
+                            break;
+                        default:
                             {
-                                using (MemoryStream ms = new MemoryStream(this.RenderAssetContent(includeAsset, preProcessLocalization, bindingParameters: bindingParameters)))
+                                if (String.IsNullOrEmpty(htmlAsset.Layout))
+                                    htmlContent = htmlAsset.Html as XElement;
+                                else
                                 {
-                                    try
-                                    {
-                                        var xel = XDocument.Load(ms).Elements().First() as XElement;
-                                        if (xel.Name == xs_xhtml + "html")
-                                        {
-                                            inc.AddAfterSelf(xel.Element(xs_xhtml + "body").Elements());
-                                        }
-                                        else
-                                        {
-                                            //var headerInjection = this.GetInjectionHeaders(includeAsset);
 
-                                            //var headElement = htmlContent.Element(xs_xhtml + "head");
-                                            //headElement?.Add(headerInjection.Where(o => !headElement.Elements(o.Name).Any(e => (e.Attributes("src") != null && (e.Attributes("src") == o.Attributes("src"))) || (e.Attributes("href") != null && (e.Attributes("href") == o.Attributes("href"))))));
 
-                                            inc.AddAfterSelf(xel);
-                                        }
-                                        inc.Remove();
-                                    }
-                                    catch (Exception e)
+                                    // Get the layout
+                                    var layoutAsset = this.ResolveAsset(htmlAsset.Layout, relativeAsset: asset);
+                                    if (layoutAsset == null)
+                                        throw new FileNotFoundException(String.Format("Layout asset {0} not found", htmlAsset.Layout));
+
+                                    using (MemoryStream ms = new MemoryStream(this.RenderAssetContent(layoutAsset, preProcessLocalization, bindingParameters: bindingParameters)))
+                                        htmlContent = XDocument.Load(ms).FirstNode as XElement;
+
+
+                                    // Find the <!--#include virtual="content" --> tag
+                                    var contentNode = htmlContent.DescendantNodes().OfType<XComment>().SingleOrDefault(o => o.Value.Trim() == "#include virtual=\"content\"");
+                                    if (contentNode != null)
                                     {
-                                        throw new XmlException($"Error in Asset: {includeAsset}", e);
+                                        contentNode.AddAfterSelf(htmlAsset.Html as XElement);
+                                        contentNode.Remove();
                                     }
+
+                                    // Injection headers
+                                    var headerInjection = this.GetInjectionHeaders(asset, htmlContent.DescendantNodes().OfType<XElement>().Any(o => o.Name == xs_xhtml + "ui-view"));
+                                    var headElement = (htmlContent.Element(xs_xhtml + "head") as XElement);
+                                    headElement?.Add(headerInjection.Where(o => !headElement.Elements(o.Name).Any(e => (e.Attributes("src") != null && (e.Attributes("src") == o.Attributes("src"))) || (e.Attributes("href") != null && (e.Attributes("href") == o.Attributes("href"))))));
+
+
                                 }
                             }
-                        }
+                            break;
+                    } // switch
 
-                        // Re-write
-                        foreach (var itm in htmlContent.DescendantNodes().OfType<XElement>().SelectMany(o => o.Attributes()).Where(o => o.Value.StartsWith("~")))
-                        {
-                            itm.Value = String.Format("/{0}/{1}", asset.Manifest.Info.Id, itm.Value.Substring(2));
-                            //itm.Value = itm.Value.Replace(APPLET_SCHEME, this.AppletBase).Replace(ASSET_SCHEME, this.AssetBase).Replace(DRAWABLE_SCHEME, this.DrawableBase);
-                        }
 
-                        // Render Title
-                        var headTitle = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "head");
-                        var title = htmlAsset.GetTitle(preProcessLocalization);
-                        if (headTitle != null && !String.IsNullOrEmpty(title))
-                        {
-                            headTitle.Add(new XElement(xs_xhtml + "title", new XText(title)));
-                        }
-                    }
-
-                    // Render out the content
-                    using (StringWriter sw = new StringWriter())
-                    using (XmlWriter xw = XmlWriter.Create(sw, new XmlWriterSettings() { OmitXmlDeclaration = true }))
+                    // Now process SSI directives - <!--#include virtual="XXXXXXX" -->
+                    var includes = htmlContent.DescendantNodes().OfType<XComment>().Where(o => o?.Value?.Trim().StartsWith("#include virtual=\"") == true).ToList();
+                    foreach (var inc in includes)
                     {
-                        htmlContent.WriteTo(xw);
-                        xw.Flush();
-
-                        String retVal = sw.ToString();
-                        if (!String.IsNullOrEmpty(preProcessLocalization))
+                        String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
+                        if (assetName.EndsWith("\""))
+                            assetName = assetName.Substring(0, assetName.Length - 1);
+                        if (assetName == "content")
+                            continue;
+                        var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
+                        if (includeAsset == null)
                         {
-                            var localizationService = ApplicationServiceContext.Current.GetService<ILocalizationService>();
-
-                            retVal = this.m_localizationRegex.Replace(retVal, (m) => localizationService?.GetString(preProcessLocalization, m.Groups[1].Value) ?? m.Groups[1].Value);
+                            inc.AddAfterSelf(new XElement(xs_xhtml + "strong", new XText(String.Format("{0} NOT FOUND", assetName))));
+                            inc.Remove();
                         }
+                        else
+                            using (MemoryStream ms = new MemoryStream(this.RenderAssetContent(includeAsset, preProcessLocalization, bindingParameters: bindingParameters)))
+                            {
+                                try
+                                {
+                                    var xel = XDocument.Load(ms).Elements().First() as XElement;
+                                    if (xel.Name == xs_xhtml + "html")
+                                        inc.AddAfterSelf(xel.Element(xs_xhtml + "body").Elements());
+                                    else
+                                    {
+                                        //var headerInjection = this.GetInjectionHeaders(includeAsset);
 
-                        // Binding objects
-                        if (bindingParameters != null)
-                        {
-                            retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
-                        }
+                                        //var headElement = htmlContent.Element(xs_xhtml + "head");
+                                        //headElement?.Add(headerInjection.Where(o => !headElement.Elements(o.Name).Any(e => (e.Attributes("src") != null && (e.Attributes("src") == o.Attributes("src"))) || (e.Attributes("href") != null && (e.Attributes("href") == o.Attributes("href"))))));
 
-                        var byteData = Encoding.UTF8.GetBytes(retVal);
-                        // Add to cache
-                        if (allowCache)
-                        {
-                            s_cache.TryAdd(cacheKey, byteData);
-                        }
-
-                        return byteData;
+                                        inc.AddAfterSelf(xel);
+                                    }
+                                    inc.Remove();
+                                }
+                                catch (Exception e)
+                                {
+                                    throw new XmlException($"Error in Asset: {includeAsset}", e);
+                                }
+                            }
                     }
-                case AppletAssetVirtual virtualContent:
-                    var renderedAsset = virtualContent.Include.SelectMany(includePath =>
+
+                    // Re-write
+                    foreach (var itm in htmlContent.DescendantNodes().OfType<XElement>().SelectMany(o => o.Attributes()).Where(o => o.Value.StartsWith("~")))
+                    {
+                        itm.Value = String.Format("/{0}/{1}", asset.Manifest.Info.Id, itm.Value.Substring(2));
+                        //itm.Value = itm.Value.Replace(APPLET_SCHEME, this.AppletBase).Replace(ASSET_SCHEME, this.AssetBase).Replace(DRAWABLE_SCHEME, this.DrawableBase);
+                    }
+
+                    // Render Title
+                    var headTitle = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "head");
+                    var title = htmlAsset.GetTitle(preProcessLocalization);
+                    if (headTitle != null && !String.IsNullOrEmpty(title))
+                        headTitle.Add(new XElement(xs_xhtml + "title", new XText(title)));
+                }
+
+                // Render out the content
+                using (StringWriter sw = new StringWriter())
+                using (XmlWriter xw = XmlWriter.Create(sw, new XmlWriterSettings() { OmitXmlDeclaration = true }))
+                {
+                    htmlContent.WriteTo(xw);
+                    xw.Flush();
+
+                    String retVal = sw.ToString();
+                    if (!String.IsNullOrEmpty(preProcessLocalization))
+                    {
+                        var assetString = ApplicationServiceContext.Current.GetService<ILocalizationService>()?.GetStrings(preProcessLocalization);
+                        retVal = this.m_localizationRegex.Replace(retVal, (m) => assetString?.FirstOrDefault(o => o.Key == m.Groups[1].Value).Value ?? m.Groups[1].Value);
+                    }
+
+                    // Binding objects
+                    if (bindingParameters != null)
+                    {
+                        retVal = this.m_bindingRegex.Replace(retVal, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
+                    }
+                    var byteData = Encoding.UTF8.GetBytes(retVal);
+                    // Add to cache
+                    if (allowCache)
+                    {
+                        s_cache.TryAdd(cacheKey, byteData);
+                    }
+
+                    return byteData;
+                }
+            }
+            else if (content is AppletAssetVirtual virtualContent) // Virtual asset 
+            {
+                if (!s_cache.TryGetValue(assetPath, out byte[] data))
+                {
+                    // TODO: Find a better way to do this
+                    data = virtualContent.Include.SelectMany(includePath =>
                     {
                         var regExp = new Regex(includePath);
                         return asset.Manifest.Assets.Where(o => regExp.IsMatch(o.Name)).SelectMany(inclAsset => this.RenderAssetContent(inclAsset, preProcessLocalization, staticScriptRefs, allowCache, bindingParameters));
@@ -812,14 +800,13 @@ namespace SanteDB.Core.Applets
 
                     if (allowCache)
                     {
-                        s_cache.TryAdd(cacheKey, renderedAsset);
+                        s_cache.TryAdd(cacheKey, data);
                     }
-                    return renderedAsset;
-                default:
-                    return null;
+                }
+                return data;
             }
-
-
+            else
+                return null;
         }
 
         /// <summary>
@@ -829,6 +816,7 @@ namespace SanteDB.Core.Applets
         {
             Uri rewrite = new Uri(this.m_baseUrl);
             return String.Format("{0}/{1}/{2}", rewrite, appletUri.Host, appletUri.PathAndQuery);
+
         }
 
 
@@ -838,17 +826,13 @@ namespace SanteDB.Core.Applets
         public List<AssetScriptReference> GetLazyScripts(AppletAsset asset)
         {
             var htmlAsset = asset.Content as AppletAssetHtml;
-            if (this.Resolver != null)
-            {
+            if (htmlAsset == null && this.Resolver != null)
                 htmlAsset = this.Resolver(asset) as AppletAssetHtml;
-            }
 
             // Insert scripts & Styles
             List<AssetScriptReference> scriptRefs = new List<AssetScriptReference>();
             if (htmlAsset == null)
-            {
                 return scriptRefs;
-            }
 
             scriptRefs.AddRange(htmlAsset.Script.Where(o => o.IsStatic == false));
 
@@ -858,20 +842,12 @@ namespace SanteDB.Core.Applets
             {
                 String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
                 if (assetName.EndsWith("\""))
-                {
                     assetName = assetName.Substring(0, assetName.Length - 1);
-                }
-
                 if (assetName == "content")
-                {
                     continue;
-                }
-
                 var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
                 if (includeAsset != null)
-                {
                     scriptRefs.AddRange(this.GetLazyScripts(includeAsset));
-                }
             }
 
             // Re-write
@@ -889,58 +865,41 @@ namespace SanteDB.Core.Applets
         private List<XElement> GetInjectionHeaders(AppletAsset asset, bool isUiContainer)
         {
             var htmlAsset = asset.Content as AppletAssetHtml;
-            if (this.Resolver != null)
-            {
+            if (htmlAsset == null && this.Resolver != null)
                 htmlAsset = this.Resolver(asset) as AppletAssetHtml;
-            }
 
             // Insert scripts & Styles
             List<XElement> headerInjection = new List<XElement>();
             if (htmlAsset == null)
-            {
                 return headerInjection;
-            }
 
             // Inject special headers
             foreach (var itm in htmlAsset.Bundle)
             {
                 var bundle = this.m_referenceBundles.Find(o => o.Name == itm);
                 if (bundle == null)
-                {
                     throw new FileNotFoundException(String.Format("Bundle {0} not found", itm));
-                }
-
                 headerInjection.AddRange(bundle.Content.SelectMany(o => o.HeaderElement));
             }
 
             // All scripts
             if (isUiContainer) // IS A UI CONTAINER = ANGULAR UI REQUIRES ALL CONTROLLERS BE LOADED
-            {
                 return this.ViewStateAssets.SelectMany(o => this.GetInjectionHeaders(o, false)).Distinct(new XElementEquityComparer()).ToList();
-            }
             else
-            {
                 foreach (var itm in htmlAsset.Script.Where(o => o.IsStatic != false))
                 {
                     var incAsset = this.ResolveAsset(itm.Reference, relativeAsset: asset);
                     if (incAsset != null)
-                    {
                         headerInjection.AddRange(new ScriptBundleContent(itm.Reference).HeaderElement);
-                    }
                     else
-                    {
                         throw new FileNotFoundException(String.Format("Asset {0} not found", itm.Reference));
-                    }
                 }
-            }
-
             foreach (var itm in htmlAsset.Style)
             {
                 var incAsset = this.ResolveAsset(itm, relativeAsset: asset);
                 if (incAsset != null)
-                {
                     headerInjection.AddRange(new StyleBundleContent(itm).HeaderElement);
-                }
+
             }
 
             // Content - SSI
@@ -949,20 +908,12 @@ namespace SanteDB.Core.Applets
             {
                 String assetName = inc.Value.Trim().Substring(18); // HACK: Should be a REGEX
                 if (assetName.EndsWith("\""))
-                {
                     assetName = assetName.Substring(0, assetName.Length - 1);
-                }
-
                 if (assetName == "content")
-                {
                     continue;
-                }
-
                 var includeAsset = this.ResolveAsset(assetName, relativeAsset: asset);
                 if (includeAsset != null)
-                {
                     headerInjection.AddRange(this.GetInjectionHeaders(includeAsset, isUiContainer));
-                }
             }
 
             // Re-write
@@ -979,6 +930,7 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public bool VerifyDependencies(AppletInfo applet)
         {
+
             bool verified = true;
             foreach (var itm in applet.Dependencies)
             {
@@ -988,12 +940,11 @@ namespace SanteDB.Core.Applets
                     return false;
                 }
                 else
-                {
                     verified &= depItm != null && new Version(depItm?.Info.Version) >= new Version(itm.Version ?? "0.0.0.0");
-                }
             }
             return verified;
         }
+
 
         /// <summary>
         /// Readonly applet collection
@@ -1041,6 +992,7 @@ namespace SanteDB.Core.Applets
                 return equals;
             }
 
+
             /// <summary>
             /// Get Hash code
             /// </summary>
@@ -1059,21 +1011,14 @@ namespace SanteDB.Core.Applets
         {
             var definition = this.GetTemplateDefinition(templateId);
             if (definition == null)
-            {
                 throw new FileNotFoundException($"Template {templateId} not found");
-            }
 
             var definitionAsset = this.ResolveAsset(definition.Definition);
             if (definitionAsset == null)
-            {
                 throw new FileNotFoundException($"Template content {definition.Definition} not found");
-            }
 
             if (parameters == null)
-            {
                 parameters = new Dictionary<String, String>();
-            }
-
             parameters.Add("today", DateTimeOffset.Now.Date.ToString("yyyy-MM-dd"));
             parameters.Add("now", DateTimeOffset.Now.ToString("o"));
 
@@ -1082,12 +1027,10 @@ namespace SanteDB.Core.Applets
             {
                 var result = json.DeSerialize<IdentifiedData>(ms);
                 if (result is IHasTemplate template) // Correct any type-os in the JSON
-                {
                     template.Template = new TemplateDefinition() { Mnemonic = templateId };
-                }
-
                 return result;
             }
         }
+
     }
 }

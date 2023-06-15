@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2022, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,15 +16,13 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-3-10
+ * Date: 2021-8-27
  */
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;
 using SanteDB.Core.Model.EntityLoader;
-using SanteDB.Core.Model.Interfaces;
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -41,9 +39,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         private ClassifierAttribute m_classifierAttribute;
 
         // Classifier hash map
-        private static ConcurrentDictionary<Type, ClassifierAttribute> m_classifierCache = new ConcurrentDictionary<Type, ClassifierAttribute>();
+        private static Dictionary<Type, ClassifierAttribute> m_classifierCache = new Dictionary<Type, ClassifierAttribute>();
 
-        private static ConcurrentDictionary<Type, Dictionary<String, Object>> m_classifierObjectCache = new ConcurrentDictionary<Type, Dictionary<string, object>>();
+        private static Dictionary<Type, Dictionary<String, Object>> m_classifierObjectCache = new Dictionary<Type, Dictionary<string, object>>();
 
         // Type
         private Type m_type;
@@ -91,11 +89,13 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             foreach (var itm in copy)
             {
                 var classifier = this.GetClassifierObj(itm, this.m_classifierAttribute);
-                String classKey = classifier?.ToString() ?? "$other";
-                if (String.IsNullOrEmpty(classKey))
+                String classKey = classifier?.ToString();
+
+                if (string.IsNullOrEmpty(classKey))
                 {
                     classKey = "$other";
                 }
+                
 
                 IList group = null;
                 if (!retVal.TryGetValue(classKey, out group))
@@ -134,13 +134,9 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                             itm.Key;
 
                         if (target != null)
-                        {
                             setProperty.SetValue(target, classifierValue);
-                        }
                         else
-                        {
                             itmClassifier = target = classifierValue;
-                        }
 
                         propertyName = setProperty.PropertyType.GetCustomAttribute<ClassifierAttribute>()?.ClassifierProperty;
                         if (propertyName != null)
@@ -151,36 +147,13 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     }
                 }
 
-
-                if (classifierProperty.PropertyType.IsEnum)
-                {
-                    itmClassifier = Enum.Parse(classifierProperty.PropertyType, (String)itmClassifier);
-                }
-
                 // Now set the classifiers
                 foreach (var inst in itm.Value as IList ?? new List<Object>() { itm.Value })
                 {
-                    if (inst == null)
-                    {
-                        continue;
-                    }
+                    if (inst == null) continue;
 
                     if (itm.Key != "$other")
-                    {
                         classifierProperty.SetValue(inst, itmClassifier);
-
-                        // Set the key property as well 
-                        if (itmClassifier is IIdentifiedResource irc)
-                        {
-                            var keyProperty = classifierProperty.GetSerializationRedirectProperty();
-                            if (keyProperty != null)
-                            {
-                                keyProperty.SetValue(inst, irc.Key);
-                            }
-                        }
-                    }
-
-
                     retVal.Add(inst);
                 }
             }
@@ -198,12 +171,8 @@ namespace SanteDB.Core.Applets.ViewModel.Json
             {
                 classValue = new Dictionary<string, object>();
                 lock (m_classifierObjectCache)
-                {
                     if (!m_classifierObjectCache.ContainsKey(type))
-                    {
-                        m_classifierObjectCache.TryAdd(type, classValue);
-                    }
-                }
+                        m_classifierObjectCache.Add(type, classValue);
             }
 
             Object retVal = null;
@@ -227,12 +196,8 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 }
                 retVal = retVal ?? Activator.CreateInstance(type);
                 lock (classValue)
-                {
                     if (!classValue.ContainsKey(classifierValue))
-                    {
                         classValue.Add(classifierValue, retVal);
-                    }
-                }
             }
 
             return retVal;
@@ -243,10 +208,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
         /// </summary>
         private object GetClassifierObj(object o, ClassifierAttribute classifierAttribute)
         {
-            if (o == null)
-            {
-                return null;
-            }
+            if (o == null) return null;
 
             var classProperty = o.GetType().GetRuntimeProperty(classifierAttribute.ClassifierProperty);
             var classifierObj = classProperty.GetValue(o);
@@ -255,18 +217,12 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 // Force load
                 var keyPropertyName = classProperty.GetCustomAttribute<SerializationReferenceAttribute>()?.RedirectProperty;
                 if (keyPropertyName == null)
-                {
                     return null;
-                }
-
                 var keyPropertyValue = o.GetType().GetRuntimeProperty(keyPropertyName).GetValue(o);
 
                 // Does the owner serializer already load this?
                 if (keyPropertyValue != null)
-                {
                     classifierObj = this.m_serializer.GetLoadedObject((Guid)keyPropertyValue);
-                }
-
                 if (classifierObj == null)
                 {
                     // Now we want to force load!!!!
@@ -274,32 +230,23 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                     classifierObj = getValueMethod.Invoke(EntitySource.Current, new object[] { keyPropertyValue });
                     classProperty.SetValue(o, classifierObj);
                     if (keyPropertyValue != null)
-                    {
                         this.m_serializer.AddLoadedObject((Guid)keyPropertyValue, (IdentifiedData)classifierObj);
-                    }
                 }
             }
 
             if (classifierObj != null)
             {
                 if (!m_classifierCache.TryGetValue(classifierObj.GetType(), out classifierAttribute))
-                {
                     lock (m_classifierCache)
-                    {
                         if (!m_classifierCache.ContainsKey(classifierObj.GetType()))
                         {
                             classifierAttribute = classifierObj?.GetType().GetCustomAttribute<ClassifierAttribute>();
-                            m_classifierCache.TryAdd(classifierObj.GetType(), classifierObj.GetType().GetCustomAttribute<ClassifierAttribute>());
+                            m_classifierCache.Add(classifierObj.GetType(), classifierObj.GetType().GetCustomAttribute<ClassifierAttribute>());
                         }
-                    }
-                }
             }
 
             if (classifierAttribute != null)
-            {
                 return this.GetClassifierObj(classifierObj, classifierAttribute);
-            }
-
             return classifierObj;
         }
     }
