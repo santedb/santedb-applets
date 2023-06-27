@@ -79,11 +79,15 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public bool IsRunning { get; private set; }
 
+        readonly IPlatformSecurityProvider _PlatformSecurityProvider;
+
         /// <summary>
         /// Local applet manager ctor
         /// </summary>
-        public FileSystemAppletManagerService(IConfigurationManager configurationManager)
+        public FileSystemAppletManagerService(IConfigurationManager configurationManager, IPlatformSecurityProvider platformSecurityProvider)
         {
+            _PlatformSecurityProvider = platformSecurityProvider;
+
             var defaultApplet = new AppletCollection();
             defaultApplet.CollectionChanged += (o, e) =>
             {
