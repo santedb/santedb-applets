@@ -343,77 +343,125 @@ namespace SanteDB.Core.Applets.Services.Impl
 
             if (package.Meta.Signature != null)
             {
-                this.m_tracer.TraceInfo("Will verify package {0}", package.Meta.Id.ToString());
+                X509Certificate2 cert = null;
 
-                // Get the public key
-                var x509Store = new X509Store(StoreName.TrustedPublisher, StoreLocation.LocalMachine);
-                try
+                if (null != _PlatformSecurityProvider)
                 {
-                    x509Store.Open(OpenFlags.ReadOnly);
-                    var cert = x509Store.Certificates.Find(X509FindType.FindByThumbprint, package.Meta.PublicKeyToken, false);
+                    m_tracer.TraceInfo("Will verify package {0} using platform security provider", package.Meta.Id.ToString());
 
-                    if (cert.Count == 0)
+                    if (null == package.PublicKey || package.PublicKey.Length == 0)
                     {
-                        if (package.PublicKey != null)
+                        if (package.Meta.PublicKeyToken != null)
                         {
-                            // Embedded cert and trusted CA
-                            X509Certificate2 embCert = new X509Certificate2(package.PublicKey);
-                            if (!embCert.IsTrustedIntern(new X509Certificate2Collection(), out IEnumerable<X509ChainStatus> chainStatus))
+                            m_tracer.TraceInfo("Package does not have an embedded certificate and is signed which will be unsupported in the future.");
+                            var certs = _PlatformSecurityProvider.FindAllCertificates(X509FindType.FindByThumbprint, package.Meta.PublicKeyToken, StoreName.TrustedPublisher, StoreLocation.LocalMachine, validOnly: true);
+
+                            if (certs?.Any() == true)
                             {
-                                throw new SecurityException($"Cannot verify identity of publisher: \r\n {embCert.Subject} thb: {embCert.Thumbprint} issued by {embCert.Issuer} \r\n- {String.Join(",", chainStatus.Select(o => o.Status))}");
+                                cert = certs.First();
                             }
                             else
                             {
-                                cert = new X509Certificate2Collection(embCert);
+                                throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        cert = new X509Certificate2(package.PublicKey);
+
+                        if (!_PlatformSecurityProvider.IsCertificateTrusted(cert))
+                        {
+                            throw new SecurityException($"Package {package.Meta.Id} has certificate {cert.Thumbprint} which is not trusted by the platform.");
+                        }
+                    }
+                }
+                else
+                {
+                    this.m_tracer.TraceInfo("Will verify package {0} using legacy method.", package.Meta.Id.ToString());
+
+                    // Get the public key
+                    var x509Store = new X509Store(StoreName.TrustedPublisher, StoreLocation.LocalMachine);
+                    try
+                    {
+                        x509Store.Open(OpenFlags.ReadOnly);
+                        var certs = x509Store.Certificates.Find(X509FindType.FindByThumbprint, package.Meta.PublicKeyToken, false);
+
+                        if (certs.Count == 0)
+                        {
+                            if (package.PublicKey != null)
+                            {
+                                // Embedded cert and trusted CA
+                                cert = new X509Certificate2(package.PublicKey);
+                                if (!cert.IsTrustedIntern(new X509Certificate2Collection(), out IEnumerable<X509ChainStatus> chainStatus))
+                                {
+                                    throw new SecurityException($"Cannot verify identity of publisher: \r\n {cert.Subject} thb: {cert.Thumbprint} issued by {cert.Issuer} \r\n- {String.Join(",", chainStatus.Select(o => o.Status))}");
+                                }
+                            }
+                            else
+                            {
+                                throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
                             }
                         }
                         else
                         {
-                            throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
+                            cert = certs[0];
                         }
                     }
-
-                    // Verify signature
-                    RSA rsa = cert[0].PublicKey.Key as RSA;
-
-                    var retVal = rsa.VerifyData(verifyBytes, package.Meta.Signature, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1); //rsa.VerifyData(verifyBytes, CryptoConfig.MapNameToOID("SHA1"), package.Meta.Signature);
-
-                    // Verify timestamp
-                    var timestamp = package.Unpack().Info.TimeStamp;
-                    if (timestamp > DateTime.Now)
+                    finally
                     {
-                        throw new SecurityException($"Package {package.Meta.Id} was published in the future! Something's fishy, refusing to load");
+                        x509Store.Close();
                     }
-                    else if (cert[0].NotAfter < timestamp || cert[0].NotBefore > timestamp)
-                    {
-                        throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
-                    }
-
-                    if (retVal == true)
-                    {
-                        this.m_tracer.TraceEvent(EventLevel.Informational, "SUCCESSFULLY VALIDATED: {0} v.{1}\r\n" +
-                            "\tKEY TOKEN: {2}\r\n" +
-                            "\tSIGNED BY: {3}\r\n" +
-                            "\tVALIDITY: {4:yyyy-MMM-dd} - {5:yyyy-MMM-dd}\r\n" +
-                            "\tISSUER: {6}",
-                            package.Meta.Id, package.Meta.Version, cert[0].Thumbprint, cert[0].Subject, cert[0].NotBefore, cert[0].NotAfter, cert[0].Issuer);
-                    }
-                    else
-                    {
-                        this.m_tracer.TraceEvent(EventLevel.Critical, ">> SECURITY ALERT : {0} v.{1} <<\r\n" +
-                            "\tPACKAGE HAS BEEN TAMPERED WITH\r\n" +
-                            "\tKEY TOKEN (CLAIMED): {2}\r\n" +
-                            "\tSIGNED BY  (CLAIMED): {3}\r\n" +
-                            "\tVALIDITY: {4:yyyy-MMM-dd} - {5:yyyy-MMM-dd}\r\n" +
-                            "\tISSUER: {6}\r\n\tSERVICE WILL HALT",
-                            package.Meta.Id, package.Meta.Version, cert[0].Thumbprint, cert[0].Subject, cert[0].NotBefore, cert[0].NotAfter, cert[0].Issuer);
-                    }
-                    return retVal;
                 }
-                finally
+
+                // Verify signature
+                var rsa = cert.GetRSAPublicKey();
+
+                var retVal = rsa.VerifyData(verifyBytes, package.Meta.Signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1); //rsa.VerifyData(verifyBytes, CryptoConfig.MapNameToOID("SHA1"), package.Meta.Signature);
+
+                if (retVal == false)
                 {
-                    x509Store.Close();
+                    retVal = rsa.VerifyData(verifyBytes, package.Meta.Signature, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
+
+                    if (retVal)
+                    {
+                        this.m_tracer.TraceInfo("Applet {0} is signed using SHA1 which will be unsupported in the future.", package.Meta.Id);
+                    }
                 }
+
+                // Verify timestamp
+                var timestamp = package.Unpack().Info.TimeStamp; //TODO: Upgrade package format to support DTO instead of DateTime.
+                if (timestamp > DateTime.Now)
+                {
+                    throw new SecurityException($"Package {package.Meta.Id} was published in the future and will not be loaded.");
+                }
+                else if (cert.NotAfter < timestamp || cert.NotBefore > timestamp)
+                {
+                    throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
+                }
+
+                if (retVal == true)
+                {
+                    this.m_tracer.TraceEvent(EventLevel.Informational, "SUCCESSFULLY VALIDATED: {0} v.{1}\r\n" +
+                        "\tKEY TOKEN: {2}\r\n" +
+                        "\tSIGNED BY: {3}\r\n" +
+                        "\tVALIDITY: {4:yyyy-MMM-dd} - {5:yyyy-MMM-dd}\r\n" +
+                        "\tISSUER: {6}",
+                        package.Meta.Id, package.Meta.Version, cert.Thumbprint, cert.Subject, cert.NotBefore, cert.NotAfter, cert.Issuer);
+                }
+                else
+                {
+                    this.m_tracer.TraceEvent(EventLevel.Critical, ">> SECURITY ALERT : {0} v.{1} <<\r\n" +
+                        "\tPACKAGE VALIDATION FAILED\r\n" +
+                        "\tKEY TOKEN (CLAIMED): {2}\r\n" +
+                        "\tSIGNED BY  (CLAIMED): {3}\r\n" +
+                        "\tVALIDITY: {4:yyyy-MMM-dd} - {5:yyyy-MMM-dd}\r\n" +
+                        "\tISSUER: {6}\r\n\tSERVICE WILL HALT",
+                        package.Meta.Id, package.Meta.Version, cert.Thumbprint, cert.Subject, cert.NotBefore, cert.NotAfter, cert.Issuer);
+                }
+                return retVal;
+
+
             }
             else if (this.m_configuration.AllowUnsignedApplets)
             {
