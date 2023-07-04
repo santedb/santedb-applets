@@ -520,8 +520,7 @@ namespace SanteDB.Core.Applets
 
             if (assetPath.EndsWith("/") || String.IsNullOrEmpty(assetPath))
                 assetPath += "index.html";
-            assetPath = assetPath.ToLower(); // case insensitive
-            return searchManifest?.Assets.FirstOrDefault(o => o.Name == assetPath);
+            return searchManifest?.Assets.FirstOrDefault(o => o.Name.Equals(assetPath, StringComparison.OrdinalIgnoreCase));
 
         }
 
