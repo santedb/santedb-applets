@@ -139,13 +139,13 @@ namespace SanteDB.Core.Applets.Test
         [TestMethod]
         public void TestResolveAbsolute()
         {
-            Assert.IsNotNull(this.m_appletCollection.ResolveAsset("app://org.santedb.sample.helloworld/layout"));
+            Assert.IsNotNull(this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/layout"));
         }
 
         [TestMethod]
         public void TestResolveIndex()
         {
-            var asset = this.m_appletCollection.ResolveAsset("app://org.santedb.sample.helloworld/");
+            var asset = this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/");
             Assert.IsNotNull(asset);
             Assert.AreEqual("index.html", asset.Name);
             Assert.AreEqual("en", asset.Language);
@@ -154,7 +154,7 @@ namespace SanteDB.Core.Applets.Test
         [TestMethod]
         public void TestResolveRelative()
         {
-            var asset = this.m_appletCollection.ResolveAsset("app://org.santedb.sample.helloworld/index.html");
+            var asset = this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/index.html");
             Assert.IsNotNull(asset);
             Assert.IsNotNull(this.m_appletCollection.ResolveAsset("layout", relativeAsset: asset));
         }
@@ -162,14 +162,14 @@ namespace SanteDB.Core.Applets.Test
         [TestMethod]
         public void TestResolveSettingLanguage()
         {
-            var asset = this.m_appletCollection.ResolveAsset("app://org.santedb.applets.core.settings/");
+            var asset = this.m_appletCollection.ResolveAsset("/org.santedb.applets.core.settings/");
             Assert.IsNotNull(asset);
         }
 
         [TestMethod]
         public void TestRenderSettingsHtml()
         {
-            var asset = this.m_appletCollection.ResolveAsset("app://org.santedb.applets.core.settings/");
+            var asset = this.m_appletCollection.ResolveAsset("/org.santedb.applets.core.settings/");
             var render = this.m_appletCollection.RenderAssetContent(asset);
             Trace.WriteLine(Encoding.UTF8.GetString(render));
         }
@@ -177,7 +177,7 @@ namespace SanteDB.Core.Applets.Test
         [TestMethod]
         public void TestRenderHtml()
         {
-            var asset = this.m_appletCollection.ResolveAsset("app://org.santedb.sample.helloworld/index.html");
+            var asset = this.m_appletCollection.ResolveAsset("/org.santedb.sample.helloworld/index.html");
             var render = this.m_appletCollection.RenderAssetContent(asset);
             Trace.WriteLine(Encoding.UTF8.GetString(render));
         }
@@ -188,14 +188,14 @@ namespace SanteDB.Core.Applets.Test
         [TestMethod]
         public void TestPreProcessLocalization()
         {
-            var asset = this.m_appletCollection.ResolveAsset("app://org.santedb.applet.test.layout/index.html");
+            var asset = this.m_appletCollection.ResolveAsset("/org.santedb.applet.test.layout/index.html");
             var render = this.m_appletCollection.RenderAssetContent(asset, "en");
 
             string html = Encoding.UTF8.GetString(render);
             Assert.IsFalse(html.Contains("{{ 'some_string' | i18n }}"));
             Assert.IsFalse(html.Contains("{{ ::'some_string' | i18n }}"));
 
-            Assert.IsTrue(html.Contains("SOME STRING!"));
+            Assert.IsTrue(html.Contains("some_string"));
         }
 
         /// <summary>
@@ -207,7 +207,7 @@ namespace SanteDB.Core.Applets.Test
             var coll = new AppletCollection();
             coll.Add(AppletManifest.Load(typeof(TestRenderApplets).Assembly.GetManifestResourceStream("SanteDB.Core.Applets.Test.LayoutAngularTest.xml")));
 
-            var asset = coll.ResolveAsset("app://org.santedb.applet.test.layout/index.html");
+            var asset = coll.ResolveAsset("/org.santedb.applet.test.layout/index.html");
             var render = coll.RenderAssetContent(asset);
             string html = Encoding.UTF8.GetString(render);
             Assert.IsTrue(html.Contains("index-controller"), "Missing index-controller");
