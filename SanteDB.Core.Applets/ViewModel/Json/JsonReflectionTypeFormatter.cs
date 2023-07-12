@@ -348,21 +348,17 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 }
                 else if (propertyType == typeof(byte[]))
                 {
-                    if (simpleValue is Boolean)
+                    switch(simpleValue)
                     {
-                        simpleProperty.SetValue(retVal, new BooleanExtensionHandler().Serialize(simpleValue));
-                    }
-                    else if (simpleValue is String)
-                    {
-                        simpleProperty.SetValue(retVal, new StringExtensionHandler().Serialize(simpleValue));
-                    }
-                    else if (simpleValue is Int32 || simpleValue is float || simpleValue is double || simpleValue is decimal)
-                    {
-                        simpleProperty.SetValue(retVal, new DecimalExtensionHandler().Serialize(simpleValue));
-                    }
-                    else
-                    {
-                        simpleProperty.SetValue(retVal, simpleValue);
+                        case byte[] b:
+                            simpleProperty.SetValue(retVal, b);
+                            break;
+                        case string s:
+                            simpleProperty.SetValue(retVal, Convert.FromBase64String(s));
+                            break;
+                        default:
+                            simpleProperty.SetValue(retVal, simpleValue);
+                            break;
                     }
                 }
                 else if (propertyType == typeof(String) && simpleValue?.GetType() != typeof(String))
