@@ -352,8 +352,8 @@ namespace SanteDB.Core.Applets
                 throw new InvalidOperationException("Collection is readonly");
             }
 
-            this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, this.m_appletManifest));
             this.m_appletManifest.Clear();
+            this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, null));
         }
 
 

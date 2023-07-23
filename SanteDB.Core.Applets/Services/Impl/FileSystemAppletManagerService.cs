@@ -547,15 +547,24 @@ namespace SanteDB.Core.Applets.Services.Impl
                 throw new SecurityException("Applet failed validation");
             }
 
-            this.m_appletCollection.Add(solution.Meta.Id, new AppletCollection());
-            this.m_appletCollection[solution.Meta.Id].CollectionChanged += (o, e) =>
+            if (this.m_appletCollection.TryGetValue(solution.Meta.Id, out var existingSolution))
             {
-                lock (this.m_lockObject)
+                this.m_tracer.TraceInfo("Upgrading solution {0}", solution.Meta.Id);
+                existingSolution.Clear();
+            }
+            else
+            {
+                this.m_appletCollection.Add(solution.Meta.Id, new AppletCollection());
+                this.m_appletCollection[solution.Meta.Id].CollectionChanged += (o, e) =>
                 {
-                    this.m_readonlyAppletCollection.Clear();
-                }
-                this.Changed?.Invoke(o, e);
-            };
+                    lock (this.m_lockObject)
+                    {
+                        this.m_readonlyAppletCollection.Clear();
+                    }
+                    this.Changed?.Invoke(o, e);
+                };
+            }
+           
 
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
@@ -574,6 +583,13 @@ namespace SanteDB.Core.Applets.Services.Impl
             if (this.m_solutions.Any(o => o.Meta.Id == solution.Meta.Id) && File.Exists(pakFile) && !isUpgrade)
             {
                 throw new InvalidOperationException($"Cannot replace {solution.Meta} unless upgrade is specifically specified");
+            }
+            if (this.IsRunning) // Not an load from the start 
+            {  // Save the original for reboot
+                using (var fs = File.Create(pakFile))
+                {
+                    solution.Save(fs);
+                }
             }
 
             // Unpack items from the solution package and install if needed
