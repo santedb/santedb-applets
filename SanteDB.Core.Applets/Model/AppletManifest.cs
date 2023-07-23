@@ -100,7 +100,7 @@ namespace SanteDB.Core.Applets.Model
             AppletPackage retVal = new AppletPackage()
             {
                 Meta = this.Info,
-                PublicKey = this.PublisherCertificate.GetRawCertData()
+                PublicKey = this.PublisherCertificate?.GetRawCertData()
             };
             this.Info.TimeStamp = DateTime.Now;
             using (var ms = new MemoryStream())
