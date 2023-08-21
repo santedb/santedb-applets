@@ -131,6 +131,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                             return null;
                         }
                     }))
+                    .OfType<ForeignDataMap>()
                     .GroupBy(o => o.Key)
                     .Select(o => o.First())
                     .ToList();
@@ -163,6 +164,10 @@ namespace SanteDB.Core.Applets.Services.Impl
             using (var ms = new MemoryStream())
             {
                 var map = this.m_definitionCache.Find(o => o.Key == key);
+                if(map == null)
+                {
+                    throw new KeyNotFoundException(key.ToString());
+                }
                 map.Save(ms);
                 ms.Seek(0, SeekOrigin.Begin);
                 return ForeignDataMap.Load(ms);

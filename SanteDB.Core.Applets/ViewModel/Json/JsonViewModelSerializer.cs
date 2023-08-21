@@ -485,6 +485,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
                 IJsonViewModelTypeFormatter typeFormatter = this.GetFormatter(instance.GetType());
 
                 var simpleValue = typeFormatter.GetSimpleValue(instance);
+                // Is the simple value a complex object?
                 if (simpleValue != null && propertyName != "$other" && context != null) // Special case for $other
                 {
                     w.WriteValue(simpleValue);

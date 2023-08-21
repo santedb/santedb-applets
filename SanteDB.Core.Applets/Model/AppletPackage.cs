@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -142,7 +143,12 @@ namespace SanteDB.Core.Applets.Model
             using (MemoryStream ms = new MemoryStream(this.Manifest))
             using (LZipStream gs = new LZipStream(NonDisposingStream.Create(ms), CompressionMode.Decompress))
             {
-                return AppletManifest.Load(gs);
+                var retVal = AppletManifest.Load(gs);
+                if(this.PublicKey != null)
+                {
+                    retVal.PublisherCertificate = new X509Certificate2(this.PublicKey);
+                }
+                return retVal;
             }
         }
 

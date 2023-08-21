@@ -18,12 +18,14 @@
  * User: fyfej
  * Date: 2023-5-19
  */
+using Newtonsoft.Json;
 using SanteDB.Core.Model.Serialization;
 using SharpCompress.Compressors.LZMA;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Xml.Serialization;
 #pragma warning disable CS0612
 
@@ -97,7 +99,8 @@ namespace SanteDB.Core.Applets.Model
         {
             AppletPackage retVal = new AppletPackage()
             {
-                Meta = this.Info
+                Meta = this.Info,
+                PublicKey = this.PublisherCertificate?.GetRawCertData()
             };
             this.Info.TimeStamp = DateTime.Now;
             using (var ms = new MemoryStream())
@@ -217,6 +220,12 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlElement("strings")]
         public List<AppletStrings> Strings { get; set; }
+
+        /// <summary>
+        /// Gets the publisher certificate for the solution
+        /// </summary>
+        [XmlIgnore, JsonIgnore]
+        public X509Certificate2 PublisherCertificate { get; internal set; }
 
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
