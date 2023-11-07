@@ -370,7 +370,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     {
                         cert = new X509Certificate2(package.PublicKey);
 
-                        if (!_PlatformSecurityProvider.IsCertificateTrusted(cert))
+                        if (!_PlatformSecurityProvider.IsCertificateTrusted(cert, package.Meta.TimeStamp))
                         {
                             throw new SecurityException($"Package {package.Meta.Id} has certificate {cert.Thumbprint} which is not trusted by the platform.");
                         }
