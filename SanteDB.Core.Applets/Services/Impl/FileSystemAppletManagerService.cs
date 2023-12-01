@@ -508,7 +508,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public virtual ReadonlyAppletCollection GetApplets(string solutionId)
         {
-            if (!this.m_readonlyAppletCollection.TryGetValue(solutionId, out var retVal))
+            if (!this.m_readonlyAppletCollection.TryGetValue(solutionId ?? string.Empty, out var retVal))
             {
                 lock (this.m_lockObject)
                 {
