@@ -92,8 +92,7 @@ namespace SanteDB.Core.Applets.Model
         public String Guard { get; set; }
 
         /// <summary>
-        /// Gets the guard condition for the template executed against the patient (allows for blocking of
-        /// templates based on patient conditions)
+        /// Gets or sets the scope of the encounter in which the data is being collected
         /// </summary>
         [XmlElement("scope"), JsonProperty("scope")]
         public List<String> Scope { get; set; }

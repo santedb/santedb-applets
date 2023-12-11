@@ -144,7 +144,7 @@ namespace SanteDB.Core.Applets.Model
             using (LZipStream gs = new LZipStream(NonDisposingStream.Create(ms), CompressionMode.Decompress))
             {
                 var retVal = AppletManifest.Load(gs);
-                if(this.PublicKey != null)
+                if (this.PublicKey != null)
                 {
                     retVal.PublisherCertificate = new X509Certificate2(this.PublicKey);
                 }

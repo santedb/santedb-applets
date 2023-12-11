@@ -370,7 +370,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     {
                         cert = new X509Certificate2(package.PublicKey);
 
-                        if (!_PlatformSecurityProvider.IsCertificateTrusted(cert))
+                        if (!_PlatformSecurityProvider.IsCertificateTrusted(cert, package.Meta.TimeStamp))
                         {
                             throw new SecurityException($"Package {package.Meta.Id} has certificate {cert.Thumbprint} which is not trusted by the platform.");
                         }
@@ -508,7 +508,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public virtual ReadonlyAppletCollection GetApplets(string solutionId)
         {
-            if (!this.m_readonlyAppletCollection.TryGetValue(solutionId, out var retVal))
+            if (!this.m_readonlyAppletCollection.TryGetValue(solutionId ?? string.Empty, out var retVal))
             {
                 lock (this.m_lockObject)
                 {
@@ -597,7 +597,8 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 var installedApplet = this.GetApplet(solution.Meta.Id, itm.Meta.Id);
                 if (installedApplet == null ||
-                    new Version(installedApplet.Info.Version) < new Version(itm.Meta.Version)) // Installed version is there but is older or is not installed, so we install it
+                    installedApplet.Info.Version.ParseVersion(out _) < itm.Meta.Version.ParseVersion(out _)) // TODO: Allow for equal versions if the suffix is newer 
+                    // Installed version is there but is older or is not installed, so we install it
                 {
                     this.m_tracer.TraceInfo("Installing Solution applet {0} v{1}...", itm.Meta.Id, itm.Meta.Version);
                     this.Install(itm, true, solution);
@@ -618,7 +619,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             foreach (var apl in this.m_appletCollection[solution.Meta.Id])
             {
                 var existing = this.m_appletCollection[String.Empty].FirstOrDefault(o => o.Info.Id == apl.Info.Id);
-                if (existing == null || new Version(existing.Info.Version) < new Version(apl.Info.Version))
+                if (existing == null || existing.Info.Version.ParseVersion(out _) < apl.Info.Version.ParseVersion(out _))
                 {
                     this.m_appletCollection[String.Empty].Remove(apl);
                     this.m_appletCollection[String.Empty].Add(apl);
