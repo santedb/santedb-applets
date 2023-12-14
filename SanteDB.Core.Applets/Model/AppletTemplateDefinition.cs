@@ -77,6 +77,12 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlElement("oid"), JsonProperty("oid")]
         public String Oid { get; set; }
+        
+        /// <summary>
+        /// Gets the UUID for the template
+        /// </summary>
+        [XmlElement("uuid"), JsonProperty("uuid")]
+        public Guid Uuid { get; set; }
 
         /// <summary>
         /// Identifies allowed content (templates) which can be embedded in this template

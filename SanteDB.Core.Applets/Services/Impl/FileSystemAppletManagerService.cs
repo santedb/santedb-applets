@@ -307,6 +307,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                         this.m_tracer.TraceInfo("Installing {0}...", itm.Mnemonic);
                         idp.Insert(new TemplateDefinition()
                         {
+                            Key = itm.Uuid == Guid.Empty ? Guid.NewGuid() : itm.Uuid,
                             Oid = itm.Oid,
                             Mnemonic = itm.Mnemonic,
                             Description = itm.Description,
