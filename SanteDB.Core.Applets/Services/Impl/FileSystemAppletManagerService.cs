@@ -394,7 +394,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                             {
                                 // Embedded cert and trusted CA
                                 cert = new X509Certificate2(package.PublicKey);
-                                if (!cert.IsTrustedIntern(new X509Certificate2Collection(), out IEnumerable<X509ChainStatus> chainStatus))
+                                if (!cert.IsTrustedIntern(new X509Certificate2Collection(), package.Meta.TimeStamp, out IEnumerable<X509ChainStatus> chainStatus))
                                 {
                                     throw new SecurityException($"Cannot verify identity of publisher: \r\n {cert.Subject} thb: {cert.Thumbprint} issued by {cert.Issuer} \r\n- {String.Join(",", chainStatus.Select(o => o.Status))}");
                                 }
