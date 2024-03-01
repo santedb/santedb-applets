@@ -1069,11 +1069,7 @@ namespace SanteDB.Core.Applets
                 throw new FileNotFoundException($"Template content {definition.Definition} not found");
             }
 
-            if (parameters == null)
-            {
-                parameters = new Dictionary<String, String>();
-            }
-
+            parameters = parameters ?? new Dictionary<String, String>();
             parameters.Add("today", DateTimeOffset.Now.Date.ToString("yyyy-MM-dd"));
             parameters.Add("now", DateTimeOffset.Now.ToString("o"));
 
@@ -1083,7 +1079,8 @@ namespace SanteDB.Core.Applets
                 var result = json.DeSerialize<IdentifiedData>(ms);
                 if (result is IHasTemplate template) // Correct any type-os in the JSON
                 {
-                    template.Template = new TemplateDefinition() { Mnemonic = templateId };
+                    template.Template = new TemplateDefinition() { Key = definition.Uuid, Description = definition.Description, Mnemonic = templateId };
+                    template.TemplateKey = definition.Uuid;
                 }
 
                 return result;
