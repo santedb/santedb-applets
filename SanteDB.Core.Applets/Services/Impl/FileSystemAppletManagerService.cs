@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Applets.Model;
@@ -565,7 +565,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     this.Changed?.Invoke(o, e);
                 };
             }
-           
+
 
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
@@ -599,7 +599,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                 var installedApplet = this.GetApplet(solution.Meta.Id, itm.Meta.Id);
                 if (installedApplet == null ||
                     installedApplet.Info.Version.ParseVersion(out _) < itm.Meta.Version.ParseVersion(out _)) // TODO: Allow for equal versions if the suffix is newer 
-                    // Installed version is there but is older or is not installed, so we install it
+                                                                                                             // Installed version is there but is older or is not installed, so we install it
                 {
                     this.m_tracer.TraceInfo("Installing Solution applet {0} v{1}...", itm.Meta.Id, itm.Meta.Version);
                     this.Install(itm, true, solution);
