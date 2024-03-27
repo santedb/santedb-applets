@@ -19,6 +19,7 @@
  * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
+using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Applets.ViewModel.Json;
 using SanteDB.Core.Diagnostics;
@@ -35,6 +36,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -704,6 +706,24 @@ namespace SanteDB.Core.Applets
                                     htmlContent = new XElement(xs_xhtml + "html", new XAttribute("ng-app", asset.Name), new XElement(xs_xhtml + "head", headerInjection), bodyElement);
                                 }
                                 break;
+                            case "div":
+                                {
+
+                                    if (htmlAsset.Script.Any() && content is AppletWidget)
+                                    {
+                                        htmlContent = htmlAsset.Html;
+                                        // Render out oc-lazy-load
+                                        var lazyLoadName = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(asset.Name)).HexEncode();
+                                        var resolvedScripts = htmlAsset.Script.Select(o =>
+                                            o.Reference.StartsWith("~") ? String.Format("/{0}/{1}", asset.Manifest.Info.Id, o.Reference.Substring(2)) : o.Reference
+                                        );
+
+                                        var lazyLoadAttribute = new XAttribute("oc-lazy-load", $"{{ name: '{lazyLoadName}', files: [ {String.Join(",", resolvedScripts.Select(s => $"\"{s}\""))} ] }}");
+                                        var bodyElement = htmlAsset.Html as XElement;
+                                        htmlContent = new XElement(xs_xhtml + "div", lazyLoadAttribute, bodyElement);
+                                    }
+                                    break;
+                                }
                         } // switch
 
                         // Now process SSI directives - <!--#include virtual="XXXXXXX" -->
