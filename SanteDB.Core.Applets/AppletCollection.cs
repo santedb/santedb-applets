@@ -718,7 +718,7 @@ namespace SanteDB.Core.Applets
                                             o.Reference.StartsWith("~") ? String.Format("/{0}/{1}", asset.Manifest.Info.Id, o.Reference.Substring(2)) : o.Reference
                                         );
 
-                                        var lazyLoadAttribute = new XAttribute("oc-lazy-load", $"{{ name: '{lazyLoadName}', files: [ {String.Join(",", resolvedScripts.Select(s => $"\"{s}\""))} ] }}");
+                                        var lazyLoadAttribute = new XAttribute("oc-lazy-load", $"{{ name: '{lazyLoadName}', files: [ {String.Join(",", resolvedScripts.Select(s => $"'{s}'"))} ] }}");
                                         var bodyElement = htmlAsset.Html as XElement;
                                         htmlContent = new XElement(xs_xhtml + "div", lazyLoadAttribute, bodyElement);
                                     }
