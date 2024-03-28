@@ -150,7 +150,12 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 
                     if (jr.TokenType == JsonToken.StartObject)
                     {
-                        return this.ReadElementUtil(jr, t, new JsonSerializationContext(null, this, null));
+                        var retVal = this.ReadElementUtil(jr, t, new JsonSerializationContext(null, this, null));
+                        if(retVal is IdentifiedData id)
+                        {
+                            id.HarmonizeKeys(KeyHarmonizationMode.PropertyOverridesKey);
+                        }
+                        return retVal;
                     }
                     else
                     {
@@ -675,7 +680,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 #endif
             try
             {
-                this.WritePropertyUtil(jw, null, data, null);
+                this.WritePropertyUtil(jw, null, data.HarmonizeKeys(KeyHarmonizationMode.PropertyOverridesKey), null);
             }
             catch (Exception e)
             {
