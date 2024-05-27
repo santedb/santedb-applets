@@ -105,7 +105,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             try
             {
                 this.m_definitionCache = this.m_definitionCache.Union(applets.SelectMany(o => o.Assets)
-                    .Where(o => o.Name.StartsWith("alien/") && o.Name.EndsWith(".xml"))
+                    .Where(o => (o.Name.StartsWith("alien/") || o.Name.StartsWith("fdm/")) && o.Name.EndsWith(".xml"))
                     .Select(o =>
                     {
                         try

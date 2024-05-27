@@ -341,7 +341,7 @@ namespace SanteDB.Core.Applets.ViewModel.Null
         /// </summary>
         public String Serialize(IdentifiedData data)
         {
-            this.Serialize((TextWriter)null, data);
+            this.Serialize((TextWriter)null, data.HarmonizeKeys(KeyHarmonizationMode.PropertyOverridesKey));
             return String.Empty;
         }
 
