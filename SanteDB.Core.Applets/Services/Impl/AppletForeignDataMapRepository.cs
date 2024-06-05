@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Data.Import.Definition;
 using SanteDB.Core.Diagnostics;
@@ -105,7 +105,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             try
             {
                 this.m_definitionCache = this.m_definitionCache.Union(applets.SelectMany(o => o.Assets)
-                    .Where(o => o.Name.StartsWith("alien/") && o.Name.EndsWith(".xml"))
+                    .Where(o => (o.Name.StartsWith("alien/") || o.Name.StartsWith("fdm/")) && o.Name.EndsWith(".xml"))
                     .Select(o =>
                     {
                         try
@@ -164,7 +164,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             using (var ms = new MemoryStream())
             {
                 var map = this.m_definitionCache.Find(o => o.Key == key);
-                if(map == null)
+                if (map == null)
                 {
                     throw new KeyNotFoundException(key.ToString());
                 }

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Applets.ViewModel.Description;
@@ -150,7 +150,12 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 
                     if (jr.TokenType == JsonToken.StartObject)
                     {
-                        return this.ReadElementUtil(jr, t, new JsonSerializationContext(null, this, null));
+                        var retVal = this.ReadElementUtil(jr, t, new JsonSerializationContext(null, this, null));
+                        if(retVal is IdentifiedData id)
+                        {
+                            id.HarmonizeKeys(KeyHarmonizationMode.PropertyOverridesKey);
+                        }
+                        return retVal;
                     }
                     else
                     {
@@ -675,7 +680,7 @@ namespace SanteDB.Core.Applets.ViewModel.Json
 #endif
             try
             {
-                this.WritePropertyUtil(jw, null, data, null);
+                this.WritePropertyUtil(jw, null, data.HarmonizeKeys(KeyHarmonizationMode.PropertyOverridesKey), null);
             }
             catch (Exception e)
             {
