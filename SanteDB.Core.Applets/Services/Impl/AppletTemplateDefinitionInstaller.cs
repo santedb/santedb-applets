@@ -20,7 +20,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Applet template definition service
         /// </summary>
-        public AppletTemplateDefinitionInstaller(IAppletManagerService appletManagerService, ITemplateDefinitionRepositoryService templateDefinitionRepositoryService, IAppletSolutionManagerService appletSolutionManagerService = null)
+        public AppletTemplateDefinitionInstaller(IAppletManagerService appletManagerService, ITemplateDefinitionRepositoryService templateDefinitionRepositoryService = null, IAppletSolutionManagerService appletSolutionManagerService = null)
         {
 
             this.m_templateDefinitionRepository = templateDefinitionRepositoryService;
@@ -42,6 +42,11 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         private void InstallTemplatesFromApplet(ReadonlyAppletCollection appletCollection)
         {
+            if(this.m_templateDefinitionRepository == null)
+            {
+                return;
+            }
+
             try
             {
                 using (AuthenticationContext.EnterSystemContext()) {
