@@ -293,30 +293,6 @@ namespace SanteDB.Core.Applets.Services.Impl
 
             this.m_appletCollection[appletScope].Add(pkg);
 
-            // We want to install the templates & protocols into the DB
-            this.m_tracer.TraceInfo("Installing templates...");
-
-            // Install templates
-            var idp = ApplicationServiceContext.Current.GetService<ITemplateDefinitionRepositoryService>();
-            if (idp != null)
-            {
-                foreach (var itm in pkg.Templates)
-                {
-                    if (idp.GetTemplateDefinition(itm.Mnemonic) == null)
-                    {
-                        this.m_tracer.TraceInfo("Installing {0}...", itm.Mnemonic);
-                        idp.Insert(new TemplateDefinition()
-                        {
-                            Key = itm.Uuid == Guid.Empty ? Guid.NewGuid() : itm.Uuid,
-                            Oid = itm.Oid,
-                            Mnemonic = itm.Mnemonic,
-                            Description = itm.Description,
-                            Name = itm.Mnemonic
-                        });
-                    }
-                }
-            }
-
             AppletCollection.ClearCaches();
 
             return true;

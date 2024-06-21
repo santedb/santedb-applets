@@ -279,6 +279,14 @@ namespace SanteDB.Core.Applets
         }
 
         /// <summary>
+        /// Gets the defined templates in the manifests
+        /// </summary>
+        public IEnumerable<AppletTemplateDefinition> DefinedTemplates
+        {
+            get => this.m_appletManifest.SelectMany(o => o.Templates);
+        }
+
+        /// <summary>
         /// Gets a list of all view states of all loaded applets
         /// </summary>
         public List<AppletAsset> ViewStateAssets
