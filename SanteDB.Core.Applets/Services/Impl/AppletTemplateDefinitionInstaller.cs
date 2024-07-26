@@ -52,14 +52,21 @@ namespace SanteDB.Core.Applets.Services.Impl
                 using (AuthenticationContext.EnterSystemContext()) {
                     foreach (var tpl in appletCollection.DefinedTemplates)
                     {
-                        this.m_templateDefinitionRepository.Save(new Core.Model.DataTypes.TemplateDefinition()
+                        var existing = this.m_templateDefinitionRepository.Find(o => o.Mnemonic == tpl.Mnemonic || o.Key == tpl.Uuid).FirstOrDefault();
+                        if (existing == null ||
+                            existing.Mnemonic != tpl.Mnemonic ||
+                            existing.Name != tpl.Description ||
+                            existing.Oid != tpl.Oid)
                         {
-                            Key = tpl.Uuid,
-                            Mnemonic = tpl.Mnemonic,
-                            Name = tpl.Description,
-                            Oid = tpl.Oid,
-                            Description = $"Definition found in {tpl.Definition}"
-                        });
+                            this.m_templateDefinitionRepository.Save(new Core.Model.DataTypes.TemplateDefinition()
+                            {
+                                Key = tpl.Uuid,
+                                Mnemonic = tpl.Mnemonic,
+                                Name = tpl.Description,
+                                Oid = tpl.Oid,
+                                Description = $"Definition found in {tpl.Definition}"
+                            });
+                        }
                     }
                 }
             }
