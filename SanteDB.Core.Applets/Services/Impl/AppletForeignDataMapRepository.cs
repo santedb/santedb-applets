@@ -133,7 +133,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     }))
                     .OfType<ForeignDataMap>()
                     .GroupBy(o => o.Key)
-                    .Select(o => o.First())
+                    .Select(o => o.OrderByDescending(d => d.Priority).First())
                     .ToList();
             }
             catch (Exception e)
