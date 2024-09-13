@@ -228,6 +228,12 @@ namespace SanteDB.Core.Applets.Model
         public X509Certificate2 PublisherCertificate { get; internal set; }
 
         /// <summary>
+        /// Get or sets the care pathways
+        /// </summary>
+        [XmlElement("carepath"), JsonProperty("carepath")]
+        public List<AppletCarePathwayDefinition> Pathways { get; set; }
+
+        /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
         /// </summary>
         /// <param name="other">An object to compare with this object.</param>

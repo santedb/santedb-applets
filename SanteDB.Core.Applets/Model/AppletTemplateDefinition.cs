@@ -61,6 +61,12 @@ namespace SanteDB.Core.Applets.Model
         public String View { get; set; }
 
         /// <summary>
+        /// Summary view
+        /// </summary>
+        [XmlElement("summaryView"), JsonProperty("summaryView")]
+        public String Summary { get; set; }
+
+        /// <summary>
         /// Gets or sets the definition file
         /// </summary>
         [XmlElement("definition"), JsonProperty("definition")]

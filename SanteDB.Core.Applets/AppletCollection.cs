@@ -287,6 +287,14 @@ namespace SanteDB.Core.Applets
         }
 
         /// <summary>
+        /// Gets the defined templates 
+        /// </summary>
+        public IEnumerable<AppletCarePathwayDefinition> DefinedPathways
+        {
+            get => this.m_appletManifest.SelectMany(o => o.Pathways);
+        }
+
+        /// <summary>
         /// Gets a list of all view states of all loaded applets
         /// </summary>
         public List<AppletAsset> ViewStateAssets

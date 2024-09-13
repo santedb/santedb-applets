@@ -14,15 +14,20 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// </summary>
     public class AppletTemplateDefinitionInstaller
     {
+        private readonly ICarePathwayDefinitionRepositoryService m_carePathwayRepository;
         private readonly ITemplateDefinitionRepositoryService m_templateDefinitionRepository;
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletTemplateDefinitionInstaller));
 
         /// <summary>
         /// Applet template definition service
         /// </summary>
-        public AppletTemplateDefinitionInstaller(IAppletManagerService appletManagerService, ITemplateDefinitionRepositoryService templateDefinitionRepositoryService = null, IAppletSolutionManagerService appletSolutionManagerService = null)
+        public AppletTemplateDefinitionInstaller(IAppletManagerService appletManagerService, 
+            ITemplateDefinitionRepositoryService templateDefinitionRepositoryService = null,
+            ICarePathwayDefinitionRepositoryService carePathwayDefinitionRepositoryService = null, 
+            IAppletSolutionManagerService appletSolutionManagerService = null)
         {
 
+            this.m_carePathwayRepository = carePathwayDefinitionRepositoryService;
             this.m_templateDefinitionRepository = templateDefinitionRepositoryService;
             appletManagerService.Changed += (o,e) =>
             {
@@ -65,6 +70,25 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 Name = tpl.Description,
                                 Oid = tpl.Oid,
                                 Description = $"Definition found in {tpl.Definition}"
+                            });
+                        }
+                    }
+                    foreach (var cpd in appletCollection.DefinedPathways)
+                    {
+                        var existing = this.m_carePathwayRepository.Find(o => o.Mnemonic == cpd.Mnemonic || o.Key == cpd.Uuid).FirstOrDefault();
+                        if (existing == null ||
+                            existing.Mnemonic != cpd.Mnemonic ||
+                            existing.Description != cpd.Description ||
+                            existing.EnrolmentMode != cpd.EnrolmentMode ||
+                            existing.EligibilityCriteria != cpd.EligibilityCriteria)
+                        {
+                            this.m_carePathwayRepository.Save(new Core.Model.Acts.CarePathwayDefinition()
+                            {
+                                Key = cpd.Uuid,
+                                Mnemonic = cpd.Mnemonic,
+                                Description = cpd.Description,
+                                EnrolmentMode = cpd.EnrolmentMode,
+                                EligibilityCriteria = cpd.EligibilityCriteria
                             });
                         }
                     }
