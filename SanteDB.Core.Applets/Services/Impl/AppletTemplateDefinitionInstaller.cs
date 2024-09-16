@@ -18,6 +18,7 @@
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
+using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using SharpCompress;
@@ -94,10 +95,17 @@ namespace SanteDB.Core.Applets.Services.Impl
                     foreach (var cpd in appletCollection.DefinedPathways)
                     {
                         var existing = this.m_carePathwayRepository.Find(o => o.Mnemonic == cpd.Mnemonic || o.Key == cpd.Uuid).FirstOrDefault();
+                        TemplateDefinition templateDefinition = null;
+                        if(!String.IsNullOrEmpty(cpd.EncounterTemplate))
+                        {
+                            templateDefinition = this.m_templateDefinitionRepository.GetTemplateDefinition(cpd.EncounterTemplate);
+                        }
+
                         if (existing == null ||
                             existing.Mnemonic != cpd.Mnemonic ||
                             existing.Description != cpd.Description ||
                             existing.EnrolmentMode != cpd.EnrolmentMode ||
+                            existing.TemplateKey != templateDefinition?.Key ||
                             existing.EligibilityCriteria != cpd.EligibilityCriteria)
                         {
                             this.m_carePathwayRepository.Save(new Core.Model.Acts.CarePathwayDefinition()
@@ -106,7 +114,8 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 Mnemonic = cpd.Mnemonic,
                                 Description = cpd.Description,
                                 EnrolmentMode = cpd.EnrolmentMode,
-                                EligibilityCriteria = cpd.EligibilityCriteria
+                                EligibilityCriteria = cpd.EligibilityCriteria,
+                                TemplateKey = templateDefinition?.Key
                             });
                         }
                     }
