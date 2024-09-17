@@ -61,8 +61,8 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets or sets the enrolment mode
         /// </summary>
-        [XmlElement("enrolment"), JsonProperty("enrolment")]
-        public CarePathwayEnrolmentMode EnrolmentMode { get; set; }
+        [XmlElement("enrollment"), JsonProperty("enrollment")]
+        public CarePathwayEnrollmentMode EnrollmentMode { get; set; }
 
         /// <summary>
         /// Gets or sets the encounter template

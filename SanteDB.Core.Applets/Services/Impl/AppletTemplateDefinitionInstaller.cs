@@ -104,7 +104,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                         if (existing == null ||
                             existing.Mnemonic != cpd.Mnemonic ||
                             existing.Description != cpd.Description ||
-                            existing.EnrolmentMode != cpd.EnrolmentMode ||
+                            existing.EnrollmentMode != cpd.EnrollmentMode ||
                             existing.TemplateKey != templateDefinition?.Key ||
                             existing.EligibilityCriteria != cpd.EligibilityCriteria)
                         {
@@ -113,7 +113,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 Key = cpd.Uuid,
                                 Mnemonic = cpd.Mnemonic,
                                 Description = cpd.Description,
-                                EnrolmentMode = cpd.EnrolmentMode,
+                                EnrollmentMode = cpd.EnrollmentMode,
                                 EligibilityCriteria = cpd.EligibilityCriteria,
                                 TemplateKey = templateDefinition?.Key
                             });
