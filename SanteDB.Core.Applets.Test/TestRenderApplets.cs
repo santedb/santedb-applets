@@ -83,6 +83,11 @@ namespace SanteDB.Core.Applets.Test
                 return new MemoryQueryResultSet(new Object[0]);
             }
 
+            public IQueryResultSet GetInverseRelations(Type tmodel, params Guid?[] sourceKey)
+            {
+                return new MemoryQueryResultSet(new Object[0]);
+            }
+
             /// <summary>
             /// Query the specified object
             /// </summary>
