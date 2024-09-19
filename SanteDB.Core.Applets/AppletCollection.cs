@@ -15,8 +15,6 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Services.Impl;
@@ -284,6 +282,14 @@ namespace SanteDB.Core.Applets
         public IEnumerable<AppletTemplateDefinition> DefinedTemplates
         {
             get => this.m_appletManifest.SelectMany(o => o.Templates);
+        }
+
+        /// <summary>
+        /// Gets the defined templates 
+        /// </summary>
+        public IEnumerable<AppletCarePathwayDefinition> DefinedPathways
+        {
+            get => this.m_appletManifest.SelectMany(o => o.Pathways);
         }
 
         /// <summary>

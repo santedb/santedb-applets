@@ -15,8 +15,6 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Model.Serialization;
@@ -226,6 +224,12 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlIgnore, JsonIgnore]
         public X509Certificate2 PublisherCertificate { get; internal set; }
+
+        /// <summary>
+        /// Get or sets the care pathways
+        /// </summary>
+        [XmlElement("carepath"), JsonProperty("carepath")]
+        public List<AppletCarePathwayDefinition> Pathways { get; set; }
 
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.

@@ -15,8 +15,6 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Model.Attributes;
@@ -59,6 +57,12 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlElement("view"), JsonProperty("view")]
         public String View { get; set; }
+
+        /// <summary>
+        /// Summary view
+        /// </summary>
+        [XmlElement("summaryView"), JsonProperty("summaryView")]
+        public String Summary { get; set; }
 
         /// <summary>
         /// Gets or sets the definition file

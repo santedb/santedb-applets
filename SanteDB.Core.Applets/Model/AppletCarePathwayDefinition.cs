@@ -16,49 +16,59 @@
  * the License.
  * 
  */
+using Newtonsoft.Json;
+using SanteDB.Core.Model.Acts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
 {
     /// <summary>
-    /// Represents view state information related to the applet
+    /// Applet care pathway definition 
     /// </summary>
-    [XmlType(nameof(AppletViewState), Namespace = "http://santedb.org/applet")]
+    [XmlType(nameof(AppletCarePathwayDefinition), Namespace = "http://santedb.org/applet")]
     [ExcludeFromCodeCoverage]
-    public class AppletViewState
+    public class AppletCarePathwayDefinition
     {
 
         /// <summary>
-        /// Gets or sets the name of the view state
+        /// Gets or sets the UUID of the definition
         /// </summary>
-        [XmlAttribute("name")]
-        public string Name { get; set; }
+        [XmlElement("uuid"), JsonProperty("uuid")]
+        public Guid Uuid { get; set; }
 
         /// <summary>
-        /// The priority of this applet (for overridding default assets)
+        /// Gets or sets the unique the mnemonic
         /// </summary>
-        [XmlAttribute("priority")]
-        public int Priority { get; set; }
+        [XmlAttribute("mnemonic"), JsonProperty("mnemonic")]
+        public String Mnemonic { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of routes associated with the applet view
+        /// Gets or sets teh description
         /// </summary>
-        [XmlElement("route")]
-        public String Route { get; set; }
+        [XmlElement("description"), JsonProperty("description")]
+        public String Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the view(s) related to the applet view state
+        /// Gets the elegilibty criteria
         /// </summary>
-        [XmlElement("view")]
-        public List<AppletView> View { get; set; }
+        [XmlElement("eligibility"), JsonProperty("eligibility")]
+        public String EligibilityCriteria { get; set; }
 
         /// <summary>
-        /// Indicates the view is abstract
+        /// Gets or sets the enrolment mode
         /// </summary>
-        [XmlAttribute("abstract")]
-        public bool IsAbstract { get; set; }
+        [XmlElement("enrollment"), JsonProperty("enrollment")]
+        public CarePathwayEnrollmentMode EnrollmentMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the encounter template
+        /// </summary>
+        [XmlElement("encounter"), JsonProperty("encounter")]
+        public String EncounterTemplate { get; set; }
+
     }
 }

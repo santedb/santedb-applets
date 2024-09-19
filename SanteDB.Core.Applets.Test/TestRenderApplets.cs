@@ -15,8 +15,6 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using NUnit.Framework;
 using SanteDB.Core.Applets.Model;
@@ -81,6 +79,11 @@ namespace SanteDB.Core.Applets.Test
 
 
             public IQueryResultSet GetRelations(Type tmodel, params Guid?[] sourceKey)
+            {
+                return new MemoryQueryResultSet(new Object[0]);
+            }
+
+            public IQueryResultSet GetInverseRelations(Type tmodel, params Guid?[] sourceKey)
             {
                 return new MemoryQueryResultSet(new Object[0]);
             }

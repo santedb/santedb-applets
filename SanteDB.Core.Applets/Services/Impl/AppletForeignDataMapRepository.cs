@@ -15,8 +15,6 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using SanteDB.Core.Data.Import.Definition;
 using SanteDB.Core.Diagnostics;
@@ -133,7 +131,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     }))
                     .OfType<ForeignDataMap>()
                     .GroupBy(o => o.Key)
-                    .Select(o => o.First())
+                    .Select(o => o.OrderByDescending(d => d.Priority).First())
                     .ToList();
             }
             catch (Exception e)
