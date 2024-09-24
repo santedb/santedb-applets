@@ -31,7 +31,7 @@ namespace SanteDB.Core.Applets.ViewModel
     public class ViewModelBodySerializer : JsonBodySerializer
     {
         /// <inheritdoc/>
-        public override string ContentType => "application/json+sdb-viewmodel";
+        public override string ContentType => SanteDBExtendedMimeTypes.JsonViewModel; //"application/json+sdb-viewmodel";
 
         /// <inheritdoc/>
         public override object DeSerialize(Stream requestOrResponseStream, ContentType contentType, Type typeHint)
