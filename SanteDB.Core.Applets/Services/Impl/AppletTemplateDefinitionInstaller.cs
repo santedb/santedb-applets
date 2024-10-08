@@ -103,6 +103,7 @@ namespace SanteDB.Core.Applets.Services.Impl
 
                         if (existing == null ||
                             existing.Mnemonic != cpd.Mnemonic ||
+                            existing.Name != cpd.Name ||
                             existing.Description != cpd.Description ||
                             existing.EnrollmentMode != cpd.EnrollmentMode ||
                             existing.TemplateKey != templateDefinition?.Key ||
@@ -111,6 +112,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                             this.m_carePathwayRepository.Save(new Core.Model.Acts.CarePathwayDefinition()
                             {
                                 Key = cpd.Uuid,
+                                Name = cpd.Name,
                                 Mnemonic = cpd.Mnemonic,
                                 Description = cpd.Description,
                                 EnrollmentMode = cpd.EnrollmentMode,

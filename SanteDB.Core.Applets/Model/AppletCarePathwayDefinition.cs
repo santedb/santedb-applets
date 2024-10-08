@@ -47,6 +47,12 @@ namespace SanteDB.Core.Applets.Model
         public String Mnemonic { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the pathway
+        /// </summary>
+        [XmlElement("name"), JsonProperty("name")]
+        public string Name { get; set; }
+
+        /// <summary>
         /// Gets or sets teh description
         /// </summary>
         [XmlElement("description"), JsonProperty("description")]
