@@ -111,7 +111,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
             PropertyContainerDescription value = null;
             if (!this.m_description.TryGetValue(name, out value))
             {
-                value = this.Model.Find(o => o.TypeName == name);
+                value = this.Model.Find(o => o.TypeName == name || o.Name == name);
                 lock (this.m_lockObject)
                 {
                     if (!this.m_description.ContainsKey(name))
@@ -134,7 +134,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
             // Type name
             if (!this.m_description.TryGetValue(rootTypeName, out retVal))
             {
-                retVal = this.Model.FirstOrDefault(o => o.TypeName == rootTypeName);
+                retVal = this.Model.FirstOrDefault(o => o.TypeName == rootTypeName && String.IsNullOrEmpty(o.Name));
                 String typeName = rootTypeName;
                 // Children from the heirarchy
                 while (rootType != typeof(IdentifiedData) && retVal == null)
@@ -149,7 +149,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
 
                     if (!this.m_description.TryGetValue(typeName, out retVal))
                     {
-                        retVal = this.Model.FirstOrDefault(o => o.TypeName == typeName);
+                        retVal = this.Model.FirstOrDefault(o => o.TypeName == typeName && String.IsNullOrEmpty(o.Name));
                     }
                 }
 
@@ -254,7 +254,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         {
             foreach (var td in victim.Model)
             {
-                var mergeModel = merged.Model.FirstOrDefault(o => o.TypeName == td.TypeName);
+                var mergeModel = merged.Model.FirstOrDefault(o => o.TypeName == td.TypeName && o.Name == td.Name);
                 if (mergeModel == null)
                 {
                     merged.Model.Add(td);

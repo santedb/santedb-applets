@@ -42,6 +42,12 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         }
 
         /// <summary>
+        /// Gets or sets the name of the type model
+        /// </summary>
+        [XmlAttribute("name")]
+        public string Name { get; set; }
+
+        /// <summary>
         /// Name of the type to be loaded
         /// </summary>
         [XmlAttribute("type")]
