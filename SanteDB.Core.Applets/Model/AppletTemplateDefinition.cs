@@ -65,6 +65,12 @@ namespace SanteDB.Core.Applets.Model
         public String Summary { get; set; }
 
         /// <summary>
+        /// Back-entry forms
+        /// </summary>
+        [XmlElement("backEntry"), JsonProperty("backEntry")]
+        public String BackEntry { get; set; }
+
+        /// <summary>
         /// Gets or sets the definition file
         /// </summary>
         [XmlElement("definition"), JsonProperty("definition")]
@@ -88,11 +94,6 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("uuid"), JsonProperty("uuid")]
         public Guid Uuid { get; set; }
 
-        /// <summary>
-        /// Identifies allowed content (templates) which can be embedded in this template
-        /// </summary>
-        [XmlElement("allowComponent"), JsonProperty("allowComponent")]
-        public List<String> AllowComponent { get; set; }
 
         /// <summary>
         /// Gets the guard condition for the template executed against the patient (allows for blocking of
