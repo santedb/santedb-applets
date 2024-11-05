@@ -522,7 +522,7 @@ namespace SanteDB.Core.Applets
                         retVal = ViewModelDescription.Load(ms);
                         foreach (var itm in retVal.Include)
                         {
-                            retVal.Model.AddRange(this.GetViewModelDescription(itm).Model);
+                            retVal.TypeModelDefinitions.AddRange(this.GetViewModelDescription(itm).TypeModelDefinitions);
                         }
 
                         // caching
