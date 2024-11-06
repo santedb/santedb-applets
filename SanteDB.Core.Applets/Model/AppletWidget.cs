@@ -139,7 +139,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlAttribute("context"), QueryParameter("context")]
         [JsonProperty("context")]
-        public List<String> Context { get; set; }
+        public string Context { get; set; }
 
         /// <summary>
         /// Gets or sets the type of widget
