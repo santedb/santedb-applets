@@ -21,9 +21,12 @@ using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
+using SanteDB.Core.Templates;
+using SanteDB.Core.Templates.Definition;
 using SharpCompress;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SanteDB.Core.Applets.Services.Impl
@@ -35,6 +38,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     {
         private readonly ICarePathwayDefinitionRepositoryService m_carePathwayRepository;
         private readonly ITemplateDefinitionRepositoryService m_templateDefinitionRepository;
+        private readonly IDataTemplateManagementService m_templateManagementService;
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletTemplateDefinitionInstaller));
 
         /// <summary>
@@ -42,10 +46,11 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public AppletTemplateDefinitionInstaller(IAppletManagerService appletManagerService, 
             ITemplateDefinitionRepositoryService templateDefinitionRepositoryService = null,
+            IDataTemplateManagementService templateManagementService = null,
             ICarePathwayDefinitionRepositoryService carePathwayDefinitionRepositoryService = null, 
             IAppletSolutionManagerService appletSolutionManagerService = null)
         {
-
+            this.m_templateManagementService = templateManagementService;
             this.m_carePathwayRepository = carePathwayDefinitionRepositoryService;
             this.m_templateDefinitionRepository = templateDefinitionRepositoryService;
             appletManagerService.Changed += (o,e) =>
@@ -82,6 +87,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                             existing.Name != tpl.Description ||
                             existing.Oid != tpl.Oid)
                         {
+
                             this.m_templateDefinitionRepository.Save(new Core.Model.DataTypes.TemplateDefinition()
                             {
                                 Key = tpl.Uuid,
@@ -91,6 +97,10 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 Description = $"Definition found in {tpl.Definition}"
                             });
                         }
+
+                        // Install the template definition and upgrade if newer version and/or priority is higher
+                        var dataTemplateDefinition = this.CreateTemplateDefinition(tpl);
+                        this.m_templateManagementService.AddOrUpdate(dataTemplateDefinition);
                     }
                     foreach (var cpd in appletCollection.DefinedPathways)
                     {
@@ -127,6 +137,76 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 this.m_tracer.TraceWarning("Could not install template definitions from applet - {0}", e);
             }
+        }
+
+        private DataTemplateDefinition CreateTemplateDefinition(AppletTemplateDefinition tpl)
+        {
+            var retVal = new DataTemplateDefinition()
+            {
+                Name = tpl.Description,
+                Guard = tpl.Guard,
+                Key = tpl.Uuid,
+                Metadata = new DataTemplateDefinitionMetadata()
+                {
+                    Author = new List<string>() { tpl.Manifest?.Info?.Author },
+                    Icon = tpl.Icon,
+                    Version = $"{tpl.Manifest?.Info?.Version}.{tpl.Priority}"
+                },
+                Mnemonic = tpl.Mnemonic,
+                Oid = tpl.Oid,
+                Public = tpl.Public,
+                Readonly = true,
+                Scopes = tpl.Scope,
+                Views = new List<DataTemplateView>(),
+                IsActive = true
+            };
+
+            // Render the contents
+            if(!String.IsNullOrEmpty(tpl.Definition))
+            {
+                retVal.JsonTemplate = new DataTemplateContent()
+                {
+                    Content = tpl.Definition,
+                    ContentType = DataTemplateContentType.reference
+                };
+            }
+            
+            if (!String.IsNullOrEmpty(tpl.View))
+            {
+                retVal.Views.Add(new DataTemplateView()
+                {
+                    ViewType = DataTemplateViewType.DetailView,
+                    Content = tpl.View
+                });
+            }
+            if (!String.IsNullOrEmpty(tpl.Summary))
+            {
+                retVal.Views.Add(new DataTemplateView()
+                {
+                    ViewType = DataTemplateViewType.SummaryView,
+                    Content = tpl.Summary
+                });
+            }
+            if (!String.IsNullOrEmpty(tpl.Form))
+            {
+                retVal.Views.Add(new DataTemplateView()
+                {
+                    ViewType = DataTemplateViewType.Entry,
+                    Content = tpl.Form
+                });
+            }
+
+            if (!String.IsNullOrEmpty(tpl.BackEntry))
+            {
+                retVal.Views.Add(new DataTemplateView()
+                {
+                    ViewType = DataTemplateViewType.BackEntry,
+                    Content = tpl.BackEntry
+                });
+            }
+            return retVal;
+
+
         }
     }
 }

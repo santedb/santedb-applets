@@ -120,5 +120,19 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("icon"), JsonProperty("icon")]
         public string Icon { get; set; }
 
+        /// <summary>
+        /// Applet manifest
+        /// </summary>
+        [XmlIgnore]
+        public AppletManifest Manifest { get; internal set; }
+
+        /// <summary>
+        /// Initialize
+        /// </summary>
+        /// <param name="host"></param>
+        internal void Initialize(AppletManifest host)
+        {
+            this.Manifest = host;
+        }
     }
 }
