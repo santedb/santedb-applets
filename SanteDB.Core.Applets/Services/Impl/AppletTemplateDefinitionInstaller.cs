@@ -143,6 +143,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             var retVal = new DataTemplateDefinition()
             {
+                Uuid = tpl.Uuid,
                 Name = tpl.Description,
                 Guard = tpl.Guard,
                 Key = tpl.Uuid,
@@ -150,7 +151,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                 {
                     Author = new List<string>() { tpl.Manifest?.Info?.Author },
                     Icon = tpl.Icon,
-                    Version = $"{tpl.Manifest?.Info?.Version}.{tpl.Priority}"
+                    Version = tpl.Priority + 1
                 },
                 Mnemonic = tpl.Mnemonic,
                 Oid = tpl.Oid,
