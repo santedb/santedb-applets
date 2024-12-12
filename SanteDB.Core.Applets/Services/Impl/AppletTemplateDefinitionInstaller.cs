@@ -44,19 +44,19 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Applet template definition service
         /// </summary>
-        public AppletTemplateDefinitionInstaller(IAppletManagerService appletManagerService, 
+        public AppletTemplateDefinitionInstaller(IAppletManagerService appletManagerService,
             ITemplateDefinitionRepositoryService templateDefinitionRepositoryService = null,
             IDataTemplateManagementService templateManagementService = null,
-            ICarePathwayDefinitionRepositoryService carePathwayDefinitionRepositoryService = null, 
+            ICarePathwayDefinitionRepositoryService carePathwayDefinitionRepositoryService = null,
             IAppletSolutionManagerService appletSolutionManagerService = null)
         {
             this.m_templateManagementService = templateManagementService;
             this.m_carePathwayRepository = carePathwayDefinitionRepositoryService;
             this.m_templateDefinitionRepository = templateDefinitionRepositoryService;
-            appletManagerService.Changed += (o,e) =>
+            appletManagerService.Changed += (o, e) =>
             {
             };
-            if(appletSolutionManagerService != null)
+            if (appletSolutionManagerService != null)
             {
                 appletSolutionManagerService.Solutions.ForEach(sln => this.InstallTemplatesFromApplet(appletSolutionManagerService.GetApplets(sln.Meta.Id)));
             }
@@ -71,14 +71,15 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         private void InstallTemplatesFromApplet(ReadonlyAppletCollection appletCollection)
         {
-            if(this.m_templateDefinitionRepository == null)
+            if (this.m_templateDefinitionRepository == null)
             {
                 return;
             }
 
             try
             {
-                using (AuthenticationContext.EnterSystemContext()) {
+                using (AuthenticationContext.EnterSystemContext())
+                {
                     foreach (var tpl in appletCollection.DefinedTemplates)
                     {
                         var existing = this.m_templateDefinitionRepository.Find(o => o.Mnemonic == tpl.Mnemonic || o.Key == tpl.Uuid).FirstOrDefault();
@@ -106,7 +107,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     {
                         var existing = this.m_carePathwayRepository.Find(o => o.Mnemonic == cpd.Mnemonic || o.Key == cpd.Uuid).FirstOrDefault();
                         TemplateDefinition templateDefinition = null;
-                        if(!String.IsNullOrEmpty(cpd.EncounterTemplate))
+                        if (!String.IsNullOrEmpty(cpd.EncounterTemplate))
                         {
                             templateDefinition = this.m_templateDefinitionRepository.GetTemplateDefinition(cpd.EncounterTemplate);
                         }
@@ -133,7 +134,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 this.m_tracer.TraceWarning("Could not install template definitions from applet - {0}", e);
             }
@@ -147,12 +148,9 @@ namespace SanteDB.Core.Applets.Services.Impl
                 Name = tpl.Description,
                 Guard = tpl.Guard,
                 Key = tpl.Uuid,
-                Metadata = new DataTemplateDefinitionMetadata()
-                {
-                    Author = new List<string>() { tpl.Manifest?.Info?.Author },
-                    Icon = tpl.Icon,
-                    Version = tpl.Priority + 1
-                },
+                Version = tpl.Priority + 1,
+                Author = new List<string>() { tpl.Manifest?.Info?.Author },
+                Icon = tpl.Icon,
                 Mnemonic = tpl.Mnemonic,
                 Oid = tpl.Oid,
                 Public = tpl.Public,
@@ -163,7 +161,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             };
 
             // Render the contents
-            if(!String.IsNullOrEmpty(tpl.Definition))
+            if (!String.IsNullOrEmpty(tpl.Definition))
             {
                 retVal.JsonTemplate = new DataTemplateContent()
                 {
@@ -171,7 +169,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     ContentType = DataTemplateContentType.reference
                 };
             }
-            
+
             if (!String.IsNullOrEmpty(tpl.View))
             {
                 retVal.Views.Add(new DataTemplateView()
