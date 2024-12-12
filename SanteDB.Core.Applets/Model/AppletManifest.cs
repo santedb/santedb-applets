@@ -87,6 +87,11 @@ namespace SanteDB.Core.Applets.Model
             {
                 mnu.Initialize(this);
             }
+
+            foreach(var tpl in this.Templates)
+            {
+                tpl.Initialize(this);
+            }
         }
 
         /// <summary>

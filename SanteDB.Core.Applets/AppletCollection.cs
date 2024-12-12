@@ -481,6 +481,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Gets the template definition
         /// </summary>
+        [Obsolete("Use the IDataTemplateManagerService", true)]
         public AppletTemplateDefinition GetTemplateDefinition(String templateMnemonic)
         {
             AppletTemplateDefinition retVal = null;
@@ -1089,6 +1090,7 @@ namespace SanteDB.Core.Applets
         /// </summary>
         /// <param name="templateId">The identifier of the template to fetch</param>
         /// <param name="parameters">The parameters to use</param>
+        [Obsolete("Use the IDataTemplateManagerService", true)]
         public IdentifiedData GetTemplateInstance(string templateId, IDictionary<String, String> parameters = null)
         {
             var definition = this.GetTemplateDefinition(templateId);

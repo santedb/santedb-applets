@@ -123,6 +123,12 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("demand"), JsonProperty("demand")]
         public List<String> Policies { get; set; }
 
+        /// <summary>
+        /// Guard for the view
+        /// </summary>
+        [XmlElement("guard"), JsonProperty("guard")]
+        public List<String> Guard { get; set; }
+
     }
 
     /// <summary>
