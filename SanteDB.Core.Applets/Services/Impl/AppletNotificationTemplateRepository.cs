@@ -107,30 +107,38 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         private void ProcessApplet(ReadonlyAppletCollection appletAssets)
         {
+            
             if (appletAssets == null)
             {
                 throw new ArgumentNullException(nameof(appletAssets));
             }
 
-            foreach (var asset in appletAssets.SelectMany(o => o.Assets.Where(a => a.Name.StartsWith("notifications/"))))
+            try
             {
-                try
+                foreach (var asset in appletAssets.SelectMany(o => o.Assets.Where(a => a.Name.StartsWith("notifications/"))))
                 {
-                    using (var str = new MemoryStream(appletAssets.RenderAssetContent(asset)))
+                    try
                     {
-                        var notification = NotificationTemplate.Load(str);
-                        this.m_definitionCache.TryAdd(notification.Id, notification); // set the default with no language
-                        if (!this.m_definitionCache.TryAdd($"{notification.Id}/{notification.Language}", notification))
+                        using (var str = new MemoryStream(appletAssets.RenderAssetContent(asset)))
                         {
-                            this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Id);
-                        }
+                            var notification = NotificationTemplate.Load(str);
+                            this.m_definitionCache.TryAdd(notification.Id, notification); // set the default with no language
+                            if (!this.m_definitionCache.TryAdd($"{notification.Id}/{notification.Language}", notification))
+                            {
+                                this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Id);
+                            }
 
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        this.m_tracer.TraceError("Could not load notification template {0}", asset.Name);
                     }
                 }
-                catch (Exception)
-                {
-                    this.m_tracer.TraceError("Could not load notification template {0}", asset.Name);
-                }
+            }
+            catch(Exception e)
+            {
+                this.m_tracer.TraceWarning("Could not load notification templates - {0}", e.ToHumanReadableString());
             }
         }
 
