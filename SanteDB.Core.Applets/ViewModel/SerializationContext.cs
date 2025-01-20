@@ -157,6 +157,10 @@ namespace SanteDB.Core.Applets.ViewModel
                             elementDescription = this.ViewModelDescription?.FindDescription(elementDescription.Ref) ?? elementDescription;
                         }
                     }
+                    else if(elementDescription?.Properties?.Any() != true)
+                    {
+                        elementDescription = this.ViewModelDescription?.FindDescription(this.Instance.GetType().GetSerializationName()) ?? elementDescription;
+                    }
 
                     this.m_elementDescription = elementDescription;
                 }
