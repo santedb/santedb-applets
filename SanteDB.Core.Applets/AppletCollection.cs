@@ -20,6 +20,7 @@ using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Services.Impl;
 using SanteDB.Core.Applets.ViewModel.Description;
 using SanteDB.Core.Applets.ViewModel.Json;
+using SanteDB.Core.Data.Quality;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.DataTypes;
@@ -63,7 +64,22 @@ namespace SanteDB.Core.Applets
         internal ReadonlyAppletCollection(AppletCollection wrap)
         {
             this.m_appletManifest = wrap;
-            wrap.CollectionChanged += (o, e) => this.CollectionChanged?.Invoke(o, e);
+            wrap.CollectionChanged += (o, e) =>
+            {
+                if (o != this && e.Action == NotifyCollectionChangedAction.Reset)
+                {
+                    this.ClearCaches();
+                }
+                this.CollectionChanged?.Invoke(o, e);
+            };
+        }
+
+        /// <summary>
+        /// Clear all caches
+        /// </summary>
+        public override void ClearCaches()
+        {
+            base.ClearCaches();
         }
 
         /// <summary>
@@ -132,10 +148,13 @@ namespace SanteDB.Core.Applets
         // A cache of rendered assets
         private static ConcurrentDictionary<String, Byte[]> s_cache = new ConcurrentDictionary<string, byte[]>();
 
-        private static ConcurrentDictionary<String, AppletTemplateDefinition> s_templateCache = new ConcurrentDictionary<string, AppletTemplateDefinition>();
-        private static ConcurrentDictionary<String, ViewModelDescription> s_viewModelCache = new ConcurrentDictionary<string, ViewModelDescription>();
-        private static List<AppletAsset> s_viewStateAssets = null;
-        private static List<AppletAsset> s_widgetAssets = null;
+        private ConcurrentDictionary<String, AppletTemplateDefinition> s_templateCache = new ConcurrentDictionary<string, AppletTemplateDefinition>();
+        private ConcurrentDictionary<String, ViewModelDescription> s_viewModelCache = new ConcurrentDictionary<string, ViewModelDescription>();
+        private ConcurrentDictionary<String, IEnumerable<AppletAsset>> m_dynamicHtmlAssets = new ConcurrentDictionary<string, IEnumerable<AppletAsset>>();
+
+        private List<AppletAsset> m_viewStateAssets = null;
+        private List<AppletAsset> m_widgetAssets = null;
+        private List<AppletAsset> m_htmlAssets = null;
 
         private AssetContentResolver m_resolver = null;
         private Regex m_localizationRegex = new Regex("{{\\s{0,}:?:?['\"]([A-Za-z0-9\\._\\-]*?)['\"]\\s{0,}\\|\\s?i18n\\s{0,}}}", RegexOptions.Compiled);
@@ -208,7 +227,6 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public AppletCollection()
         {
-            AppletCollection.ClearCaches();
         }
 
 
@@ -224,15 +242,17 @@ namespace SanteDB.Core.Applets
         /// Clear all caches
         /// </summary>
         [ExcludeFromCodeCoverage]
-        public static void ClearCaches()
+        public virtual void ClearCaches()
         {
-            s_viewStateAssets?.Clear();
-            s_widgetAssets?.Clear();
+            m_viewStateAssets?.Clear();
+            m_widgetAssets?.Clear();
             s_viewModelCache?.Clear();
             s_templateCache?.Clear();
             s_cache?.Clear();
-            s_viewStateAssets = null;
-            s_widgetAssets = null;
+            m_dynamicHtmlAssets.Clear();
+            m_viewStateAssets = null;
+            m_widgetAssets = null;
+            this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         /// <summary>
@@ -293,32 +313,66 @@ namespace SanteDB.Core.Applets
         }
 
         /// <summary>
-        /// Gets a list of all view states of all loaded applets
+        /// Html Assets
         /// </summary>
-        public List<AppletAsset> ViewStateAssets
+        public IEnumerable<AppletAsset> HtmlAssets
         {
             get
             {
-                if (s_viewStateAssets == null)
+                if (this.m_htmlAssets == null)
                 {
-                    s_viewStateAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(a => ((this.Resolver != null ? this.Resolver(a) : a.Content) as AppletAssetHtml)?.ViewState != null).ToList();
+                    this.m_htmlAssets = this.m_appletManifest.SelectMany(m => m.Assets).Where(a => a.MimeType == "text/html").ToList();
                 }
-
-                return s_viewStateAssets;
+                return this.m_htmlAssets;
             }
         }
 
         /// <summary>
-        /// Gets a list of all widgets for all loaded applets
+        /// Gets a list of all view states of all loaded applets
         /// </summary>
-        public List<AppletAsset> WidgetAssets
+        public IEnumerable<AppletAsset> ViewStateAssets
         {
             get
             {
-                if (s_widgetAssets == null)
+                if (m_viewStateAssets == null)
                 {
-                    s_widgetAssets = this.m_appletManifest.SelectMany(m => m.Assets)
-                        .Where(o => o.MimeType == "text/html")
+                    m_viewStateAssets = this.HtmlAssets.Where(h => ((h.Content ?? this.Resolver(h)) as AppletAssetHtml)?.ViewState != null).ToList();
+                }
+
+                return m_viewStateAssets;
+            }
+        }
+
+        /// <summary>
+        /// Gets all registered dynamic html asset generation source
+        /// </summary>
+        /// <param name="identifier">The identifier of the dynamic asset extension point</param>
+        /// <returns>The list of dynamic applet assets</returns>
+        public IEnumerable<AppletAsset> GetDynamicHtmlAssets(String identifier)
+        {
+            if (!this.m_dynamicHtmlAssets.TryGetValue(identifier, out var dynamicAssetList)) {
+                var dynamicIncludeInstructions = this.m_appletManifest
+                            .SelectMany(o => o.DynamicHtml.Select(d => new { manifest = o, dhtml = d }))
+                            .Where(n => identifier.Equals(n.dhtml.Name, StringComparison.OrdinalIgnoreCase))
+                            .SelectMany(o=>o.dhtml.Assets.Select(d => new { manifest = o.manifest, asset = d }));
+                dynamicAssetList = this.HtmlAssets.Where(a => dynamicIncludeInstructions?.Any(d => a.Manifest == d.manifest &&  d.asset.Equals(a.Name) || new Regex(d.asset).IsMatch(a.Name)) == true).ToList();
+                m_dynamicHtmlAssets.TryAdd(identifier, dynamicAssetList);
+            }
+            return dynamicAssetList;
+        }
+
+
+        /// <summary>
+        /// Gets a list of all widgets for all loaded applets
+        /// </summary>
+        public IEnumerable<AppletAsset> WidgetAssets
+        {
+            get
+            {
+                if (m_widgetAssets == null)
+                {
+                    this.m_widgetAssets = this
+                        .HtmlAssets
                         .Select(o => new { asset = o, content = (this.Resolver != null ? this.Resolver(o) : o.Content) as AppletWidget })
                         .Where(o => o.content != null)
                         .GroupBy(o => o.content.Name)
@@ -326,7 +380,7 @@ namespace SanteDB.Core.Applets
                         .ToList();
                 }
 
-                return s_widgetAssets;
+                return m_widgetAssets;
             }
         }
 
@@ -355,7 +409,7 @@ namespace SanteDB.Core.Applets
 
             this.m_appletManifest.Add(item);
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
-            AppletCollection.ClearCaches();
+            this.ClearCaches();
         }
 
         /// <summary>

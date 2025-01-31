@@ -213,7 +213,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     }
                 }
 
-                AppletCollection.ClearCaches();
+                this.m_appletCollection[String.Empty].ClearCaches();
             }
             return true;
         }
@@ -291,7 +291,7 @@ namespace SanteDB.Core.Applets.Services.Impl
 
             this.m_appletCollection[appletScope].Add(pkg);
 
-            AppletCollection.ClearCaches();
+            this.m_appletCollection[appletScope].ClearCaches();
 
             return true;
         }

@@ -154,6 +154,12 @@ namespace SanteDB.Core.Applets.Model
         public List<AppletErrorAssetDefinition> ErrorAssets { get; set; }
 
         /// <summary>
+        /// Gets the dynamically generated HTML assets
+        /// </summary>
+        [XmlElement("dynamicHtml")]
+        public List<AppletDynamicHtmlCollection> DynamicHtml { get; set; }
+
+        /// <summary>
         /// Attempt to retrieve the assets <paramref name="assetPath"/>
         /// </summary>
         /// <param name="assetPath">The path to the asset name in this collection</param>
