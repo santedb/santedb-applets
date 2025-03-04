@@ -123,7 +123,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                         {
                             var notification = NotificationTemplate.Load(str);
                             this.m_definitionCache.TryAdd(notification.Id, notification); // set the default with no language
-                            if (!this.m_definitionCache.TryAdd($"{notification.Id}/{notification.Language}", notification))
+                            if (!this.m_definitionCache.TryAdd($"{notification.Id}", notification))
                             {
                                 this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Id);
                             }
@@ -152,9 +152,9 @@ namespace SanteDB.Core.Applets.Services.Impl
         public IEnumerable<NotificationTemplate> Find(Expression<Func<NotificationTemplate, bool>> filter) => this.m_definitionCache.Values.Where(filter.Compile());
 
         /// <inheritdoc/>
-        public NotificationTemplate Get(string id, string lang)
+        public NotificationTemplate Get(string id)
         {
-            if (this.m_definitionCache.TryGetValue($"{id}/{lang}", out var retVal) ||
+            if (this.m_definitionCache.TryGetValue($"{id}", out var retVal) ||
                 this.m_definitionCache.TryGetValue(id, out retVal))
             {
                 return retVal;
