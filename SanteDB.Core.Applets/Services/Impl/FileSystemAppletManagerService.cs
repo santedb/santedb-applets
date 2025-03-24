@@ -467,6 +467,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public virtual AppletManifest GetApplet(string appletId)
         {
+
             return this.GetApplet(String.Empty, appletId);
         }
 
@@ -522,10 +523,12 @@ namespace SanteDB.Core.Applets.Services.Impl
                 throw new SecurityException("Applet failed validation");
             }
 
-            if (this.m_appletCollection.TryGetValue(solution.Meta.Id, out var existingSolution))
+            if (this.m_appletCollection.TryGetValue(solution.Meta.Id, out var existingSolutionCollection))
             {
                 this.m_tracer.TraceInfo("Upgrading solution {0}", solution.Meta.Id);
-                existingSolution.Clear();
+                existingSolutionCollection.Clear();
+                this.m_appletCollection.Remove(solution.Meta.Id);
+
             }
             else
             {
@@ -555,10 +558,16 @@ namespace SanteDB.Core.Applets.Services.Impl
 
             // Install
             var pakFile = Path.Combine(appletDir, solution.Meta.Id + ".pak");
-            if (this.m_solutions.Any(o => o.Meta.Id == solution.Meta.Id) && File.Exists(pakFile) && !isUpgrade)
+            var existingSolution = this.m_solutions.FirstOrDefault(o => o.Meta.Id == solution.Meta.Id);
+            if (existingSolution != null && File.Exists(pakFile))
             {
-                throw new InvalidOperationException($"Cannot replace {solution.Meta} unless upgrade is specifically specified");
+                if (!isUpgrade)
+                {
+                    throw new InvalidOperationException($"Cannot replace {solution.Meta} unless upgrade is specifically specified");
+                }
+                this.m_solutions.Remove(existingSolution);
             }
+
             if (this.IsRunning) // Not an load from the start 
             {  // Save the original for reboot
                 using (var fs = File.Create(pakFile))
