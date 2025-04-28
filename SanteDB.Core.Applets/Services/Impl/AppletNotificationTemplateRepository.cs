@@ -122,10 +122,10 @@ namespace SanteDB.Core.Applets.Services.Impl
                         using (var str = new MemoryStream(appletAssets.RenderAssetContent(asset)))
                         {
                             var notification = NotificationTemplate.Load(str);
-                            this.m_definitionCache.TryAdd(notification.Id, notification); // set the default with no language
-                            if (!this.m_definitionCache.TryAdd($"{notification.Id}", notification))
+                            this.m_definitionCache.TryAdd(notification.Key.ToString(), notification); // set the default with no language
+                            if (!this.m_definitionCache.TryAdd($"{notification.Key.ToString()}", notification))
                             {
-                                this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Id);
+                                this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Key.ToString());
                             }
 
                         }
