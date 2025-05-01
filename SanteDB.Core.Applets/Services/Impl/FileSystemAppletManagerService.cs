@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2025, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -15,6 +15,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
+ * User: fyfej
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Applets.Model;
@@ -467,6 +469,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public virtual AppletManifest GetApplet(string appletId)
         {
+
             return this.GetApplet(String.Empty, appletId);
         }
 
@@ -522,10 +525,12 @@ namespace SanteDB.Core.Applets.Services.Impl
                 throw new SecurityException("Applet failed validation");
             }
 
-            if (this.m_appletCollection.TryGetValue(solution.Meta.Id, out var existingSolution))
+            if (this.m_appletCollection.TryGetValue(solution.Meta.Id, out var existingSolutionCollection))
             {
                 this.m_tracer.TraceInfo("Upgrading solution {0}", solution.Meta.Id);
-                existingSolution.Clear();
+                existingSolutionCollection.Clear();
+                this.m_appletCollection.Remove(solution.Meta.Id);
+
             }
             else
             {
@@ -555,10 +560,16 @@ namespace SanteDB.Core.Applets.Services.Impl
 
             // Install
             var pakFile = Path.Combine(appletDir, solution.Meta.Id + ".pak");
-            if (this.m_solutions.Any(o => o.Meta.Id == solution.Meta.Id) && File.Exists(pakFile) && !isUpgrade)
+            var existingSolution = this.m_solutions.FirstOrDefault(o => o.Meta.Id == solution.Meta.Id);
+            if (existingSolution != null && File.Exists(pakFile))
             {
-                throw new InvalidOperationException($"Cannot replace {solution.Meta} unless upgrade is specifically specified");
+                if (!isUpgrade)
+                {
+                    throw new InvalidOperationException($"Cannot replace {solution.Meta} unless upgrade is specifically specified");
+                }
+                this.m_solutions.Remove(existingSolution);
             }
+
             if (this.IsRunning) // Not an load from the start 
             {  // Save the original for reboot
                 using (var fs = File.Create(pakFile))

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2025, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -15,6 +15,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
+ * User: fyfej
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Notifications;
@@ -122,10 +124,10 @@ namespace SanteDB.Core.Applets.Services.Impl
                         using (var str = new MemoryStream(appletAssets.RenderAssetContent(asset)))
                         {
                             var notification = NotificationTemplate.Load(str);
-                            this.m_definitionCache.TryAdd(notification.Id, notification); // set the default with no language
-                            if (!this.m_definitionCache.TryAdd($"{notification.Id}/{notification.Language}", notification))
+                            this.m_definitionCache.TryAdd(notification.Key.ToString(), notification); // set the default with no language
+                            if (!this.m_definitionCache.TryAdd($"{notification.Key.ToString()}", notification))
                             {
-                                this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Id);
+                                this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Key.ToString());
                             }
 
                         }
@@ -152,9 +154,9 @@ namespace SanteDB.Core.Applets.Services.Impl
         public IEnumerable<NotificationTemplate> Find(Expression<Func<NotificationTemplate, bool>> filter) => this.m_definitionCache.Values.Where(filter.Compile());
 
         /// <inheritdoc/>
-        public NotificationTemplate Get(string id, string lang)
+        public NotificationTemplate Get(string id)
         {
-            if (this.m_definitionCache.TryGetValue($"{id}/{lang}", out var retVal) ||
+            if (this.m_definitionCache.TryGetValue($"{id}", out var retVal) ||
                 this.m_definitionCache.TryGetValue(id, out retVal))
             {
                 return retVal;

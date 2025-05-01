@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2025, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -15,6 +15,8 @@
  * License for the specific language governing permissions and limitations under 
  * the License.
  * 
+ * User: fyfej
+ * Date: 2023-6-21
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Services.Impl;
@@ -160,8 +162,6 @@ namespace SanteDB.Core.Applets
         private Regex m_localizationRegex = new Regex("{{\\s{0,}:?:?['\"]([A-Za-z0-9\\._\\-]*?)['\"]\\s{0,}\\|\\s?i18n\\s{0,}}}", RegexOptions.Compiled);
         private Regex m_bindingRegex = new Regex("{{\\s?\\$([A-Za-z0-9_]*?)\\s?}}", RegexOptions.Compiled);
 
-        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletCollection));
-
         /// <summary>
         /// Represetns the applet scheme
         /// </summary>
@@ -173,7 +173,6 @@ namespace SanteDB.Core.Applets
         // XMLNS stuff
         private readonly XNamespace xs_xhtml = "http://www.w3.org/1999/xhtml";
 
-        private readonly XNamespace xs_binding = "http://santedb.org/applet/binding";
 
         /// <summary>
         /// Gets or sets whether caching is enabled
@@ -246,10 +245,12 @@ namespace SanteDB.Core.Applets
         {
             m_viewStateAssets?.Clear();
             m_widgetAssets?.Clear();
+            m_htmlAssets?.Clear();
             s_viewModelCache?.Clear();
             s_templateCache?.Clear();
             s_cache?.Clear();
             m_dynamicHtmlAssets.Clear();
+            m_htmlAssets = null;
             m_viewStateAssets = null;
             m_widgetAssets = null;
             this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
