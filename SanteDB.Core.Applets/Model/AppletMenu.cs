@@ -72,6 +72,12 @@ namespace SanteDB.Core.Applets.Model
         }
 
         /// <summary>
+        /// Gets or sets the priority of the menu item (used for overrides)
+        /// </summary>
+        [XmlAttribute("priority")]
+        public int Priority { get; set; }
+
+        /// <summary>
         /// Gets or sets the applet asset that this item should launch
         /// </summary>
         [XmlAttribute("launch")]
