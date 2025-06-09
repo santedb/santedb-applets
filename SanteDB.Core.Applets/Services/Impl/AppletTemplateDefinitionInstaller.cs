@@ -21,6 +21,7 @@
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model.DataTypes;
+using SanteDB.Core.Notifications;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using SanteDB.Core.Templates;
@@ -28,6 +29,7 @@ using SanteDB.Core.Templates.Definition;
 using SharpCompress;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 
@@ -40,8 +42,10 @@ namespace SanteDB.Core.Applets.Services.Impl
     {
         private readonly ICarePathwayDefinitionRepositoryService m_carePathwayRepository;
         private readonly ITemplateDefinitionRepositoryService m_templateDefinitionRepository;
+        private readonly IAppletManagerService m_appletManager;
         private readonly IDataTemplateManagementService m_templateManagementService;
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletTemplateDefinitionInstaller));
+        private readonly IAppletSolutionManagerService m_solutionManager;
 
         /// <summary>
         /// Applet template definition service
@@ -55,16 +59,34 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_templateManagementService = templateManagementService;
             this.m_carePathwayRepository = carePathwayDefinitionRepositoryService;
             this.m_templateDefinitionRepository = templateDefinitionRepositoryService;
-            appletManagerService.Changed += (o, e) =>
+            this.m_appletManager = appletManagerService;
+            this.m_solutionManager = appletSolutionManagerService; 
+            
+            if (appletSolutionManagerService != null && appletSolutionManagerService.Solutions is INotifyCollectionChanged notify)
             {
-            };
-            if (appletSolutionManagerService != null)
-            {
-                appletSolutionManagerService.Solutions.ForEach(sln => this.InstallTemplatesFromApplet(appletSolutionManagerService.GetApplets(sln.Meta.Id)));
+                notify.CollectionChanged += (oa, eo) => this.InstallAllDefinitions();
             }
             else
             {
-                this.InstallTemplatesFromApplet(appletManagerService.Applets);
+                appletManagerService.Changed += (o, e) => this.InstallAllDefinitions();
+
+            }
+        }
+
+        private void InstallAllDefinitions()
+        {
+            this.m_tracer.TraceInfo("Scanning installed applets for changes...");
+            if(this.m_solutionManager != null)
+            {
+                this.m_solutionManager.Solutions.ForEach(sln =>
+                {
+                    this.m_tracer.TraceInfo("Scanning {0}...", sln.Meta.Id);
+                    this.InstallTemplatesFromApplet(this.m_solutionManager.GetApplets(sln.Meta.Id));
+                });
+            }
+            else
+            {
+                this.InstallTemplatesFromApplet(this.m_appletManager.Applets);
             }
         }
 
@@ -75,6 +97,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             if (this.m_templateDefinitionRepository == null)
             {
+                this.m_tracer.TraceWarning("No template definition repository has been registered!");
                 return;
             }
 
@@ -84,13 +107,13 @@ namespace SanteDB.Core.Applets.Services.Impl
                 {
                     foreach (var tpl in appletCollection.DefinedTemplates)
                     {
-                        var existing = this.m_templateDefinitionRepository.Find(o => o.Mnemonic == tpl.Mnemonic || o.Key == tpl.Uuid).FirstOrDefault();
+                        var existing = this.m_templateDefinitionRepository.Find(o => o.Mnemonic == tpl.Mnemonic || o.Key == tpl.Uuid || o.Oid == tpl.Oid).FirstOrDefault();
                         if (existing == null ||
                             existing.Mnemonic != tpl.Mnemonic ||
                             existing.Name != tpl.Description ||
                             existing.Oid != tpl.Oid)
                         {
-
+                            this.m_tracer.TraceInfo("Updating data template definition {0}...", tpl.Mnemonic);
                             this.m_templateDefinitionRepository.Save(new Core.Model.DataTypes.TemplateDefinition()
                             {
                                 Key = tpl.Uuid,
@@ -103,6 +126,7 @@ namespace SanteDB.Core.Applets.Services.Impl
 
                         // Install the template definition and upgrade if newer version and/or priority is higher
                         var dataTemplateDefinition = this.CreateTemplateDefinition(tpl);
+                        this.m_tracer.TraceInfo("Registering data template definition {0} with manager...", tpl.Mnemonic);
                         this.m_templateManagementService.AddOrUpdate(dataTemplateDefinition);
                     }
                     foreach (var cpd in appletCollection.DefinedPathways)

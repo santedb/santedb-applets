@@ -60,15 +60,19 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_appletManagerService = appletManager;
             this.m_appletSolutionManagerService = appletSolutionManagerService;
 
-            // Re-scans the loaded applets for definitions when the collection has changed
-            this.m_appletManagerService.Changed += (oa, ea) =>
-            {
-                this.LoadAllDefinitions();
-            };
+
 
             if (this.m_appletSolutionManagerService != null && this.m_appletSolutionManagerService.Solutions is INotifyCollectionChanged notify)
             {
                 notify.CollectionChanged += (oa, eo) =>
+                {
+                    this.LoadAllDefinitions();
+                };
+            }
+            else
+            {
+                // Re-scans the loaded applets for definitions when the collection has changed
+                this.m_appletManagerService.Changed += (oa, ea) =>
                 {
                     this.LoadAllDefinitions();
                 };
@@ -109,7 +113,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         private void ProcessApplet(ReadonlyAppletCollection appletAssets)
         {
-            
+
             if (appletAssets == null)
             {
                 throw new ArgumentNullException(nameof(appletAssets));
@@ -138,7 +142,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 this.m_tracer.TraceWarning("Could not load notification templates - {0}", e.ToHumanReadableString());
             }
