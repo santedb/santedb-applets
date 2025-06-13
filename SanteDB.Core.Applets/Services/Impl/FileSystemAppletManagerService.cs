@@ -89,19 +89,8 @@ namespace SanteDB.Core.Applets.Services.Impl
             _PlatformSecurityProvider = platformSecurityProvider;
 
             var defaultApplet = new AppletCollection();
-            defaultApplet.CollectionChanged += (o, e) =>
-            {
-                lock (this.m_lockObject)
-                {
-                    this.m_readonlyAppletCollection.Clear();
-                }
-                this.Changed?.Invoke(o, e);
-            };
-
             this.m_appletCollection.Add(String.Empty, defaultApplet); // Default applet
             this.m_configuration = configurationManager.GetSection<AppletConfigurationSection>();
-
-
         }
 
         /// <summary>
@@ -294,7 +283,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_appletCollection[appletScope].Add(pkg);
 
             this.m_appletCollection[appletScope].ClearCaches();
-
+            this.Changed?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
@@ -535,14 +524,6 @@ namespace SanteDB.Core.Applets.Services.Impl
             else
             {
                 this.m_appletCollection.Add(solution.Meta.Id, new AppletCollection());
-                this.m_appletCollection[solution.Meta.Id].CollectionChanged += (o, e) =>
-                {
-                    lock (this.m_lockObject)
-                    {
-                        this.m_readonlyAppletCollection.Clear();
-                    }
-                    this.Changed?.Invoke(o, e);
-                };
             }
 
 
@@ -611,6 +592,8 @@ namespace SanteDB.Core.Applets.Services.Impl
                     this.m_appletCollection[String.Empty].Add(apl);
                 }
             }
+            this.Changed?.Invoke(this, EventArgs.Empty);
+
             return true;
         }
 
