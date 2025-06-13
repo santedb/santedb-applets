@@ -225,16 +225,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_tracer.TraceInfo("Installing {0}", package.Meta);
 
             var appletScope = owner?.Meta.Id ?? String.Empty;
-            // TODO: Verify package hash / signature
-            if (!this.VerifyPackage(package))
-            {
-                throw new SecurityException("Applet failed validation");
-            }
-            else if (!this.m_appletCollection[appletScope].VerifyDependencies(package.Meta))
-            {
-                this.m_tracer.TraceWarning($"Applet {package.Meta} depends on : [{String.Join(", ", package.Meta.Dependencies.Select(o => o.ToString()))}] which are missing or incompatible");
-            }
-
+            
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
             if (!Path.IsPathRooted(appletDir))
@@ -258,7 +249,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 throw new InvalidOperationException($"Cannot replace {package.Meta} unless upgrade is specifically specified");
             }
-
+            
             using (var fs = File.Create(pakFile))
             {
                 package.Save(fs);
@@ -272,19 +263,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                 }
             }
 
-            var pkg = package.Unpack();
-
-            // remove the package from the collection if this is an upgrade
-            if (isUpgrade)
-            {
-                this.m_appletCollection[appletScope].Remove(pkg);
-            }
-
-            this.m_appletCollection[appletScope].Add(pkg);
-
-            this.m_appletCollection[appletScope].ClearCaches();
-            this.Changed?.Invoke(this, EventArgs.Empty);
-            return true;
+            return this.LoadPackage(package, appletScope);
         }
 
         /// <summary>
@@ -508,24 +487,16 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             this.m_tracer.TraceInfo("Installing solution {0}", solution.Meta);
 
-            // TODO: Verify package hash / signature
-            if (!this.VerifyPackage(solution))
-            {
-                throw new SecurityException("Applet failed validation");
-            }
-
             if (this.m_appletCollection.TryGetValue(solution.Meta.Id, out var existingSolutionCollection))
             {
                 this.m_tracer.TraceInfo("Upgrading solution {0}", solution.Meta.Id);
                 existingSolutionCollection.Clear();
                 this.m_appletCollection.Remove(solution.Meta.Id);
-
             }
             else
             {
                 this.m_appletCollection.Add(solution.Meta.Id, new AppletCollection());
             }
-
 
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
@@ -627,6 +598,13 @@ namespace SanteDB.Core.Applets.Services.Impl
                         {
                             var pkg = AppletPackage.Load(fs);
 
+                            // TODO: Verify package hash / signature
+                            if (!this.VerifyPackage(pkg))
+                            {
+                                throw new SecurityException($"{pkg.GetType().Name} {pkg.Meta.Id} failed validation");
+                            }
+                            
+
                             if (pkg is AppletSolution) // We have loaded a solution
                             {
                                 if (this.m_solutions.Any(o => o.Meta.Id == pkg.Meta.Id))
@@ -644,7 +622,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 this.m_tracer.TraceEvent(EventLevel.Warning, "Skipping duplicate package {0}", pkg.Meta.Id);
                                 continue;
                             }
-                            else if (!this.Install(pkg, true))
+                            else if (!this.LoadPackage(pkg, String.Empty))
                             {
                                 this.m_tracer.TraceEvent(EventLevel.Critical, "Cannot proceed while untrusted applets are present");
                                 throw new SecurityException("Cannot proceed while untrusted applets are present");
@@ -668,5 +646,26 @@ namespace SanteDB.Core.Applets.Services.Impl
             return true;
         }
 
+        private bool LoadPackage(AppletPackage package, String packageScope)
+        {
+
+            if (!this.m_appletCollection[packageScope].VerifyDependencies(package.Meta))
+            {
+                this.m_tracer.TraceWarning($"Applet {package.Meta} depends on : [{String.Join(", ", package.Meta.Dependencies.Select(o => o.ToString()))}] which are missing or incompatible");
+            }
+
+            var manifest = package.Unpack();
+            // remove the package from the collection if this is an upgrade
+            this.m_appletCollection[packageScope].Remove(manifest);
+            this.m_appletCollection[packageScope].Add(manifest);
+            this.m_appletCollection[packageScope].ClearCaches();
+
+            if (String.IsNullOrEmpty(packageScope))
+            {
+                this.Changed?.Invoke(this, EventArgs.Empty);
+            }
+            return true;
+
+        }
     }
 }
