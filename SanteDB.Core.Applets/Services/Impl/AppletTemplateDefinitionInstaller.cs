@@ -69,8 +69,9 @@ namespace SanteDB.Core.Applets.Services.Impl
             else
             {
                 appletManagerService.Changed += (o, e) => this.InstallAllDefinitions();
-
             }
+            this.InstallAllDefinitions();
+
         }
 
         private void InstallAllDefinitions()
