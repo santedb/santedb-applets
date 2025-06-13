@@ -21,7 +21,6 @@
 using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
-using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using System;
@@ -42,7 +41,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// Represents an applet manager service that uses the local file system
     /// </summary>
     [ServiceProvider("Local Applet Repository/Manager", Configuration = typeof(AppletConfigurationSection))]
-    public class FileSystemAppletManagerService : IAppletManagerService, IAppletSolutionManagerService, IDaemonService
+    public class FileSystemAppletManagerService : IAppletManagerService, IAppletSolutionManagerService
     {
         /// <summary>
         /// Gets the service name
@@ -74,11 +73,6 @@ namespace SanteDB.Core.Applets.Services.Impl
         // Tracer
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(FileSystemAppletManagerService));
 
-        /// <summary>
-        /// Indicates whether the service is running
-        /// </summary>
-        public bool IsRunning { get; private set; }
-
         readonly IPlatformSecurityProvider _PlatformSecurityProvider;
 
         /// <summary>
@@ -91,6 +85,9 @@ namespace SanteDB.Core.Applets.Services.Impl
             var defaultApplet = new AppletCollection();
             this.m_appletCollection.Add(String.Empty, defaultApplet); // Default applet
             this.m_configuration = configurationManager.GetSection<AppletConfigurationSection>();
+
+            // Load the applets
+            this.LoadApplets();
         }
 
         /// <summary>
@@ -113,15 +110,6 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// Applet has changed
         /// </summary>
         public event EventHandler Changed;
-
-        /// <inheritdoc/>
-        public event EventHandler Starting;
-        /// <inheritdoc/>
-        public event EventHandler Started;
-        /// <inheritdoc/>
-        public event EventHandler Stopping;
-        /// <inheritdoc/>
-        public event EventHandler Stopped;
 
         /// <summary>
         /// Get the specified applet
@@ -225,7 +213,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_tracer.TraceInfo("Installing {0}", package.Meta);
 
             var appletScope = owner?.Meta.Id ?? String.Empty;
-            
+
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
             if (!Path.IsPathRooted(appletDir))
@@ -249,7 +237,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 throw new InvalidOperationException($"Cannot replace {package.Meta} unless upgrade is specifically specified");
             }
-            
+
             using (var fs = File.Create(pakFile))
             {
                 package.Save(fs);
@@ -421,18 +409,6 @@ namespace SanteDB.Core.Applets.Services.Impl
         }
 
         /// <summary>
-        /// Stop the service
-        /// </summary>
-        public bool Stop()
-        {
-            this.Stopping?.Invoke(this, EventArgs.Empty);
-            this.m_solutions.Clear();
-            this.m_appletCollection.Clear();
-            this.Stopped?.Invoke(this, EventArgs.Empty);
-            return true;
-        }
-
-        /// <summary>
         /// Get applet
         /// </summary>
         public virtual AppletManifest GetApplet(string appletId)
@@ -522,12 +498,9 @@ namespace SanteDB.Core.Applets.Services.Impl
                 this.m_solutions.Remove(existingSolution);
             }
 
-            if (this.IsRunning) // Not an load from the start 
-            {  // Save the original for reboot
-                using (var fs = File.Create(pakFile))
-                {
-                    solution.Save(fs);
-                }
+            using (var fs = File.Create(pakFile))
+            {
+                solution.Save(fs);
             }
 
             // Unpack items from the solution package and install if needed
@@ -569,9 +542,8 @@ namespace SanteDB.Core.Applets.Services.Impl
         }
 
         /// <inheritdoc/>
-        public bool Start()
+        public bool LoadApplets()
         {
-            this.Starting?.Invoke(this, EventArgs.Empty);
             try
             {
                 // Load packages from applets/ filesystem directory
@@ -603,7 +575,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                             {
                                 throw new SecurityException($"{pkg.GetType().Name} {pkg.Meta.Id} failed validation");
                             }
-                            
+
 
                             if (pkg is AppletSolution) // We have loaded a solution
                             {
@@ -641,8 +613,6 @@ namespace SanteDB.Core.Applets.Services.Impl
                 this.m_tracer.TraceEvent(EventLevel.Error, "Error loading applets: {0}", ex);
                 throw;
             }
-            this.IsRunning = true;
-            this.Started?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
