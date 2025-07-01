@@ -41,7 +41,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// Represents an applet manager service that uses the local file system
     /// </summary>
     [ServiceProvider("Local Applet Repository/Manager", Configuration = typeof(AppletConfigurationSection))]
-    public class FileSystemAppletManagerService : IAppletManagerService, IAppletSolutionManagerService
+    public class FileSystemAppletManagerService : IAppletManagerService, IAppletSolutionManagerService, IReportProgressChanged
     {
         /// <summary>
         /// Gets the service name
@@ -110,6 +110,9 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// Applet has changed
         /// </summary>
         public event EventHandler Changed;
+
+        /// <inheritdoc/>
+        public event EventHandler<ProgressChangedEventArgs> ProgressChanged;
 
         /// <summary>
         /// Get the specified applet
@@ -254,159 +257,6 @@ namespace SanteDB.Core.Applets.Services.Impl
             return this.LoadPackage(package, appletScope);
         }
 
-        /// <summary>
-        /// Verify package signature
-        /// </summary>
-        private bool VerifyPackage(AppletPackage package)
-        {
-            byte[] verifyBytes = package.Manifest;
-            // First check: Hash - Make sure the HASH is ok
-            if (package is AppletSolution asln)
-            {
-                verifyBytes = asln.Include.SelectMany(o => o.Manifest).ToArray();
-                if (BitConverter.ToString(SHA256.Create().ComputeHash(verifyBytes)) != BitConverter.ToString(package.Meta.Hash))
-                {
-                    throw new InvalidOperationException($"Package contents of {package.Meta.Id} appear to be corrupt!");
-                }
-            }
-            else if (BitConverter.ToString(SHA256.Create().ComputeHash(package.Manifest)) != BitConverter.ToString(package.Meta.Hash))
-            {
-                throw new InvalidOperationException($"Package contents of {package.Meta.Id} appear to be corrupt!");
-            }
-
-            if (package.Meta.Signature != null)
-            {
-                X509Certificate2 cert = null;
-
-                if (null != _PlatformSecurityProvider)
-                {
-                    m_tracer.TraceInfo("Will verify package {0} using platform security provider", package.Meta.Id.ToString());
-
-                    if (null == package.PublicKey || package.PublicKey.Length == 0)
-                    {
-                        if (package.Meta.PublicKeyToken != null)
-                        {
-                            m_tracer.TraceInfo("Package does not have an embedded certificate and is signed which will be unsupported in the future.");
-                            var certs = _PlatformSecurityProvider.FindAllCertificates(X509FindType.FindByThumbprint, package.Meta.PublicKeyToken, StoreName.TrustedPublisher, StoreLocation.LocalMachine, validOnly: true);
-
-                            if (certs?.Any() == true)
-                            {
-                                cert = certs.First();
-                            }
-                            else
-                            {
-                                throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        cert = new X509Certificate2(package.PublicKey);
-
-                        if (!_PlatformSecurityProvider.IsCertificateTrusted(cert, package.Meta.TimeStamp))
-                        {
-                            throw new SecurityException($"Package {package.Meta.Id} has certificate {cert.Thumbprint} which is not trusted by the platform.");
-                        }
-                    }
-                }
-                else
-                {
-                    this.m_tracer.TraceInfo("Will verify package {0} using legacy method.", package.Meta.Id.ToString());
-
-                    // Get the public key
-                    var x509Store = new X509Store(StoreName.TrustedPublisher, StoreLocation.LocalMachine);
-                    try
-                    {
-                        x509Store.Open(OpenFlags.ReadOnly);
-                        var certs = x509Store.Certificates.Find(X509FindType.FindByThumbprint, package.Meta.PublicKeyToken, false);
-
-                        if (certs.Count == 0)
-                        {
-                            if (package.PublicKey != null)
-                            {
-                                // Embedded cert and trusted CA
-                                cert = new X509Certificate2(package.PublicKey);
-                                if (!cert.IsTrustedIntern(new X509Certificate2Collection(), package.Meta.TimeStamp, out IEnumerable<X509ChainStatus> chainStatus))
-                                {
-                                    throw new SecurityException($"Cannot verify identity of publisher: \r\n {cert.Subject} thb: {cert.Thumbprint} issued by {cert.Issuer} \r\n- {String.Join(",", chainStatus.Select(o => o.Status))}");
-                                }
-                            }
-                            else
-                            {
-                                throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
-                            }
-                        }
-                        else
-                        {
-                            cert = certs[0];
-                        }
-                    }
-                    finally
-                    {
-                        x509Store.Close();
-                    }
-                }
-
-                // Verify signature
-                var rsa = cert.GetRSAPublicKey();
-
-                var retVal = rsa.VerifyData(verifyBytes, package.Meta.Signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1); //rsa.VerifyData(verifyBytes, CryptoConfig.MapNameToOID("SHA1"), package.Meta.Signature);
-
-                if (retVal == false)
-                {
-                    retVal = rsa.VerifyData(verifyBytes, package.Meta.Signature, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
-
-                    if (retVal)
-                    {
-                        this.m_tracer.TraceInfo("Applet {0} is signed using SHA1 which will be unsupported in the future.", package.Meta.Id);
-                    }
-                }
-
-                // Verify timestamp
-                var timestamp = package.Unpack().Info.TimeStamp; //TODO: Upgrade package format to support DTO instead of DateTime.
-                if (timestamp > DateTime.Now)
-                {
-                    throw new SecurityException($"Package {package.Meta.Id} was published in the future and will not be loaded.");
-                }
-                else if (cert.NotAfter < timestamp || cert.NotBefore > timestamp)
-                {
-                    throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
-                }
-
-                if (retVal == true)
-                {
-                    this.m_tracer.TraceEvent(EventLevel.Informational, "SUCCESSFULLY VALIDATED: {0} v.{1}\r\n" +
-                        "\tKEY TOKEN: {2}\r\n" +
-                        "\tSIGNED BY: {3}\r\n" +
-                        "\tVALIDITY: {4:yyyy-MMM-dd} - {5:yyyy-MMM-dd}\r\n" +
-                        "\tISSUER: {6}",
-                        package.Meta.Id, package.Meta.Version, cert.Thumbprint, cert.Subject, cert.NotBefore, cert.NotAfter, cert.Issuer);
-                }
-                else
-                {
-                    this.m_tracer.TraceEvent(EventLevel.Critical, ">> SECURITY ALERT : {0} v.{1} <<\r\n" +
-                        "\tPACKAGE VALIDATION FAILED\r\n" +
-                        "\tKEY TOKEN (CLAIMED): {2}\r\n" +
-                        "\tSIGNED BY  (CLAIMED): {3}\r\n" +
-                        "\tVALIDITY: {4:yyyy-MMM-dd} - {5:yyyy-MMM-dd}\r\n" +
-                        "\tISSUER: {6}\r\n\tSERVICE WILL HALT",
-                        package.Meta.Id, package.Meta.Version, cert.Thumbprint, cert.Subject, cert.NotBefore, cert.NotAfter, cert.Issuer);
-                }
-                return retVal;
-
-
-            }
-            else if (this.m_configuration.AllowUnsignedApplets)
-            {
-                this.m_tracer.TraceEvent(EventLevel.Warning, "Package {0} v.{1} (publisher: {2}) is not signed. To prevent unsigned applets from being installed disable the configuration option", package.Meta.Id, package.Meta.Version, package.Meta.Author);
-                return true;
-            }
-            else
-            {
-                this.m_tracer.TraceEvent(EventLevel.Critical, "Package {0} v.{1} (publisher: {2}) is not signed and cannot be installed", package.Meta.Id, package.Meta.Version, package.Meta.Author);
-                return false;
-            }
-        }
 
         /// <summary>
         /// Get applet
@@ -562,16 +412,20 @@ namespace SanteDB.Core.Applets.Services.Impl
                 else
                 {
                     this.m_tracer.TraceEvent(EventLevel.Verbose, "Scanning {0} for applets...", appletDir);
-                    foreach (var f in Directory.GetFiles(appletDir).OrderBy(o => o.EndsWith(".sln.pak") ? 0 : 1))
+                    // JF - Provide feedback to caller in case of slow loading
+                    var appletFiles = Directory.GetFiles(appletDir).OrderBy(o => o.EndsWith(".sln.pak") ? 0 : 1).ToArray();
+                    int loadedApplets = 0;
+                    foreach (var f in appletFiles)
                     {
                         // Try to open the file
                         this.m_tracer.TraceInfo("Loading {0}...", f);
+                        this.ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(nameof(FileSystemAppletManagerService), (float)loadedApplets++ / (float)appletFiles.Length, $"Loading {Path.GetFileName(f)}"));
                         using (var fs = File.OpenRead(f))
                         {
                             var pkg = AppletPackage.Load(fs);
 
                             // TODO: Verify package hash / signature
-                            if (!this.VerifyPackage(pkg))
+                            if (!pkg.VerifySignatures(this.m_configuration.AllowUnsignedApplets, _PlatformSecurityProvider))
                             {
                                 throw new SecurityException($"{pkg.GetType().Name} {pkg.Meta.Id} failed validation");
                             }

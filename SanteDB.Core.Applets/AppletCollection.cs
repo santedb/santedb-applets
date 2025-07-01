@@ -72,6 +72,7 @@ namespace SanteDB.Core.Applets
                 {
                     this.ClearCaches();
                 }
+            
                 this.CollectionChanged?.Invoke(o, e);
             };
         }
@@ -752,7 +753,8 @@ namespace SanteDB.Core.Applets
                                         htmlContent.Add(head);
                                     }
 
-                                    head.Add(headerInjection.Where(o => !head.Elements(o.Name).Any(e => (e.Attributes("src") != null && (e.Attributes("src") == o.Attributes("src"))) || (e.Attributes("href") != null && (e.Attributes("href") == o.Attributes("href"))))));
+                                    head.Add(headerInjection.OfType<XElement>().Where(o => !head.Elements(o.Name).Any(e => (e.Attributes("src") != null && (e.Attributes("src") == o.Attributes("src"))) || (e.Attributes("href") != null && (e.Attributes("href") == o.Attributes("href"))))));
+                                    head.Add(headerInjection.OfType<XComment>());
 
                                     // Inject any business rules as static refs
                                     var body = htmlContent.DescendantNodes().OfType<XElement>().FirstOrDefault(o => o.Name == xs_xhtml + "body");
@@ -976,7 +978,7 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Injection for HTML headers
         /// </summary>
-        private List<XElement> GetInjectionHeaders(AppletAsset asset, bool isUiContainer)
+        private List<XNode> GetInjectionHeaders(AppletAsset asset, bool isUiContainer)
         {
             var htmlAsset = asset.Content as AppletAssetHtml;
             if (this.Resolver != null)
@@ -985,7 +987,7 @@ namespace SanteDB.Core.Applets
             }
 
             // Insert scripts & Styles
-            List<XElement> headerInjection = new List<XElement>();
+            List<XNode> headerInjection = new List<XNode>();
             if (htmlAsset == null)
             {
                 return headerInjection;
@@ -1006,7 +1008,7 @@ namespace SanteDB.Core.Applets
             // All scripts
             if (isUiContainer) // IS A UI CONTAINER = ANGULAR UI REQUIRES ALL CONTROLLERS BE LOADED
             {
-                return this.ViewStateAssets.SelectMany(o => this.GetInjectionHeaders(o, false)).Distinct(new XElementEquityComparer()).ToList();
+                return this.ViewStateAssets.SelectMany(o => this.GetInjectionHeaders(o, false)).Distinct(new XNodeEquityComparer()).ToList();
             }
             else
             {
@@ -1019,7 +1021,7 @@ namespace SanteDB.Core.Applets
                     }
                     else
                     {
-                        throw new FileNotFoundException(String.Format("Asset {0} not found", itm.Reference));
+                        headerInjection.Add(new XComment($"Asset {itm.Reference} not found"));
                     }
                 }
             }
@@ -1061,7 +1063,7 @@ namespace SanteDB.Core.Applets
                 itm.Value = String.Format("/{0}/{1}", asset.Manifest.Info.Id, itm.Value.Substring(2));
                 //itm.Value = itm.Value.Replace(APPLET_SCHEME, this.AppletBase).Replace(ASSET_SCHEME, this.AssetBase).Replace(DRAWABLE_SCHEME, this.DrawableBase);
             }
-            return headerInjection.Distinct(new XElementEquityComparer()).ToList();
+            return headerInjection.Distinct(new XNodeEquityComparer()).ToList();
         }
 
         /// <summary>
@@ -1118,25 +1120,39 @@ namespace SanteDB.Core.Applets
         /// <summary>
         /// Xelement comparer
         /// </summary>
-        private class XElementEquityComparer : IEqualityComparer<XElement>
+        private class XNodeEquityComparer : IEqualityComparer<XNode>
         {
-            public bool Equals(XElement x, XElement y)
+            public bool Equals(XNode x, XNode y)
             {
-                bool equals = true;
-                foreach (var xa in x.Attributes())
+                if (x.GetType() != y.GetType())
                 {
-                    var ya = y.Attribute(xa.Name);
-                    equals &= xa.Value == ya?.Value;
+                    return false;
                 }
-                return equals;
+                else if (x is XElement xE && y is XElement yE)
+                {
+
+                    bool equals = true;
+                    foreach (var xa in xE.Attributes())
+                    {
+                        var ya = yE.Attribute(xa.Name);
+                        equals &= xa.Value == ya?.Value;
+                    }
+                    return equals;
+                }
+                else
+                    return x.ToString().Equals(y.ToString());
             }
 
             /// <summary>
             /// Get Hash code
             /// </summary>
-            public int GetHashCode(XElement obj)
+            public int GetHashCode(XNode obj)
             {
-                return obj.Attribute("src")?.Value.GetHashCode() ?? obj.Attribute("href")?.Value.GetHashCode() ?? obj.GetHashCode();
+                if (obj is XElement xe)
+                {
+                    return xe.Attribute("src")?.Value.GetHashCode() ?? xe.Attribute("href")?.Value.GetHashCode() ?? obj.GetHashCode();
+                }
+                return obj.GetHashCode();
             }
         }
 
