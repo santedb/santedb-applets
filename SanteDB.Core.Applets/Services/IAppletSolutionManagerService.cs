@@ -27,7 +27,7 @@ namespace SanteDB.Core.Applets.Services
     /// <summary>
     /// Represents a service which loads/registers applet solutions
     /// </summary>
-    public interface IAppletSolutionManagerService
+    public interface IAppletSolutionManagerService 
     {
         /// <summary>
         /// Get the solutions configured on the server

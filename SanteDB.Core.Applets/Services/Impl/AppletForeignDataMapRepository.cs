@@ -52,23 +52,11 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_appletManagerService = appletManagerService;
             this.m_appletSolutionManagerService = appletSolutionManagerService;
 
-
-
-            if (this.m_appletSolutionManagerService != null && this.m_appletSolutionManagerService.Solutions is INotifyCollectionChanged notify)
+            // Re-scans the loaded applets for definitions when the collection has changed
+            this.m_appletManagerService.Changed += (oa, ea) =>
             {
-                notify.CollectionChanged += (oa, eo) =>
-                {
-                    this.LoadAllDefinitions();
-                };
-            }
-            else
-            {
-                // Re-scans the loaded applets for definitions when the collection has changed
-                this.m_appletManagerService.Changed += (oa, ea) =>
-                {
-                    this.LoadAllDefinitions();
-                };
-            }
+                this.LoadAllDefinitions();
+            };
             this.LoadAllDefinitions();
         }
 

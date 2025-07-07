@@ -21,7 +21,6 @@
 using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
-using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using System;
@@ -42,7 +41,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// Represents an applet manager service that uses the local file system
     /// </summary>
     [ServiceProvider("Local Applet Repository/Manager", Configuration = typeof(AppletConfigurationSection))]
-    public class FileSystemAppletManagerService : IAppletManagerService, IAppletSolutionManagerService, IDaemonService
+    public class FileSystemAppletManagerService : IAppletManagerService, IAppletSolutionManagerService, IReportProgressChanged
     {
         /// <summary>
         /// Gets the service name
@@ -74,11 +73,6 @@ namespace SanteDB.Core.Applets.Services.Impl
         // Tracer
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(FileSystemAppletManagerService));
 
-        /// <summary>
-        /// Indicates whether the service is running
-        /// </summary>
-        public bool IsRunning { get; private set; }
-
         readonly IPlatformSecurityProvider _PlatformSecurityProvider;
 
         /// <summary>
@@ -89,19 +83,11 @@ namespace SanteDB.Core.Applets.Services.Impl
             _PlatformSecurityProvider = platformSecurityProvider;
 
             var defaultApplet = new AppletCollection();
-            defaultApplet.CollectionChanged += (o, e) =>
-            {
-                lock (this.m_lockObject)
-                {
-                    this.m_readonlyAppletCollection.Clear();
-                }
-                this.Changed?.Invoke(o, e);
-            };
-
             this.m_appletCollection.Add(String.Empty, defaultApplet); // Default applet
             this.m_configuration = configurationManager.GetSection<AppletConfigurationSection>();
 
-
+            // Load the applets
+            this.LoadApplets();
         }
 
         /// <summary>
@@ -126,13 +112,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         public event EventHandler Changed;
 
         /// <inheritdoc/>
-        public event EventHandler Starting;
-        /// <inheritdoc/>
-        public event EventHandler Started;
-        /// <inheritdoc/>
-        public event EventHandler Stopping;
-        /// <inheritdoc/>
-        public event EventHandler Stopped;
+        public event EventHandler<ProgressChangedEventArgs> ProgressChanged;
 
         /// <summary>
         /// Get the specified applet
@@ -236,15 +216,6 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_tracer.TraceInfo("Installing {0}", package.Meta);
 
             var appletScope = owner?.Meta.Id ?? String.Empty;
-            // TODO: Verify package hash / signature
-            if (!this.VerifyPackage(package))
-            {
-                throw new SecurityException("Applet failed validation");
-            }
-            else if (!this.m_appletCollection[appletScope].VerifyDependencies(package.Meta))
-            {
-                this.m_tracer.TraceWarning($"Applet {package.Meta} depends on : [{String.Join(", ", package.Meta.Dependencies.Select(o => o.ToString()))}] which are missing or incompatible");
-            }
 
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
@@ -283,186 +254,9 @@ namespace SanteDB.Core.Applets.Services.Impl
                 }
             }
 
-            var pkg = package.Unpack();
-
-            // remove the package from the collection if this is an upgrade
-            if (isUpgrade)
-            {
-                this.m_appletCollection[appletScope].Remove(pkg);
-            }
-
-            this.m_appletCollection[appletScope].Add(pkg);
-
-            this.m_appletCollection[appletScope].ClearCaches();
-
-            return true;
+            return this.LoadPackage(package, appletScope);
         }
 
-        /// <summary>
-        /// Verify package signature
-        /// </summary>
-        private bool VerifyPackage(AppletPackage package)
-        {
-            byte[] verifyBytes = package.Manifest;
-            // First check: Hash - Make sure the HASH is ok
-            if (package is AppletSolution asln)
-            {
-                verifyBytes = asln.Include.SelectMany(o => o.Manifest).ToArray();
-                if (BitConverter.ToString(SHA256.Create().ComputeHash(verifyBytes)) != BitConverter.ToString(package.Meta.Hash))
-                {
-                    throw new InvalidOperationException($"Package contents of {package.Meta.Id} appear to be corrupt!");
-                }
-            }
-            else if (BitConverter.ToString(SHA256.Create().ComputeHash(package.Manifest)) != BitConverter.ToString(package.Meta.Hash))
-            {
-                throw new InvalidOperationException($"Package contents of {package.Meta.Id} appear to be corrupt!");
-            }
-
-            if (package.Meta.Signature != null)
-            {
-                X509Certificate2 cert = null;
-
-                if (null != _PlatformSecurityProvider)
-                {
-                    m_tracer.TraceInfo("Will verify package {0} using platform security provider", package.Meta.Id.ToString());
-
-                    if (null == package.PublicKey || package.PublicKey.Length == 0)
-                    {
-                        if (package.Meta.PublicKeyToken != null)
-                        {
-                            m_tracer.TraceInfo("Package does not have an embedded certificate and is signed which will be unsupported in the future.");
-                            var certs = _PlatformSecurityProvider.FindAllCertificates(X509FindType.FindByThumbprint, package.Meta.PublicKeyToken, StoreName.TrustedPublisher, StoreLocation.LocalMachine, validOnly: true);
-
-                            if (certs?.Any() == true)
-                            {
-                                cert = certs.First();
-                            }
-                            else
-                            {
-                                throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        cert = new X509Certificate2(package.PublicKey);
-
-                        if (!_PlatformSecurityProvider.IsCertificateTrusted(cert, package.Meta.TimeStamp))
-                        {
-                            throw new SecurityException($"Package {package.Meta.Id} has certificate {cert.Thumbprint} which is not trusted by the platform.");
-                        }
-                    }
-                }
-                else
-                {
-                    this.m_tracer.TraceInfo("Will verify package {0} using legacy method.", package.Meta.Id.ToString());
-
-                    // Get the public key
-                    var x509Store = new X509Store(StoreName.TrustedPublisher, StoreLocation.LocalMachine);
-                    try
-                    {
-                        x509Store.Open(OpenFlags.ReadOnly);
-                        var certs = x509Store.Certificates.Find(X509FindType.FindByThumbprint, package.Meta.PublicKeyToken, false);
-
-                        if (certs.Count == 0)
-                        {
-                            if (package.PublicKey != null)
-                            {
-                                // Embedded cert and trusted CA
-                                cert = new X509Certificate2(package.PublicKey);
-                                if (!cert.IsTrustedIntern(new X509Certificate2Collection(), package.Meta.TimeStamp, out IEnumerable<X509ChainStatus> chainStatus))
-                                {
-                                    throw new SecurityException($"Cannot verify identity of publisher: \r\n {cert.Subject} thb: {cert.Thumbprint} issued by {cert.Issuer} \r\n- {String.Join(",", chainStatus.Select(o => o.Status))}");
-                                }
-                            }
-                            else
-                            {
-                                throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
-                            }
-                        }
-                        else
-                        {
-                            cert = certs[0];
-                        }
-                    }
-                    finally
-                    {
-                        x509Store.Close();
-                    }
-                }
-
-                // Verify signature
-                var rsa = cert.GetRSAPublicKey();
-
-                var retVal = rsa.VerifyData(verifyBytes, package.Meta.Signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1); //rsa.VerifyData(verifyBytes, CryptoConfig.MapNameToOID("SHA1"), package.Meta.Signature);
-
-                if (retVal == false)
-                {
-                    retVal = rsa.VerifyData(verifyBytes, package.Meta.Signature, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
-
-                    if (retVal)
-                    {
-                        this.m_tracer.TraceInfo("Applet {0} is signed using SHA1 which will be unsupported in the future.", package.Meta.Id);
-                    }
-                }
-
-                // Verify timestamp
-                var timestamp = package.Unpack().Info.TimeStamp; //TODO: Upgrade package format to support DTO instead of DateTime.
-                if (timestamp > DateTime.Now)
-                {
-                    throw new SecurityException($"Package {package.Meta.Id} was published in the future and will not be loaded.");
-                }
-                else if (cert.NotAfter < timestamp || cert.NotBefore > timestamp)
-                {
-                    throw new SecurityException($"Cannot find public key of publisher information for {package.Meta.PublicKeyToken} or the local certificate is invalid");
-                }
-
-                if (retVal == true)
-                {
-                    this.m_tracer.TraceEvent(EventLevel.Informational, "SUCCESSFULLY VALIDATED: {0} v.{1}\r\n" +
-                        "\tKEY TOKEN: {2}\r\n" +
-                        "\tSIGNED BY: {3}\r\n" +
-                        "\tVALIDITY: {4:yyyy-MMM-dd} - {5:yyyy-MMM-dd}\r\n" +
-                        "\tISSUER: {6}",
-                        package.Meta.Id, package.Meta.Version, cert.Thumbprint, cert.Subject, cert.NotBefore, cert.NotAfter, cert.Issuer);
-                }
-                else
-                {
-                    this.m_tracer.TraceEvent(EventLevel.Critical, ">> SECURITY ALERT : {0} v.{1} <<\r\n" +
-                        "\tPACKAGE VALIDATION FAILED\r\n" +
-                        "\tKEY TOKEN (CLAIMED): {2}\r\n" +
-                        "\tSIGNED BY  (CLAIMED): {3}\r\n" +
-                        "\tVALIDITY: {4:yyyy-MMM-dd} - {5:yyyy-MMM-dd}\r\n" +
-                        "\tISSUER: {6}\r\n\tSERVICE WILL HALT",
-                        package.Meta.Id, package.Meta.Version, cert.Thumbprint, cert.Subject, cert.NotBefore, cert.NotAfter, cert.Issuer);
-                }
-                return retVal;
-
-
-            }
-            else if (this.m_configuration.AllowUnsignedApplets)
-            {
-                this.m_tracer.TraceEvent(EventLevel.Warning, "Package {0} v.{1} (publisher: {2}) is not signed. To prevent unsigned applets from being installed disable the configuration option", package.Meta.Id, package.Meta.Version, package.Meta.Author);
-                return true;
-            }
-            else
-            {
-                this.m_tracer.TraceEvent(EventLevel.Critical, "Package {0} v.{1} (publisher: {2}) is not signed and cannot be installed", package.Meta.Id, package.Meta.Version, package.Meta.Author);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Stop the service
-        /// </summary>
-        public bool Stop()
-        {
-            this.Stopping?.Invoke(this, EventArgs.Empty);
-            this.m_solutions.Clear();
-            this.m_appletCollection.Clear();
-            this.Stopped?.Invoke(this, EventArgs.Empty);
-            return true;
-        }
 
         /// <summary>
         /// Get applet
@@ -519,32 +313,16 @@ namespace SanteDB.Core.Applets.Services.Impl
         {
             this.m_tracer.TraceInfo("Installing solution {0}", solution.Meta);
 
-            // TODO: Verify package hash / signature
-            if (!this.VerifyPackage(solution))
-            {
-                throw new SecurityException("Applet failed validation");
-            }
-
             if (this.m_appletCollection.TryGetValue(solution.Meta.Id, out var existingSolutionCollection))
             {
                 this.m_tracer.TraceInfo("Upgrading solution {0}", solution.Meta.Id);
                 existingSolutionCollection.Clear();
                 this.m_appletCollection.Remove(solution.Meta.Id);
-
             }
             else
             {
                 this.m_appletCollection.Add(solution.Meta.Id, new AppletCollection());
-                this.m_appletCollection[solution.Meta.Id].CollectionChanged += (o, e) =>
-                {
-                    lock (this.m_lockObject)
-                    {
-                        this.m_readonlyAppletCollection.Clear();
-                    }
-                    this.Changed?.Invoke(o, e);
-                };
             }
-
 
             // Save the applet
             var appletDir = this.m_configuration.AppletDirectory;
@@ -570,12 +348,9 @@ namespace SanteDB.Core.Applets.Services.Impl
                 this.m_solutions.Remove(existingSolution);
             }
 
-            if (this.IsRunning) // Not an load from the start 
-            {  // Save the original for reboot
-                using (var fs = File.Create(pakFile))
-                {
-                    solution.Save(fs);
-                }
+            using (var fs = File.Create(pakFile))
+            {
+                solution.Save(fs);
             }
 
             // Unpack items from the solution package and install if needed
@@ -611,13 +386,14 @@ namespace SanteDB.Core.Applets.Services.Impl
                     this.m_appletCollection[String.Empty].Add(apl);
                 }
             }
+            this.Changed?.Invoke(this, EventArgs.Empty);
+
             return true;
         }
 
         /// <inheritdoc/>
-        public bool Start()
+        public bool LoadApplets()
         {
-            this.Starting?.Invoke(this, EventArgs.Empty);
             try
             {
                 // Load packages from applets/ filesystem directory
@@ -636,13 +412,24 @@ namespace SanteDB.Core.Applets.Services.Impl
                 else
                 {
                     this.m_tracer.TraceEvent(EventLevel.Verbose, "Scanning {0} for applets...", appletDir);
-                    foreach (var f in Directory.GetFiles(appletDir).OrderBy(o => o.EndsWith(".sln.pak") ? 0 : 1))
+                    // JF - Provide feedback to caller in case of slow loading
+                    var appletFiles = Directory.GetFiles(appletDir).OrderBy(o => o.EndsWith(".sln.pak") ? 0 : 1).ToArray();
+                    int loadedApplets = 0;
+                    foreach (var f in appletFiles)
                     {
                         // Try to open the file
                         this.m_tracer.TraceInfo("Loading {0}...", f);
+                        this.ProgressChanged?.Invoke(this, new ProgressChangedEventArgs(nameof(FileSystemAppletManagerService), (float)loadedApplets++ / (float)appletFiles.Length, $"Loading {Path.GetFileName(f)}"));
                         using (var fs = File.OpenRead(f))
                         {
                             var pkg = AppletPackage.Load(fs);
+
+                            // TODO: Verify package hash / signature
+                            if (!pkg.VerifySignatures(this.m_configuration.AllowUnsignedApplets, _PlatformSecurityProvider))
+                            {
+                                throw new SecurityException($"{pkg.GetType().Name} {pkg.Meta.Id} failed validation");
+                            }
+
 
                             if (pkg is AppletSolution) // We have loaded a solution
                             {
@@ -661,7 +448,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 this.m_tracer.TraceEvent(EventLevel.Warning, "Skipping duplicate package {0}", pkg.Meta.Id);
                                 continue;
                             }
-                            else if (!this.Install(pkg, true))
+                            else if (!this.LoadPackage(pkg, String.Empty))
                             {
                                 this.m_tracer.TraceEvent(EventLevel.Critical, "Cannot proceed while untrusted applets are present");
                                 throw new SecurityException("Cannot proceed while untrusted applets are present");
@@ -680,10 +467,29 @@ namespace SanteDB.Core.Applets.Services.Impl
                 this.m_tracer.TraceEvent(EventLevel.Error, "Error loading applets: {0}", ex);
                 throw;
             }
-            this.IsRunning = true;
-            this.Started?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
+        private bool LoadPackage(AppletPackage package, String packageScope)
+        {
+
+            if (!this.m_appletCollection[packageScope].VerifyDependencies(package.Meta))
+            {
+                this.m_tracer.TraceWarning($"Applet {package.Meta} depends on : [{String.Join(", ", package.Meta.Dependencies.Select(o => o.ToString()))}] which are missing or incompatible");
+            }
+
+            var manifest = package.Unpack();
+            // remove the package from the collection if this is an upgrade
+            this.m_appletCollection[packageScope].Remove(manifest);
+            this.m_appletCollection[packageScope].Add(manifest);
+            this.m_appletCollection[packageScope].ClearCaches();
+
+            if (String.IsNullOrEmpty(packageScope))
+            {
+                this.Changed?.Invoke(this, EventArgs.Empty);
+            }
+            return true;
+
+        }
     }
 }

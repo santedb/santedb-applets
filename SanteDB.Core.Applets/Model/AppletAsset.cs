@@ -148,6 +148,11 @@ namespace SanteDB.Core.Applets.Model
             }
         }
 
+        public void SaveContent(FileStream fs)
+        {
+            throw new NotImplementedException();
+        }
+
 
         /// <summary>
         /// Represent the asset as a string

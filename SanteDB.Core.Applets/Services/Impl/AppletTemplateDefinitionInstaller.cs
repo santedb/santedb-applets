@@ -60,23 +60,17 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_carePathwayRepository = carePathwayDefinitionRepositoryService;
             this.m_templateDefinitionRepository = templateDefinitionRepositoryService;
             this.m_appletManager = appletManagerService;
-            this.m_solutionManager = appletSolutionManagerService; 
-            
-            if (appletSolutionManagerService != null && appletSolutionManagerService.Solutions is INotifyCollectionChanged notify)
-            {
-                notify.CollectionChanged += (oa, eo) => this.InstallAllDefinitions();
-            }
-            else
-            {
-                appletManagerService.Changed += (o, e) => this.InstallAllDefinitions();
+            this.m_solutionManager = appletSolutionManagerService;
 
-            }
+            appletManagerService.Changed += (o, e) => this.InstallAllDefinitions();
+            this.InstallAllDefinitions();
+
         }
 
         private void InstallAllDefinitions()
         {
             this.m_tracer.TraceInfo("Scanning installed applets for changes...");
-            if(this.m_solutionManager != null)
+            if (this.m_solutionManager != null)
             {
                 this.m_solutionManager.Solutions.ForEach(sln =>
                 {
