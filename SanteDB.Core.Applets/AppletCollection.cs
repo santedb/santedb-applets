@@ -708,7 +708,7 @@ namespace SanteDB.Core.Applets
                     {
                         if (bindingParameters != null)
                         {
-                            str = this.m_bindingRegex.Replace(str, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : m.ToString());
+                            str = this.m_bindingRegex.Replace(str, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : $"NOT FOUND {m.ToString()}");
                         }
 
                         cacheObject = Encoding.UTF8.GetBytes(str);
@@ -723,6 +723,20 @@ namespace SanteDB.Core.Applets
                         return Encoding.UTF8.GetBytes(str);
                     }
                 case byte[] bytea:
+                    if(asset.MimeType == "text/javascript" || asset.MimeType == "application/json")
+                    {
+                        var str = Encoding.UTF8.GetString(bytea);
+                        if (bindingParameters != null)
+                        {
+                            str = this.m_bindingRegex.Replace(str, (m) => bindingParameters.TryGetValue(m.Groups[1].Value, out string v) ? v : $"NOT FOUND {m.ToString()}");
+                        }
+                        cacheObject = Encoding.UTF8.GetBytes(str);
+                        if (allowCache)
+                        {
+                            s_cache.TryAdd(cacheKey, cacheObject);
+                        }
+                        return cacheObject;
+                    }
                     return bytea;
                 case AppletAssetHtml html:
                     // Clone the asset HTML so we can manipulate it for this locale without messing up the original
