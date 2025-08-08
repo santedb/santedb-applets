@@ -87,20 +87,19 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         public static ViewModelDescription Load(Stream stream)
         {
             var retVal = s_xsz.Deserialize(stream) as ViewModelDescription;
-            retVal.Initialize();
             return retVal;
         }
 
         /// <summary>
         /// Initialize
         /// </summary>
-        public void Initialize()
+        internal void Initialize()
         {
             if (!this.m_isInitialized)
             {
                 foreach (var itm in this.TypeModelDefinitions)
                 {
-                    itm.Initialize();
+                    itm.Initialize(this);
                 }
             }
         }

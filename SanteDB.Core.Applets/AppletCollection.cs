@@ -582,6 +582,8 @@ namespace SanteDB.Core.Applets
                             retVal.TypeModelDefinitions.AddRange(this.GetViewModelDescription(itm).TypeModelDefinitions);
                         }
 
+                        retVal.Initialize();
+
                         // caching
                         if (this.CachePages)
                         {

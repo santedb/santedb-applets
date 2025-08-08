@@ -19,7 +19,9 @@
  * Date: 2023-6-21
  */
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Xml.Serialization;
+using System;
 
 namespace SanteDB.Core.Applets.ViewModel.Description
 {
@@ -35,13 +37,36 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         /// <summary>
         /// Initialize the type mode description
         /// </summary>
-        public void Initialize()
+        internal void Initialize(ViewModelDescription parent)
         {
             for (int i = 0; i < this.Properties?.Count; i++)
             {
                 this.Properties[i]?.Initialize(this);
             }
+
+            this.ProcessBaseRefs(this, parent);
         }
+
+        /// <summary>
+        /// Process base refs
+        /// </summary>
+        /// <param name="parent">The parent description file in which the processing of the parents should occur</param>
+        private void ProcessBaseRefs(TypeModelDescription type, ViewModelDescription parent)
+        {
+            if (!String.IsNullOrEmpty(type.Base))
+            {
+                var baseDef = parent.TypeModelDefinitions.FirstOrDefault(t => t.Name == type.Base) ?? parent.TypeModelDefinitions.FirstOrDefault(o => o.TypeName == type.Base);
+                this.Properties.AddRange(baseDef.Properties.Where(p => !this.Properties.Any(tp => p.Name == tp.Name)).ToArray());
+                this.All = this.All ?? baseDef.All;
+                this.ProcessBaseRefs(baseDef, parent);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the base reference or type
+        /// </summary>
+        [XmlAttribute("base")]
+        public string Base { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the type model
