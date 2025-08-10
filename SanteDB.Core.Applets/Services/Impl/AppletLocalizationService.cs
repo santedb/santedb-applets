@@ -109,6 +109,8 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public string GetString(string locale, string stringKey)
         {
+            if (stringKey == null) return null;
+
             var refData = this.GetOrLoadStringData(locale ?? Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName);
             if (refData.TryGetValue(stringKey, out String retVal))
             {
