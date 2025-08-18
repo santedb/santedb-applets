@@ -39,6 +39,7 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         /// </summary>
         internal void Initialize(ViewModelDescription parent)
         {
+            this.PackageName = parent.Name;
             for (int i = 0; i < this.Properties?.Count; i++)
             {
                 this.Properties[i]?.Initialize(this);
@@ -55,7 +56,8 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         {
             if (!String.IsNullOrEmpty(type.Base))
             {
-                var baseDef = parent.TypeModelDefinitions.FirstOrDefault(t => t.Name == type.Base) ?? parent.TypeModelDefinitions.FirstOrDefault(o => o.TypeName == type.Base);
+                var baseDef = parent.TypeModelDefinitions.FirstOrDefault(t => t.Name == type.Base) ?? parent.TypeModelDefinitions.FirstOrDefault(o => o.TypeName == type.Base) ??
+                    parent.TypeModelDefinitions.FirstOrDefault(o=>$"{o.PackageName}.{o.TypeName}" == type.Base);
                 this.Properties.AddRange(baseDef.Properties.Where(p => !this.Properties.Any(tp => p.Name == tp.Name)).ToArray());
                 this.All = this.All ?? baseDef.All;
                 this.ProcessBaseRefs(baseDef, parent);
@@ -79,6 +81,11 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         /// </summary>
         [XmlAttribute("type")]
         public string TypeName { get; set; }
+
+        /// <summary>
+        /// Owner name
+        /// </summary>
+        public string PackageName { get; set; }
 
         /// <summary>
         /// Get the name of the container

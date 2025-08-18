@@ -576,7 +576,8 @@ namespace SanteDB.Core.Applets
                 {
                     using (MemoryStream ms = new MemoryStream(viewModelDefinition.DefinitionContent))
                     {
-                        retVal = ViewModelDescription.Load(ms);
+                        retVal = ViewModelDescription.Load(ms, viewModelName);
+                        
                         foreach (var itm in retVal.Include)
                         {
                             retVal.TypeModelDefinitions.AddRange(this.GetViewModelDescription(itm).TypeModelDefinitions);

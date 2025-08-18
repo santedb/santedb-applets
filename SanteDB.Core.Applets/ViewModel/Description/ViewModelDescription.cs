@@ -84,9 +84,10 @@ namespace SanteDB.Core.Applets.ViewModel.Description
         /// <summary>
         /// Load the specified view model description
         /// </summary>
-        public static ViewModelDescription Load(Stream stream)
+        public static ViewModelDescription Load(Stream stream, string name = null)
         {
             var retVal = s_xsz.Deserialize(stream) as ViewModelDescription;
+            retVal.Name = retVal.Name ?? name;
             return retVal;
         }
 
