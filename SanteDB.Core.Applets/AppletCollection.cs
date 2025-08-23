@@ -20,8 +20,8 @@
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Services.Impl;
-using SanteDB.Core.Applets.ViewModel.Description;
-using SanteDB.Core.Applets.ViewModel.Json;
+using SanteDB.Core.ViewModel.Description;
+using SanteDB.Core.ViewModel.Json;
 using SanteDB.Core.Data.Quality;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
