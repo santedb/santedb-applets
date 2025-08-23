@@ -64,7 +64,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             var itm = this.m_appletManager?.Applets.ResolveAsset(reference) ?? this.m_appletManager.Applets.SelectMany(a => a.Assets).FirstOrDefault(a => a.Name.EndsWith(reference));
             if (itm == null)
             {
-                throw new FileNotFoundException($"Applet asset {reference} not found");
+                return null;
             }
 
             return new MemoryStream(this.m_appletManager.Applets.RenderAssetContent(itm));
