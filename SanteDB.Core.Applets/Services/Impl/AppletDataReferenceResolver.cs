@@ -38,7 +38,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// DI CTOR
         /// </summary>
-        public AppletDataReferenceResolver(IAppletManagerService appletManager)
+        public AppletDataReferenceResolver(IAppletManagerService appletManager = null)
         {
             this.m_appletManager = appletManager;
         }
@@ -61,10 +61,10 @@ namespace SanteDB.Core.Applets.Services.Impl
         private Stream Resolve(string reference)
         {
             // From loaded applets we resolve the references
-            var itm = this.m_appletManager.Applets.ResolveAsset(reference) ?? this.m_appletManager.Applets.SelectMany(a => a.Assets).FirstOrDefault(a => a.Name.EndsWith(reference));
+            var itm = this.m_appletManager?.Applets.ResolveAsset(reference) ?? this.m_appletManager.Applets.SelectMany(a => a.Assets).FirstOrDefault(a => a.Name.EndsWith(reference));
             if (itm == null)
             {
-                return null;
+                throw new FileNotFoundException($"Applet asset {reference} not found");
             }
 
             return new MemoryStream(this.m_appletManager.Applets.RenderAssetContent(itm));
