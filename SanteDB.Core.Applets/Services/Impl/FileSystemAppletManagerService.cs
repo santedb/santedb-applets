@@ -317,7 +317,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 this.m_tracer.TraceInfo("Upgrading solution {0}", solution.Meta.Id);
                 existingSolutionCollection.Clear();
-                this.m_appletCollection.Remove(solution.Meta.Id);
+                //this.m_appletCollection.Remove(solution.Meta.Id);
             }
             else
             {
@@ -369,9 +369,11 @@ namespace SanteDB.Core.Applets.Services.Impl
             // Register the pakfile
             lock (this.m_fileDictionary)
             {
-                if (!this.m_fileDictionary.ContainsKey(solution.Meta.Id + ".sln"))
+                string solutionkey = solution.Meta.Id + ".sln";
+
+                if (!this.m_fileDictionary.ContainsKey(solutionkey))
                 {
-                    this.m_fileDictionary.Add(solution.Meta.Id + ".sln", pakFile);
+                    this.m_fileDictionary.Add(solutionkey, pakFile);
                 }
             }
 

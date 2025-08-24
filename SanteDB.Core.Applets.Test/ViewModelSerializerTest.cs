@@ -19,8 +19,8 @@
  * Date: 2023-6-21
  */
 using NUnit.Framework;
-using SanteDB.Core.Applets.ViewModel.Description;
-using SanteDB.Core.Applets.ViewModel.Json;
+using SanteDB.Core.ViewModel.Description;
+using SanteDB.Core.ViewModel.Json;
 using SanteDB.Core.Model.Acts;
 using SanteDB.Core.Model.Constants;
 using SanteDB.Core.Model.DataTypes;

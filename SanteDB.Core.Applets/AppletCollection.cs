@@ -20,8 +20,8 @@
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Services.Impl;
-using SanteDB.Core.Applets.ViewModel.Description;
-using SanteDB.Core.Applets.ViewModel.Json;
+using SanteDB.Core.ViewModel.Description;
+using SanteDB.Core.ViewModel.Json;
 using SanteDB.Core.Data.Quality;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model;
@@ -576,11 +576,14 @@ namespace SanteDB.Core.Applets
                 {
                     using (MemoryStream ms = new MemoryStream(viewModelDefinition.DefinitionContent))
                     {
-                        retVal = ViewModelDescription.Load(ms);
+                        retVal = ViewModelDescription.Load(ms, viewModelName);
+                        
                         foreach (var itm in retVal.Include)
                         {
                             retVal.TypeModelDefinitions.AddRange(this.GetViewModelDescription(itm).TypeModelDefinitions);
                         }
+
+                        retVal.Initialize();
 
                         // caching
                         if (this.CachePages)
