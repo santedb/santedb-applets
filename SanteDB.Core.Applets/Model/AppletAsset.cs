@@ -163,6 +163,10 @@ namespace SanteDB.Core.Applets.Model
             return String.Format("/{1}/{2}", AppletCollection.APPLET_SCHEME, this.Manifest?.Info?.Id, this.Name);
         }
 
+        /// <summary>
+        /// Full path
+        /// </summary>
+        public string FullPath => $"/{this.Manifest?.Info?.Id}/{this.Name}";
     }
 
 }

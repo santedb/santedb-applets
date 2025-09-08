@@ -169,7 +169,6 @@ namespace SanteDB.Core.Applets.Services.Impl
                 Guard = tpl.Guard,
                 Key = tpl.Uuid,
                 Version = tpl.Priority + 1,
-                Author = new List<string>() { tpl.Manifest?.Info?.Author },
                 Icon = tpl.Icon,
                 Mnemonic = tpl.Mnemonic,
                 Oid = tpl.Oid,
