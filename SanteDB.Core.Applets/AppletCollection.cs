@@ -148,6 +148,8 @@ namespace SanteDB.Core.Applets
     /// </summary>
     public class AppletCollection : IList<AppletManifest>, INotifyCollectionChanged
     {
+
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletCollection));
         // A cache of rendered assets
         private static ConcurrentDictionary<String, Byte[]> s_cache = new ConcurrentDictionary<string, byte[]>();
 
@@ -155,6 +157,8 @@ namespace SanteDB.Core.Applets
         private ConcurrentDictionary<String, ViewModelDescription> s_viewModelCache = new ConcurrentDictionary<string, ViewModelDescription>();
         private ConcurrentDictionary<String, IEnumerable<AppletAsset>> m_dynamicHtmlAssets = new ConcurrentDictionary<string, IEnumerable<AppletAsset>>();
 
+        private List<AppletTemplateDefinition> m_templateDefinitions = null;
+        private List<AppletCarePathwayDefinition> m_carePathwayDefinitions = null;
         private List<AppletAsset> m_viewStateAssets = null;
         private List<AppletAsset> m_widgetAssets = null;
         private List<AppletAsset> m_htmlAssets = null;
@@ -249,8 +253,12 @@ namespace SanteDB.Core.Applets
             m_htmlAssets?.Clear();
             s_viewModelCache?.Clear();
             s_templateCache?.Clear();
+            m_carePathwayDefinitions?.Clear();
+            m_templateDefinitions?.Clear();
             s_cache?.Clear();
             m_dynamicHtmlAssets.Clear();
+            m_carePathwayDefinitions = null;
+            m_templateDefinitions = null;
             m_htmlAssets = null;
             m_viewStateAssets = null;
             m_widgetAssets = null;
@@ -303,7 +311,41 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public IEnumerable<AppletTemplateDefinition> DefinedTemplates
         {
-            get => this.m_appletManifest.SelectMany(o => o.Templates);
+            get 
+            {
+                if(this.m_templateDefinitions == null)
+                {
+                    this.m_templateDefinitions = this.m_appletManifest.SelectMany(m => m.Assets)
+                        .Where(a => a.Name.StartsWith("templates/", StringComparison.OrdinalIgnoreCase) && a.Name.EndsWith("template.xml") && a.MimeType == "text/xml")
+                        .Select(r =>
+                        {
+                            try
+                            {
+                                using (var ms = new MemoryStream(this.RenderAssetContent(r)))
+                                {
+                                    var appletTemplateDefinition = AppletTemplateDefinition.Load(ms);
+                                    // Resolve the views
+                                    appletTemplateDefinition.Definition = this.ResolveAsset(appletTemplateDefinition.Definition, relativeManifest: r.Manifest, relativeAsset: r)?.FullPath ?? appletTemplateDefinition.Definition;
+                                    appletTemplateDefinition.Summary = this.ResolveAsset(appletTemplateDefinition.Summary, relativeManifest: r.Manifest, relativeAsset: r)?.FullPath ?? appletTemplateDefinition.Summary;
+                                    appletTemplateDefinition.Form = this.ResolveAsset(appletTemplateDefinition.Form, relativeManifest: r.Manifest, relativeAsset: r)?.FullPath ?? appletTemplateDefinition.Form;
+                                    appletTemplateDefinition.BackEntry = this.ResolveAsset(appletTemplateDefinition.BackEntry, relativeManifest: r.Manifest, relativeAsset: r)?.FullPath ?? appletTemplateDefinition.BackEntry;
+                                    appletTemplateDefinition.View = this.ResolveAsset(appletTemplateDefinition.View, relativeManifest: r.Manifest, relativeAsset: r)?.FullPath ?? appletTemplateDefinition.View;
+                                    return appletTemplateDefinition;
+                                }
+                            }
+                            catch(Exception ex) 
+                            {
+                                this.m_tracer.TraceError("Could not load {0} - {1}", r.Name, ex);
+                                return null;
+                            }
+                        })
+                        .OfType<AppletTemplateDefinition>()
+                        .GroupBy(o=>o.Mnemonic)
+                        .Select(o=>o.OrderByDescending(p=>p.Priority).First())
+                        .ToList();
+                }
+                return this.m_templateDefinitions;
+            }
         }
 
         /// <summary>
@@ -311,7 +353,22 @@ namespace SanteDB.Core.Applets
         /// </summary>
         public IEnumerable<AppletCarePathwayDefinition> DefinedPathways
         {
-            get => this.m_appletManifest.SelectMany(o => o.Pathways);
+            get 
+            {
+                if (this.m_carePathwayDefinitions == null)
+                {
+                    this.m_carePathwayDefinitions = this.m_appletManifest.SelectMany(m => m.Assets)
+                        .Where(a => a.Name.StartsWith("carepaths/", StringComparison.OrdinalIgnoreCase) && a.Name.EndsWith(".xml") && a.MimeType == "text/xml")
+                        .Select(r =>
+                        {
+                            using (var ms = new MemoryStream(this.RenderAssetContent(r)))
+                            {
+                                return AppletCarePathwayDefinition.Load(ms);
+                            }
+                        }).ToList();
+                }
+                return this.m_carePathwayDefinitions;
+            }
         }
 
         /// <summary>
@@ -670,6 +727,10 @@ namespace SanteDB.Core.Applets
             else
             {
                 searchManifest = relativeManifest ?? relativeAsset?.Manifest;
+                if (relativeAsset?.Name.Contains("/") == true)
+                {
+                    assetPath = relativeAsset.Name.Substring(0, relativeAsset.Name.LastIndexOf("/") + 1) + assetPath;
+                }
             }
 
             if (assetPath.EndsWith("/") || String.IsNullOrEmpty(assetPath))

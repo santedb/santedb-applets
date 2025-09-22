@@ -159,6 +159,19 @@ namespace SanteDB.Core.Applets.Services.Impl
                 }
 
                 this.m_stringCache.TryAdd(locale, localStrings);
+                // Load the generic one 
+                if(locale.Contains("-"))
+                {
+                    var genericLocale = locale.Split('-')[0];
+                    var genericStrings = this.GetOrLoadStringData(genericLocale);
+                    foreach(var kv in genericStrings)
+                    {
+                        if(!localStrings.ContainsKey(kv.Key))
+                        {
+                            localStrings.Add(kv.Key, kv.Value);
+                        }
+                    }
+                }
                 return localStrings;
             }
         }

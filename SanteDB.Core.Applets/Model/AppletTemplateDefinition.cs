@@ -20,9 +20,11 @@
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Model.Attributes;
+using SanteDB.Core.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Xml.Serialization;
 
 namespace SanteDB.Core.Applets.Model
@@ -32,9 +34,12 @@ namespace SanteDB.Core.Applets.Model
     /// Applet template definition
     /// </summary>
     [XmlType(nameof(AppletTemplateDefinition), Namespace = "http://santedb.org/applet")]
+    [XmlRoot(nameof(AppletTemplateDefinition), Namespace = "http://santedb.org/applet")]
     [ExcludeFromCodeCoverage]
     public class AppletTemplateDefinition
     {
+        // Template definition
+        private static XmlSerializer x_xsz = XmlModelSerializerFactory.Current.CreateSerializer(typeof(AppletTemplateDefinition));
 
         /// <summary>
         /// Public
@@ -122,19 +127,16 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("icon"), JsonProperty("icon")]
         public string Icon { get; set; }
 
+        
         /// <summary>
-        /// Applet manifest
+        /// Load the specified template from the stream
         /// </summary>
-        [XmlIgnore]
-        public AppletManifest Manifest { get; internal set; }
-
-        /// <summary>
-        /// Initialize
-        /// </summary>
-        /// <param name="host"></param>
-        internal void Initialize(AppletManifest host)
+        /// <param name="stream">The stream from which the template definition should be loaded</param>
+        /// <returns>The template definition</returns>
+        public static AppletTemplateDefinition Load(Stream stream)
         {
-            this.Manifest = host;
-        }
+            return (AppletTemplateDefinition)x_xsz.Deserialize(stream);
+        } 
+
     }
 }

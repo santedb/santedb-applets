@@ -90,10 +90,10 @@ namespace SanteDB.Core.Applets.Model
                 mnu.Initialize(this);
             }
 
-            foreach(var tpl in this.Templates)
-            {
-                tpl.Initialize(this);
-            }
+            //foreach(var tpl in this.Templates)
+            //{
+            //    tpl.Initialize(this);
+            //}
         }
 
         /// <summary>
@@ -207,7 +207,7 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Gets or ets the templates for use in the applet
         /// </summary>
-        [XmlElement("template")]
+        [XmlElement("template"), Obsolete("Use AppletTemplate.Load on /templates folder", true)]
         public List<AppletTemplateDefinition> Templates { get; set; }
 
         /// <summary>
@@ -241,7 +241,7 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Get or sets the care pathways
         /// </summary>
-        [XmlElement("carepath"), JsonProperty("carepath")]
+        [XmlElement("carepath"), JsonProperty("carepath"), Obsolete("Use AppletCarePathwayDefinition.Load", true)]
         public List<AppletCarePathwayDefinition> Pathways { get; set; }
 
         /// <summary>

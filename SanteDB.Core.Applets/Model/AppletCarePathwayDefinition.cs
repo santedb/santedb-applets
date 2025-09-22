@@ -20,9 +20,11 @@
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Model.Acts;
+using SanteDB.Core.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text;
 using System.Xml.Serialization;
 
@@ -32,9 +34,14 @@ namespace SanteDB.Core.Applets.Model
     /// Applet care pathway definition 
     /// </summary>
     [XmlType(nameof(AppletCarePathwayDefinition), Namespace = "http://santedb.org/applet")]
+    [XmlRoot(nameof(AppletCarePathwayDefinition), Namespace = "http://santedb.org/applet")]
     [ExcludeFromCodeCoverage]
     public class AppletCarePathwayDefinition
     {
+        /// <summary>
+        /// Care pathway serializer
+        /// </summary>
+        private static XmlSerializer x_xsz = XmlModelSerializerFactory.Current.CreateSerializer(typeof(AppletCarePathwayDefinition));
 
         /// <summary>
         /// Gets or sets the UUID of the definition
@@ -78,5 +85,12 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("encounter"), JsonProperty("encounter")]
         public String EncounterTemplate { get; set; }
 
+        /// <summary>
+        /// Load care pathway definition from stream
+        /// </summary>
+        public static AppletCarePathwayDefinition Load(Stream stream)
+        {
+            return (AppletCarePathwayDefinition)x_xsz.Deserialize(stream);
+        }
     }
 }

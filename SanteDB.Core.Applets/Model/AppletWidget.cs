@@ -170,6 +170,12 @@ namespace SanteDB.Core.Applets.Model
         public List<AppletWidgetView> AlternateViews { get; set; }
 
         /// <summary>
+        /// Gets or sets the badges
+        /// </summary>
+        [XmlArray("badges"), XmlArrayItem("badge"), JsonProperty("badges")]
+        public List<AppletBadge> Badges { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the widget
         /// </summary>
         [XmlAttribute("name")]
@@ -247,4 +253,30 @@ namespace SanteDB.Core.Applets.Model
         }
     }
 
+    /// <summary>
+    /// Applet badge definition
+    /// </summary>
+    [XmlType(nameof(AppletBadge), Namespace = "http://santedb.org/applet")]
+    [JsonObject(nameof(AppletBadge))]
+    public class AppletBadge
+    {
+
+        /// <summary>
+        /// Get or sets the icon class
+        /// </summary>
+        [XmlAttribute("icon"), JsonProperty("icon")]
+        public string IconClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the badge class
+        /// </summary>
+        [XmlAttribute("badge"), JsonProperty("badge")]
+        public string BadgeClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the guard condition which is applied to the badge
+        /// </summary>
+        [XmlElement("guard"), JsonProperty("guard")]
+        public List<String> GuardCondition { get; set; }
+    }
 }
