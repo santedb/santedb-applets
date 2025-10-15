@@ -222,6 +222,16 @@ namespace SanteDB.Core.Applets.Services.Impl
                     Content = tpl.BackEntry
                 });
             }
+
+            if(tpl.CdssCallback != null)
+            {
+                retVal.CdssCallback = new DataTemplateCdssCallback()
+                {
+                    LibrariesToApply = tpl.CdssCallback.LibrariesToApply,
+                    SubjectPath = tpl.CdssCallback.SubjectPath,
+                    TargetPath = tpl.CdssCallback.TargetPath
+                };
+            }
             return retVal;
 
 
