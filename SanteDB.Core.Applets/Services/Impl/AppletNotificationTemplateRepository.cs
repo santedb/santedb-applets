@@ -116,10 +116,9 @@ namespace SanteDB.Core.Applets.Services.Impl
                         using (var str = new MemoryStream(appletAssets.RenderAssetContent(asset)))
                         {
                             var notification = NotificationTemplate.Load(str);
-                            this.m_definitionCache.TryAdd(notification.Key.ToString(), notification); // set the default with no language
-                            if (!this.m_definitionCache.TryAdd($"{notification.Key.ToString()}", notification))
+                            if (!this.m_definitionCache.TryAdd($"{notification.Mnemonic.ToString()}", notification))
                             {
-                                this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Key.ToString());
+                                this.m_tracer.TraceWarning("Could not add {0} since it already is registered by another applet", notification.Mnemonic.ToString());
                             }
 
                         }
@@ -146,13 +145,13 @@ namespace SanteDB.Core.Applets.Services.Impl
         public IEnumerable<NotificationTemplate> Find(Expression<Func<NotificationTemplate, bool>> filter) => this.m_definitionCache.Values.Where(filter.Compile());
 
         /// <inheritdoc/>
-        public NotificationTemplate Get(string id)
+        public NotificationTemplate Get(string mnemonic)
         {
-            if (this.m_definitionCache.TryGetValue($"{id}", out var retVal) ||
-                this.m_definitionCache.TryGetValue(id, out retVal))
+            if (this.m_definitionCache.TryGetValue(mnemonic, out var retVal))
             {
                 return retVal;
             }
+
             return null;
         }
 
