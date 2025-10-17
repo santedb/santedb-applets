@@ -127,7 +127,12 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("icon"), JsonProperty("icon")]
         public string Icon { get; set; }
 
-        
+        /// <summary>
+        /// CDSS callback
+        /// </summary>
+        [XmlElement("cdss"), JsonProperty("cdss")]
+        public AppletTemplateCdssDefinition CdssCallback { get; set; }
+
         /// <summary>
         /// Load the specified template from the stream
         /// </summary>
