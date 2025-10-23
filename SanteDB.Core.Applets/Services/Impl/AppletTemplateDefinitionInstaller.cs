@@ -20,6 +20,7 @@
  */
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
+using SanteDB.Core.Model.Acts;
 using SanteDB.Core.Model.DataTypes;
 using SanteDB.Core.Notifications;
 using SanteDB.Core.Security;
@@ -46,12 +47,14 @@ namespace SanteDB.Core.Applets.Services.Impl
         private readonly IDataTemplateManagementService m_templateManagementService;
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletTemplateDefinitionInstaller));
         private readonly IAppletSolutionManagerService m_solutionManager;
+        private readonly IDataPersistenceService<Protocol> m_protocolPersistence;
 
         /// <summary>
         /// Applet template definition service
         /// </summary>
         public AppletTemplateDefinitionInstaller(IAppletManagerService appletManagerService,
             ITemplateDefinitionRepositoryService templateDefinitionRepositoryService = null,
+            IDataPersistenceService<Protocol> protocolPersistenceService = null,
             IDataTemplateManagementService templateManagementService = null,
             ICarePathwayDefinitionRepositoryService carePathwayDefinitionRepositoryService = null,
             IAppletSolutionManagerService appletSolutionManagerService = null)
@@ -61,6 +64,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_templateDefinitionRepository = templateDefinitionRepositoryService;
             this.m_appletManager = appletManagerService;
             this.m_solutionManager = appletSolutionManagerService;
+            this.m_protocolPersistence = protocolPersistenceService;
 
             appletManagerService.Changed += (o, e) => this.InstallAllDefinitions();
             this.InstallAllDefinitions();
@@ -150,6 +154,27 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 EligibilityCriteria = cpd.EligibilityCriteria,
                                 TemplateKey = templateDefinition?.Key
                             });
+                        }
+
+                        if(this.m_protocolPersistence != null)
+                        {
+                            var existingProto = this.m_protocolPersistence.Get(cpd.Uuid, null, AuthenticationContext.SystemPrincipal);
+                            if(existingProto == null)
+                            {
+                                this.m_protocolPersistence.Insert(new Protocol()
+                                {
+                                    CreatedByKey = Guid.Parse(AuthenticationContext.SystemUserSid),
+                                    CreationTime = DateTimeOffset.Now,
+                                    Name = cpd.Name,
+                                    Key = cpd.Uuid,
+                                    Oid = $"2.25.{BitConverter.ToUInt64(cpd.Uuid.ToByteArray(), 0)}"
+                                }, TransactionMode.Commit, AuthenticationContext.SystemPrincipal);
+                            }
+                            else
+                            {
+                                existingProto.Name = cpd.Name;
+                                this.m_protocolPersistence.Update(existingProto, TransactionMode.Commit, AuthenticationContext.SystemPrincipal);
+                            }
                         }
                     }
                 }
