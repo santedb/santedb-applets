@@ -261,6 +261,7 @@
 		<xs:attribute name="launch" type="xs:string" />
 		<xs:attribute name="asset" type="xs:string" />
 	</xs:complexType>
+	<xs:element name="AppletTemplateDefinition" type="tns:AppletTemplateDefinition" nillable="true"></xs:element>
 	<xs:complexType name="AppletTemplateDefinition">
 		<xs:sequence>
 			<xs:element minOccurs="0" maxOccurs="1" name="form" type="xs:string" />
