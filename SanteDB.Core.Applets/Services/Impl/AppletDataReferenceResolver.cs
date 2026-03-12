@@ -20,6 +20,7 @@
  */
 using SanteDB.Core;
 using SanteDB.Core.Applets.Services;
+using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Services;
 using System.IO;
 using System.Linq;
@@ -33,6 +34,7 @@ namespace SanteDB.Core.Applets.Services.Impl
     /// </summary>
     public class AppletDataReferenceResolver : IReferenceResolver
     {
+        private readonly Tracer m_tracer = Tracer.GetTracer(typeof(AppletDataReferenceResolver));
         private readonly IAppletManagerService m_appletManager;
 
         /// <summary>
@@ -49,9 +51,19 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <inheritdoc/>
         public string ResolveAsString(string reference)
         {
-            using (var sr = new StreamReader(Resolve(reference)))
+            var referenceStream = this.Resolve(reference);
+
+            if (referenceStream == null)
             {
-                return sr.ReadToEnd();
+                this.m_tracer.TraceWarning("Could not resolve stream for referenced object {0}", reference); // We only warn since the caller may not actually "need" the resolved data (i.e. an option lookup) so we return null
+                return null;
+            }
+            else
+            {
+                using (var sr = new StreamReader(Resolve(reference)))
+                {
+                    return sr.ReadToEnd();
+                }
             }
         }
 
