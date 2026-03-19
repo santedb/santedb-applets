@@ -19,11 +19,13 @@
  * Date: 2023-6-21
  */
 using Newtonsoft.Json;
+using SanteDB.Core.BusinessRules;
 using SanteDB.Core.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Xml.Serialization;
 
@@ -33,7 +35,7 @@ namespace SanteDB.Core.Applets.Configuration
     /// Represents a local applet configuration section
     /// </summary>
     [XmlType(nameof(AppletConfigurationSection), Namespace = "http://santedb.org/configuration")]
-    public class AppletConfigurationSection : IConfigurationSection
+    public class AppletConfigurationSection : IConfigurationSection, IValidatableConfigurationSection
     {
 
         /// <summary>
@@ -89,5 +91,27 @@ namespace SanteDB.Core.Applets.Configuration
         [Obsolete("Trusted Publishers can no longer be configured via command line - certificates must be installed into host trust store", true)]
         public List<string> TrustedPublishers { get; set; }
 
+        /// <inheritdoc/>
+        public IEnumerable<DetectedIssue> Validate()
+        {
+            if(!Directory.Exists(this.AppletDirectory))
+            {
+                yield return new DetectedIssue(DetectedIssuePriorityType.Error, "err.config.applet", $"Applet directory {this.AppletDirectory} does not exist", Guid.Empty);
+            }
+            else if (!Directory.EnumerateFiles(this.AppletDirectory, "*.pak").Any())
+            {
+                yield return new DetectedIssue(DetectedIssuePriorityType.Warning, "err.config.noapps", $"There are no applets in {this.AppletDirectory} - please ensure that you have installed applets", Guid.Empty);
+            }
+
+            if(!File.Exists(Path.Combine(this.AppletDirectory, "santedb.core.sln.pak")) && !File.Exists(Path.Combine(this.AppletDirectory, "santedb.core.pak")))
+            {
+                yield return new DetectedIssue(DetectedIssuePriorityType.Warning, "err.config.appmis", "Missing SanteDB core applet - ensure santedb.core.pak or santedb.core.sln.pak exists", Guid.Empty);
+            }
+
+            if (!Path.IsPathRooted(this.AppletDirectory))
+            {
+                yield return new DetectedIssue(DetectedIssuePriorityType.Warning, "err.config.root", $"Applet directory {this.AppletDirectory} should be a full path", Guid.Empty);
+            }
+        }
     }
 }

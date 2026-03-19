@@ -54,7 +54,7 @@
 											</div>
 										</div>
 									</div>
-									<form name="realmForm" novalidate="novalidate">
+									<form name="realmForm" novalidate="novalidate" autocomplete="off">
 										<div class="input-group">
 											<span class="input-group-addon" id="deviceNameLabel">Device Name:</span>
 											<input ng-model="config.security.deviceName" ng-required="true" placeholder="tabletid" ng-pattern="/^[A-Za-z][A-Za-z.0-9-]+$/i" class="form-control" type="text" name="deviceName" id="deviceName" aria-describedby="deviceNameLabel" />
@@ -83,7 +83,7 @@
 						</div>
 					</div>
 				</div>
-				<form name="configurationForm" novalidate="novalidate">
+				<form name="configurationForm" novalidate="novalidate" autocomplete="off">
 					<div class="container">
 						<!-- Security Settings -->
 						<div class="row">
