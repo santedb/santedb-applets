@@ -122,6 +122,11 @@
         <PackageReference Include="SharpCompress" Version="0.40.0" />
         <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Schema\Applet.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Choose>
     <When Condition="$(SolutionName.Contains('-nuget'))">
       <ItemGroup>
