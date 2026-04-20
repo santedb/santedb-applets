@@ -96,7 +96,7 @@ namespace SanteDB.Core.Applets.Configuration
         {
             if(!Directory.Exists(this.AppletDirectory))
             {
-                yield return new DetectedIssue(DetectedIssuePriorityType.Error, "err.config.applet", $"Applet directory {this.AppletDirectory} does not exist", Guid.Empty);
+                yield return new DetectedIssue(DetectedIssuePriorityType.Warning, "err.config.applet", $"Applet directory {this.AppletDirectory} does not exist", Guid.Empty);
             }
             else if (!Directory.EnumerateFiles(this.AppletDirectory, "*.pak").Any())
             {
