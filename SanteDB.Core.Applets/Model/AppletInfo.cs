@@ -155,6 +155,9 @@ namespace SanteDB.Core.Applets.Model
         {
             return new AppletName(this.Id, this.Version, this.PublicKeyToken);
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => $"{this.Id} v.{this.Version}";
     }
 
 }
