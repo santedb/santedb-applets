@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Serialization;
 #pragma warning disable CS0612
@@ -116,6 +117,7 @@ namespace SanteDB.Core.Applets.Model
                 }
                 retVal.Manifest = ms.ToArray();
             }
+            retVal.Meta.Hash = SHA256.Create().ComputeHash(retVal.Manifest);
             return retVal;
         }
 

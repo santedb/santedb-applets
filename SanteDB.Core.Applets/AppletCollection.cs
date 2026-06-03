@@ -42,6 +42,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
+using System.Xml.XPath;
 
 namespace SanteDB.Core.Applets
 {
@@ -941,6 +942,11 @@ namespace SanteDB.Core.Applets
                         {
                             headTitle.Add(new XElement(xs_xhtml + "title", new XText(title)));
                         }
+
+                        // Turn off auto-complete
+                        htmlContent.XPathSelectElements("//*[(local-name() = 'form' or local-name() = 'input' or local-name() = 'textarea' or local-name() = 'select') and not(@autocomplete)]")
+                            .OfType<XElement>()
+                            .ForEach(xe => xe.SetAttributeValue("autocomplete", "off"));
                     }
 
                     // Render out the content

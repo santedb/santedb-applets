@@ -200,6 +200,10 @@ namespace SanteDB.Core.Applets.Model
                     throw new InvalidOperationException($"Package contents of {this.Meta.Id} appear to be corrupt!");
                 }
             }
+            else if (this.Meta.Hash == null)
+            {
+                return allowUnsignedApplets;
+            }
             else if (BitConverter.ToString(SHA256.Create().ComputeHash(this.Manifest)) != BitConverter.ToString(this.Meta.Hash))
             {
                 throw new InvalidOperationException($"Package contents of {this.Meta.Id} appear to be corrupt!");
