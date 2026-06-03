@@ -80,14 +80,6 @@ namespace SanteDB.Core.Applets.Configuration
         [Description("Allows unsigned applets to be installed and executed on this server (NOT RECOMMENDED)")]
         public bool AllowUnsignedApplets { get; set; }
 
-        /// <summary>
-        /// Trusted publishers
-        /// </summary>
-        [XmlArray("trustedPublishers"), XmlArrayItem("add")]
-        [DisplayName("Trusted Publishers")]
-        [Description("Identifies the thumbprints of software publishers that are treated as TRUSTED in this environment")]
-        [Obsolete("Trusted Publishers can no longer be configured via command line - certificates must be installed into host trust store", true)]
-        public List<string> TrustedPublishers { get; set; }
 
     }
 }
