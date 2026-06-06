@@ -55,7 +55,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                 {
                     using (var ms = new MemoryStream(this.m_appletManager.Applets.RenderAssetContent(o)))
                     {
-                        return Dataset.Load(ms);
+                        return Dataset.Load(ms, source: o.FullPath);
                     }
                 });
         }
