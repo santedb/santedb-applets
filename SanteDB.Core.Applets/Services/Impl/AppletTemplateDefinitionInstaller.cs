@@ -156,10 +156,10 @@ namespace SanteDB.Core.Applets.Services.Impl
                             });
                         }
 
-                        if(this.m_protocolPersistence != null)
+                        if (this.m_protocolPersistence != null)
                         {
                             var existingProto = this.m_protocolPersistence.Get(cpd.Uuid, null, AuthenticationContext.SystemPrincipal);
-                            if(existingProto == null)
+                            if (existingProto == null)
                             {
                                 this.m_protocolPersistence.Insert(new Protocol()
                                 {
@@ -201,7 +201,23 @@ namespace SanteDB.Core.Applets.Services.Impl
                 Readonly = true,
                 Scopes = tpl.Scope,
                 Views = new List<DataTemplateView>(),
-                IsActive = true
+                IsActive = true,
+                Parameters = tpl.Parameters.Select(o =>
+                {
+                    var dp = new DataTemplateParameter() { Name = o.Name };
+                    var queryData = o.Value.Split('?');
+                    if (queryData.Length == 1)
+                    {
+                        dp.Value = queryData[0];
+                    }
+                    else
+                    {
+                        dp.Value = queryData[1];
+                        dp.Resource = new Core.Configuration.ResourceTypeReferenceConfiguration(queryData[0]);
+                    }
+                    return dp;
+                }).ToList()
+
             };
 
             // Render the contents
@@ -248,7 +264,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                 });
             }
 
-            if(tpl.CdssCallback != null)
+            if (tpl.CdssCallback != null)
             {
                 retVal.CdssCallback = new DataTemplateCdssCallback()
                 {

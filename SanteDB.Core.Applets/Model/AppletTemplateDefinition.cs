@@ -134,6 +134,12 @@ namespace SanteDB.Core.Applets.Model
         public AppletTemplateCdssDefinition CdssCallback { get; set; }
 
         /// <summary>
+        /// Gets or sets additional parameters for the data template definition which the server should populate
+        /// </summary>
+        [XmlArray("parameters"), XmlArrayItem("add"), JsonProperty("parameters")]
+        public List<AppletSettingEntry> Parameters { get; set; }
+
+        /// <summary>
         /// Load the specified template from the stream
         /// </summary>
         /// <param name="stream">The stream from which the template definition should be loaded</param>
