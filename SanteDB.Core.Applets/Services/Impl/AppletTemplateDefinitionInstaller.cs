@@ -103,7 +103,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 using (AuthenticationContext.EnterSystemContext())
                 {
-                    foreach (var tpl in appletCollection.DefinedTemplates)
+                    foreach (var tpl in appletCollection.DefinedTemplates.ToArray())
                     {
                         var existing = this.m_templateDefinitionRepository.Find(o => o.Mnemonic == tpl.Mnemonic || o.Key == tpl.Uuid || o.Oid == tpl.Oid).FirstOrDefault();
                         if (existing == null ||
