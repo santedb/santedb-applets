@@ -127,7 +127,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                         this.m_tracer.TraceInfo("Registering data template definition {0} with manager...", tpl.Mnemonic);
                         this.m_templateManagementService.AddOrUpdate(dataTemplateDefinition);
                     }
-                    foreach (var cpd in appletCollection.DefinedPathways)
+                    foreach (var cpd in appletCollection.DefinedPathways.ToArray())
                     {
                         var existing = this.m_carePathwayRepository.Find(o => o.Mnemonic == cpd.Mnemonic || o.Key == cpd.Uuid).FirstOrDefault();
                         TemplateDefinition templateDefinition = null;
