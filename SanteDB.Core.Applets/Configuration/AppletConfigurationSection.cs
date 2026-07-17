@@ -77,7 +77,7 @@ namespace SanteDB.Core.Applets.Configuration
         /// <summary>
         /// Allow unsigned applets to be installed
         /// </summary>
-        [XmlAttribute("allowUnsignedApplets")]
+        [XmlIgnore()] // Ignore Configuration
         [DisplayName("Allow Unsigned Code")]
         [Description("Allows unsigned applets to be installed and executed on this server (NOT RECOMMENDED)")]
         public bool AllowUnsignedApplets { get; set; }

@@ -479,6 +479,13 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 this.m_tracer.TraceWarning($"Applet {package.Meta} depends on : [{String.Join(", ", package.Meta.Dependencies.Select(o => o.ToString()))}] which are missing or incompatible");
             }
+#if !DEBUG
+            // TODO: Verify package hash / signature
+            if (!package.VerifySignatures(this.m_configuration.AllowUnsignedApplets, _PlatformSecurityProvider))
+            {
+                throw new SecurityException($"{package.GetType().Name} {package.Meta.Id} failed validation");
+            }
+#endif 
 
             var manifest = package.Unpack();
             // remove the package from the collection if this is an upgrade
