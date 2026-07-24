@@ -111,7 +111,7 @@ namespace SanteDB.Core.Applets.Model
             this.Info.TimeStamp = DateTime.Now;
             using (var ms = new MemoryStream())
             {
-                using (var ls = new LZipStream(ms, SharpCompress.Compressors.CompressionMode.Compress))
+                using (var ls = LZipStream.Create(ms, SharpCompress.Compressors.CompressionMode.Compress))
                 {
                     x_xsz.Serialize(ls, this);
                 }

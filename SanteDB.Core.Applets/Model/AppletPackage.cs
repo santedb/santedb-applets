@@ -154,7 +154,7 @@ namespace SanteDB.Core.Applets.Model
             if (this.m_unpackedManifest == null && this.Manifest != null)
             {
                 using (MemoryStream ms = new MemoryStream(this.Manifest))
-                using (LZipStream gs = new LZipStream(NonDisposingStream.Create(ms), CompressionMode.Decompress))
+                using (LZipStream gs = LZipStream.Create(SharpCompressStream.CreateNonDisposing(ms), CompressionMode.Decompress))
                 {
                     this.m_unpackedManifest =  AppletManifest.Load(gs);
                     if (this.PublicKey != null)
@@ -172,7 +172,7 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         public void Save(Stream stream)
         {
-            using (GZipStream gzs = new GZipStream(NonDisposingStream.Create(stream), CompressionMode.Compress))
+            using (GZipStream gzs = new GZipStream(SharpCompressStream.CreateNonDisposing(stream), CompressionMode.Compress))
             {
                 if (this is AppletSolution)
                 {

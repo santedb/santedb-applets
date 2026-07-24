@@ -22,17 +22,13 @@ using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model.Acts;
 using SanteDB.Core.Model.DataTypes;
-using SanteDB.Core.Notifications;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using SanteDB.Core.Templates;
 using SanteDB.Core.Templates.Definition;
-using SharpCompress;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
 
 namespace SanteDB.Core.Applets.Services.Impl
 {
