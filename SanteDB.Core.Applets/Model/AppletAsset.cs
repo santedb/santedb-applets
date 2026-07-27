@@ -119,7 +119,7 @@ namespace SanteDB.Core.Applets.Model
                         if (Encoding.UTF8.GetString(bytea, 0, 4) == "LZIP")
                         {
                             using (var ms = new MemoryStream(bytea))
-                            using (var ls = new SharpCompress.Compressors.LZMA.LZipStream(NonDisposingStream.Create(ms), SharpCompress.Compressors.CompressionMode.Decompress))
+                            using (var ls = SharpCompress.Compressors.LZMA.LZipStream.Create(SharpCompressStream.CreateNonDisposing(ms), SharpCompress.Compressors.CompressionMode.Decompress))
                             using (var oms = new MemoryStream())
                             {
                                 ls.CopyTo(oms);
