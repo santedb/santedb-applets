@@ -48,6 +48,9 @@ namespace SanteDB.Core.Applets.Test
         [OneTimeSetUp]
         public void Initialize()
         {
+#if NET10_0_OR_GREATER
+            AppContext.SetSwitch("Switch.System.Xml.IgnoreObsoleteMembers", true); //See https://learn.microsoft.com/en-us/dotnet/core/compatibility/serialization/10/xmlserializer-obsolete-properties
+#endif
             this.m_appletCollection.Add(AppletManifest.Load(typeof(TestRenderApplets).Assembly.GetManifestResourceStream("SanteDB.Core.Applets.Test.HelloWorldApplet.xml")));
             this.m_appletCollection.Add(AppletManifest.Load(typeof(TestRenderApplets).Assembly.GetManifestResourceStream("SanteDB.Core.Applets.Test.SettingsApplet.xml")));
             this.m_appletCollection.Add(AppletManifest.Load(typeof(TestRenderApplets).Assembly.GetManifestResourceStream("SanteDB.Core.Applets.Test.LocalizationWithJavascript.xml")));
