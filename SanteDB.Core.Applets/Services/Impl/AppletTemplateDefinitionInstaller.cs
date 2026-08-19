@@ -22,17 +22,13 @@ using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Model.Acts;
 using SanteDB.Core.Model.DataTypes;
-using SanteDB.Core.Notifications;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using SanteDB.Core.Templates;
 using SanteDB.Core.Templates.Definition;
-using SharpCompress;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
 
 namespace SanteDB.Core.Applets.Services.Impl
 {
@@ -103,7 +99,7 @@ namespace SanteDB.Core.Applets.Services.Impl
             {
                 using (AuthenticationContext.EnterSystemContext())
                 {
-                    foreach (var tpl in appletCollection.DefinedTemplates)
+                    foreach (var tpl in appletCollection.DefinedTemplates.ToArray())
                     {
                         var existing = this.m_templateDefinitionRepository.Find(o => o.Mnemonic == tpl.Mnemonic || o.Key == tpl.Uuid || o.Oid == tpl.Oid).FirstOrDefault();
                         if (existing == null ||
@@ -127,7 +123,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                         this.m_tracer.TraceInfo("Registering data template definition {0} with manager...", tpl.Mnemonic);
                         this.m_templateManagementService.AddOrUpdate(dataTemplateDefinition);
                     }
-                    foreach (var cpd in appletCollection.DefinedPathways)
+                    foreach (var cpd in appletCollection.DefinedPathways.ToArray())
                     {
                         var existing = this.m_carePathwayRepository.Find(o => o.Mnemonic == cpd.Mnemonic || o.Key == cpd.Uuid).FirstOrDefault();
                         TemplateDefinition templateDefinition = null;
@@ -156,10 +152,10 @@ namespace SanteDB.Core.Applets.Services.Impl
                             });
                         }
 
-                        if(this.m_protocolPersistence != null)
+                        if (this.m_protocolPersistence != null)
                         {
                             var existingProto = this.m_protocolPersistence.Get(cpd.Uuid, null, AuthenticationContext.SystemPrincipal);
-                            if(existingProto == null)
+                            if (existingProto == null)
                             {
                                 this.m_protocolPersistence.Insert(new Protocol()
                                 {
@@ -201,7 +197,23 @@ namespace SanteDB.Core.Applets.Services.Impl
                 Readonly = true,
                 Scopes = tpl.Scope,
                 Views = new List<DataTemplateView>(),
-                IsActive = true
+                IsActive = true,
+                Parameters = tpl.Parameters.Select(o =>
+                {
+                    var dp = new DataTemplateParameter() { Name = o.Name };
+                    var queryData = o.Value.Split('?');
+                    if (queryData.Length == 1)
+                    {
+                        dp.Value = queryData[0];
+                    }
+                    else
+                    {
+                        dp.Value = queryData[1];
+                        dp.Resource = new Core.Configuration.ResourceTypeReferenceConfiguration(queryData[0]);
+                    }
+                    return dp;
+                }).ToList()
+
             };
 
             // Render the contents
@@ -248,7 +260,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                 });
             }
 
-            if(tpl.CdssCallback != null)
+            if (tpl.CdssCallback != null)
             {
                 retVal.CdssCallback = new DataTemplateCdssCallback()
                 {
