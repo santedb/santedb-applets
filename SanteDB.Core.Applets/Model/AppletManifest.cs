@@ -19,12 +19,14 @@
  * Date: 2023-6-21
  */
 using Newtonsoft.Json;
+using SanteDB.Core.Configuration.Supplement;
 using SanteDB.Core.Model.Serialization;
 using SharpCompress.Compressors.LZMA;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Serialization;
@@ -189,11 +191,11 @@ namespace SanteDB.Core.Applets.Model
         /// <summary>
         /// Applet configuration settings legacy
         /// </summary>
-        [XmlElement("configuration")]
-        public AppletConfigurationSettings ConfigurationSettingsObsolete
+        [XmlArray("configuration", Namespace = "http://santedb.org/configuration"), XmlArrayItem("setting", Namespace = "http://santedb.org/configuration")]
+        public List<ConfigurationSupplementModifier> ConfigurationSupplements
         {
-            get => null;
-            set => this.Settings = value.Settings;
+            get;
+            set;
         }
 
         /// <summary>
@@ -294,6 +296,29 @@ namespace SanteDB.Core.Applets.Model
         /// <param name="name">The name of the setting</param>
         /// <returns>The setting</returns>
         public String GetSetting(string name) => this.Settings?.Find(o => o.Name == name)?.Value;
+
+
+        /// <summary>
+        /// Convert an applet manifest to supplements
+        /// </summary>
+        /// <param name="manifest">The manifest to convert</param>
+        /// <returns>The supplement modifier</returns>
+        public static ConfigurationSupplement CreateConfigurationSupplement(AppletManifest manifest)
+        {
+            if (manifest.ConfigurationSupplements?.Any() == true)
+            {
+                return new ConfigurationSupplement()
+                {
+                    Id = manifest.Info.Id,
+                    SettingModifiers = manifest.ConfigurationSupplements
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
+
 }
 #pragma warning restore
