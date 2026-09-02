@@ -21,6 +21,7 @@
 using SanteDB.Core.Applets.Model;
 using SanteDB.Core.Applets.Model.Extern.SanteDB.Core.Applets.Model;
 using SanteDB.Core.Diagnostics;
+using SanteDB.Core.i18n;
 using SanteDB.Core.Services;
 using System;
 using System.Collections.Concurrent;
@@ -57,7 +58,10 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Gets the service name
         /// </summary>
-        public string ServiceName => "Applet-Based Localization Service";
+        public virtual string ServiceName => "Applet-Based Localization Service";
+
+        /// <inheritdoc/>
+        public virtual bool IsReadonly => true;
 
         /// <summary>
         /// Dependency injection header for localization service
@@ -73,12 +77,12 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Format the specified string
         /// </summary>
-        public string GetString(string stringKey, dynamic parameters) => this.GetString(null, stringKey, parameters);
+        public virtual string GetString(string stringKey, dynamic parameters) => this.GetString(null, stringKey, parameters);
 
         /// <summary>
         /// Format the string
         /// </summary>
-        public string GetString(string locale, string stringKey, dynamic parameters)
+        public virtual string GetString(string locale, string stringKey, dynamic parameters)
         {
             if (parameters == null)
             {
@@ -102,12 +106,12 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get string
         /// </summary>
-        public string GetString(string stringKey) => this.GetString(null, stringKey);
+        public virtual string GetString(string stringKey) => this.GetString(null, stringKey);
 
         /// <summary>
         /// Get string
         /// </summary>
-        public string GetString(string locale, string stringKey)
+        public virtual string GetString(string locale, string stringKey)
         {
             if (stringKey == null) return null;
 
@@ -125,7 +129,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Get all strings for the specified locale
         /// </summary>
-        public IEnumerable<KeyValuePair<String, String>> GetStrings(string locale)
+        public virtual IEnumerable<KeyValuePair<String, String>> GetStrings(string locale)
         {
             return this.GetOrLoadStringData(locale);
         }
@@ -235,5 +239,11 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// Get all available locales
         /// </summary>
         public IEnumerable<string> GetAvailableLocales() => this.m_appletManager.Applets.SelectMany(o => o.Locales.Select(l => l.Code)).Distinct();
+
+        /// <inheritdoc/>
+        public virtual void SetString(String locale, String stringKey, String value)
+        {
+            throw new NotSupportedException(ErrorMessages.OBJECT_READONLY);
+        }
     }
 }
