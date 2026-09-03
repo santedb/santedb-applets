@@ -43,6 +43,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using RestSrvr;
 
 namespace SanteDB.Core.Applets
 {
@@ -961,7 +962,18 @@ namespace SanteDB.Core.Applets
                         {
                             var localizationService = ApplicationServiceContext.Current.GetService<ILocalizationService>();
 
-                            retVal = this.m_localizationRegex.Replace(retVal, (m) => localizationService?.GetString(preProcessLocalization, m.Groups[1].Value) ?? m.Groups[1].Value);
+                            retVal = this.m_localizationRegex.Replace(retVal, (m) => {
+                                var replacement = localizationService?.GetString(preProcessLocalization, m.Groups[1].Value) ?? m.Groups[1].Value;
+                                if (replacement.Equals(m.Groups[1].Value) && !localizationService.IsReadonly &&
+                                retVal.Substring(m.Index - 2, 2) != "=\"")
+                                {
+                                    return $"<localize>{ replacement }</localize>";
+                                }
+                                else
+                                {
+                                    return replacement;
+                                }
+                            });
                         }
 
                         // Binding objects

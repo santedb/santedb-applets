@@ -36,6 +36,13 @@ namespace SanteDB.Core.Applets.Model.Extern
         [ExcludeFromCodeCoverage]
         public class ResourceFile
         {
+            /// <summary>
+            /// CTOR
+            /// </summary>
+            public ResourceFile()
+            {
+                this.Strings = new List<ExternalStringResource>();
+            }
 
             // Serializer
             private static readonly XmlSerializer m_xsz = new XmlSerializer(typeof(ResourceFile));
@@ -52,6 +59,14 @@ namespace SanteDB.Core.Applets.Model.Extern
             public static ResourceFile Load(Stream inputStream)
             {
                 return m_xsz.Deserialize(inputStream) as ResourceFile;
+            }
+
+            /// <summary>
+            /// Save the resource file
+            /// </summary>
+            public void Save(Stream outputStream)
+            {
+                m_xsz.Serialize(outputStream, this);
             }
         }
 
