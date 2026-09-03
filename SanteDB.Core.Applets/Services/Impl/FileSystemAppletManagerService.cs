@@ -20,7 +20,10 @@
  */
 using SanteDB.Core.Applets.Configuration;
 using SanteDB.Core.Applets.Model;
+using SanteDB.Core.Configuration;
+using SanteDB.Core.Configuration.Supplement;
 using SanteDB.Core.Diagnostics;
+using SanteDB.Core.i18n;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using System;
@@ -69,6 +72,7 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// The configuration injected into the service
         /// </summary>
         protected readonly AppletConfigurationSection m_configuration;
+        private readonly IConfigurationSupplementManager m_supplementManager;
 
         // Tracer
         private readonly Tracer m_tracer = Tracer.GetTracer(typeof(FileSystemAppletManagerService));
@@ -78,14 +82,16 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// <summary>
         /// Local applet manager ctor
         /// </summary>
-        public FileSystemAppletManagerService(IConfigurationManager configurationManager, IPlatformSecurityProvider platformSecurityProvider)
+        public FileSystemAppletManagerService(IConfigurationManager configurationManager, 
+            IPlatformSecurityProvider platformSecurityProvider,
+            IConfigurationSupplementManager supplementManager = null)
         {
             _PlatformSecurityProvider = platformSecurityProvider;
 
             var defaultApplet = new AppletCollection();
             this.m_appletCollection.Add(String.Empty, defaultApplet); // Default applet
             this.m_configuration = configurationManager.GetSection<AppletConfigurationSection>();
-
+            this.m_supplementManager = supplementManager;
             // Load the applets
             this.LoadApplets();
         }
@@ -159,6 +165,9 @@ namespace SanteDB.Core.Applets.Services.Impl
             if (applet == null) // Might be solution
             {
                 var soln = this.m_solutions.FirstOrDefault(o => o.Meta.Id == packageId);
+
+                this.GetConfigurationSupplements(packageId).ForEach(supl => this.m_supplementManager?.RemoveConfigurationSupplement(supl.Id));
+
                 if (soln == null)
                 {
                     throw new FileNotFoundException($"Applet {packageId} is not installed");
@@ -186,6 +195,8 @@ namespace SanteDB.Core.Applets.Services.Impl
 
                 // We're good to go!
                 this.m_appletCollection[String.Empty].Remove(applet);
+
+                this.GetConfigurationSupplements(String.Empty).ForEach(supl => this.m_supplementManager?.RemoveConfigurationSupplement(supl.Id));
 
                 lock (this.m_fileDictionary)
                 {
@@ -263,7 +274,6 @@ namespace SanteDB.Core.Applets.Services.Impl
         /// </summary>
         public virtual AppletManifest GetApplet(string appletId)
         {
-
             return this.GetApplet(String.Empty, appletId);
         }
 
@@ -493,6 +503,15 @@ namespace SanteDB.Core.Applets.Services.Impl
             this.m_appletCollection[packageScope].Add(manifest);
             this.m_appletCollection[packageScope].ClearCaches();
 
+            // Apply any configuration modifiers
+            var modifier = AppletManifest.CreateConfigurationSupplement(manifest);
+            if (modifier != null)
+            {
+                this.m_tracer.TraceInfo("Installing configuration modifiers from {0}...", package.Meta.Id);
+                modifier.Id = $"{packageScope}/{package.Meta.Id}";
+                this.m_supplementManager?.AddConfigurationSupplement(modifier);
+            }
+
             if (String.IsNullOrEmpty(packageScope))
             {
                 this.Changed?.Invoke(this, EventArgs.Empty);
@@ -500,5 +519,29 @@ namespace SanteDB.Core.Applets.Services.Impl
             return true;
 
         }
+
+        /// <summary>
+        /// Get all configuration supplements
+        /// </summary>
+        private IEnumerable<ConfigurationSupplement> GetConfigurationSupplements(string solutionName)
+        {
+            // Solutions available?
+            if(this.m_readonlyAppletCollection.TryGetValue(solutionName, out var roc))
+            {
+                return roc.Select(AppletManifest.CreateConfigurationSupplement)
+                    .Select(o =>
+                    {
+                        o.Id = $"{solutionName}/{o.Id}";
+                        return o;
+                    })
+                    .OfType<ConfigurationSupplement>()
+                    .Distinct(new ConfigurationSupplementEqualityComparer());
+            }
+            else
+            {
+                throw new InvalidOperationException(ErrorMessages.WOULD_RESULT_INVALID_STATE);
+            }
+        }
+
     }
 }
