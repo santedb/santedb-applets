@@ -113,6 +113,7 @@ namespace SanteDB.Core.Applets.Services.Impl
                                 }
                                 else
                                 {
+                                    fdm.Schema = fdm.GenerateSchemaObjects().ToList();
                                     return fdm;
                                 }
                             }

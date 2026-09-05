@@ -964,7 +964,7 @@ namespace SanteDB.Core.Applets
 
                             retVal = this.m_localizationRegex.Replace(retVal, (m) => {
                                 var replacement = localizationService?.GetString(preProcessLocalization, m.Groups[1].Value) ?? m.Groups[1].Value;
-                                if (replacement.Equals(m.Groups[1].Value) && !localizationService.IsReadonly &&
+                                if (replacement.Equals(m.Groups[1].Value) && localizationService?.IsReadonly == false &&
                                 retVal.Substring(m.Index - 2, 2) != "=\"")
                                 {
                                     return $"<localize>{ replacement }</localize>";
