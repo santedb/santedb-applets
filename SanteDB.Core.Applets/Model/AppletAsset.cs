@@ -117,7 +117,7 @@ namespace SanteDB.Core.Applets.Model
                 {
                     case byte[] bytea:
                         // is the content compressed?
-                        if (Encoding.UTF8.GetString(bytea, 0, 4) == "LZIP")
+                        if (bytea.Length > 4 && Encoding.UTF8.GetString(bytea, 0, 4) == "LZIP")
                         {
                             using (var ms = new MemoryStream(bytea))
                             using (var ls = SharpCompress.Compressors.LZMA.LZipStream.Create(SharpCompressStream.CreateNonDisposing(ms), SharpCompress.Compressors.CompressionMode.Decompress))
