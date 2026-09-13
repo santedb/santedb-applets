@@ -741,7 +741,12 @@ namespace SanteDB.Core.Applets
             }
 
             //assetPath = assetPath.ToLower(); // case insensitive
-            return searchManifest?.Assets.FirstOrDefault(o => o.Name == assetPath);
+            var retVal = searchManifest?.Assets.FirstOrDefault(o => o.Name == assetPath);
+            if(retVal == null && !assetPath.EndsWith("index.html"))
+            {
+                retVal = searchManifest?.Assets.FirstOrDefault(o => o.Name == $"{assetPath}/index.html");
+            }
+            return retVal;
         }
 
         /// <summary>
@@ -767,10 +772,15 @@ namespace SanteDB.Core.Applets
                 content = this.Resolver(asset);
             }
 
+            if(content is AppletAssetCdata xcd) // JF: Optimization - load XCD
+            {
+                content = xcd.Value;
+            }
+
             switch (content)
             {
                 case String str:
-                    if (asset.MimeType == "text/javascript" || asset.MimeType == "application/json")
+                    if (asset.MimeType == "text/javascript" || asset.MimeType == "application/json" || asset.MimeType == "text/html")
                     {
                         if (bindingParameters != null)
                         {
@@ -789,7 +799,7 @@ namespace SanteDB.Core.Applets
                         return Encoding.UTF8.GetBytes(str);
                     }
                 case byte[] bytea:
-                    if(asset.MimeType == "text/javascript" || asset.MimeType == "application/json")
+                    if(asset.MimeType == "text/javascript" || asset.MimeType == "application/json" || asset.MimeType == "text/html")
                     {
                         var str = Encoding.UTF8.GetString(bytea);
                         if (bindingParameters != null)

@@ -104,6 +104,7 @@ namespace SanteDB.Core.Applets.Model
         [XmlElement("contentText", Type = typeof(String))]
         [XmlElement("contentBin", Type = typeof(byte[]))]
         [XmlElement("contentXml", Type = typeof(XElement))]
+        [XmlElement("contentCdata", Type = typeof(AppletAssetCdata))]
         [XmlElement("contentHtml", Type = typeof(AppletAssetHtml))]
         [XmlElement("widgetHtml", Type = typeof(AppletWidget))]
         [XmlElement("virtual", Type = typeof(AppletAssetVirtual))]
@@ -161,6 +162,16 @@ namespace SanteDB.Core.Applets.Model
         public override string ToString()
         {
             return String.Format("/{1}/{2}", AppletCollection.APPLET_SCHEME, this.Manifest?.Info?.Id, this.Name);
+        }
+
+        /// <summary>
+        /// True if the content is empty
+        /// </summary>
+        public bool IsContentEmpty()
+        {
+            return this.Content == null ||
+                this.Content is String s && String.IsNullOrEmpty(s) ||
+                this.Content is byte[] b && b.Length == 0;
         }
 
         /// <summary>
