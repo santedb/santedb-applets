@@ -772,7 +772,7 @@ namespace SanteDB.Core.Applets
                 content = this.Resolver(asset);
             }
 
-            if(content is AppletAssetCdata xcd) // JF: Optimization - load XCD
+            if(content is AppletAssetCdata xcd) // JF: Optimization - load XCDATA as string
             {
                 content = xcd.Value;
             }

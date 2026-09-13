@@ -101,10 +101,9 @@ namespace SanteDB.Core.Applets.Model
         /// <remarks>
         /// Assets of type contentXml 
         /// </remarks>
-        [XmlElement("contentText", Type = typeof(String))]
+        [XmlElement("contentText", Type = typeof(AppletAssetCdata))]
         [XmlElement("contentBin", Type = typeof(byte[]))]
         [XmlElement("contentXml", Type = typeof(XElement))]
-        [XmlElement("contentCdata", Type = typeof(AppletAssetCdata))]
         [XmlElement("contentHtml", Type = typeof(AppletAssetHtml))]
         [XmlElement("widgetHtml", Type = typeof(AppletWidget))]
         [XmlElement("virtual", Type = typeof(AppletAssetVirtual))]
@@ -141,6 +140,9 @@ namespace SanteDB.Core.Applets.Model
                             ms.Flush();
                             this.m_decompressedContent = ms.ToArray();
                         }
+                        break;
+                    case String str:
+                        this.m_decompressedContent = new AppletAssetCdata(str);
                         break;
                     default:
                         this.m_decompressedContent = value;
