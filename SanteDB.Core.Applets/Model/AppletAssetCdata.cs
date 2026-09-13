@@ -66,13 +66,9 @@ namespace SanteDB.Core.Applets.Model
         /// <inheritdoc/>
         public void WriteXml(XmlWriter writer)
         {
-            if (this.Value.Contains(">") || this.Value.Contains("<"))
+            if (!string.IsNullOrEmpty(this.Value))
             {
                 writer.WriteCData(this.Value);
-            }
-            else if (!string.IsNullOrEmpty(this.Value))
-            {
-                writer.WriteString(this.Value);
             }
             else
             {
