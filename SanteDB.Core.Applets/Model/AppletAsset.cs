@@ -173,6 +173,7 @@ namespace SanteDB.Core.Applets.Model
         {
             return this.Content == null ||
                 this.Content is String s && String.IsNullOrEmpty(s) ||
+                this.Content is AppletAssetCdata cd && String.IsNullOrEmpty(cd.Value) ||
                 this.Content is byte[] b && b.Length == 0;
         }
 
