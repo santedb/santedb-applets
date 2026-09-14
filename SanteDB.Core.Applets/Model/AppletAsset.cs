@@ -101,7 +101,7 @@ namespace SanteDB.Core.Applets.Model
         /// <remarks>
         /// Assets of type contentXml 
         /// </remarks>
-        [XmlElement("contentText", Type = typeof(String))]
+        [XmlElement("contentText", Type = typeof(AppletAssetCdata))]
         [XmlElement("contentBin", Type = typeof(byte[]))]
         [XmlElement("contentXml", Type = typeof(XElement))]
         [XmlElement("contentHtml", Type = typeof(AppletAssetHtml))]
@@ -116,7 +116,7 @@ namespace SanteDB.Core.Applets.Model
                 {
                     case byte[] bytea:
                         // is the content compressed?
-                        if (Encoding.UTF8.GetString(bytea, 0, 4) == "LZIP")
+                        if (bytea.Length > 4 && Encoding.UTF8.GetString(bytea, 0, 4) == "LZIP")
                         {
                             using (var ms = new MemoryStream(bytea))
                             using (var ls = SharpCompress.Compressors.LZMA.LZipStream.Create(SharpCompressStream.CreateNonDisposing(ms), SharpCompress.Compressors.CompressionMode.Decompress))
@@ -141,6 +141,9 @@ namespace SanteDB.Core.Applets.Model
                             this.m_decompressedContent = ms.ToArray();
                         }
                         break;
+                    case String str:
+                        this.m_decompressedContent = new AppletAssetCdata(str);
+                        break;
                     default:
                         this.m_decompressedContent = value;
                         break;
@@ -161,6 +164,17 @@ namespace SanteDB.Core.Applets.Model
         public override string ToString()
         {
             return String.Format("/{1}/{2}", AppletCollection.APPLET_SCHEME, this.Manifest?.Info?.Id, this.Name);
+        }
+
+        /// <summary>
+        /// True if the content is empty
+        /// </summary>
+        public bool IsContentEmpty()
+        {
+            return this.Content == null ||
+                this.Content is String s && String.IsNullOrEmpty(s) ||
+                this.Content is AppletAssetCdata cd && String.IsNullOrEmpty(cd.Value) ||
+                this.Content is byte[] b && b.Length == 0;
         }
 
         /// <summary>
