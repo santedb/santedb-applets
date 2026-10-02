@@ -105,22 +105,29 @@ namespace SanteDB.Core.Applets.Model
         /// <returns>The package.</returns>
         public AppletPackage CreatePackage()
         {
-            AppletPackage retVal = new AppletPackage()
+            if (this.OriginalPackage == null)
             {
-                Meta = this.Info,
-                PublicKey = this.PublisherCertificate?.GetRawCertData()
-            };
-            this.Info.TimeStamp = DateTime.Now;
-            using (var ms = new MemoryStream())
-            {
-                using (var ls = LZipStream.Create(ms, SharpCompress.Compressors.CompressionMode.Compress))
+                AppletPackage retVal = new AppletPackage()
                 {
-                    x_xsz.Serialize(ls, this);
+                    Meta = this.Info,
+                    PublicKey = this.PublisherCertificate?.GetRawCertData()
+                };
+                this.Info.TimeStamp = DateTime.Now;
+                using (var ms = new MemoryStream())
+                {
+                    using (var ls = LZipStream.Create(ms, SharpCompress.Compressors.CompressionMode.Compress))
+                    {
+                        x_xsz.Serialize(ls, this);
+                    }
+                    retVal.Manifest = ms.ToArray();
                 }
-                retVal.Manifest = ms.ToArray();
+                retVal.Meta.Hash = SHA256.Create().ComputeHash(retVal.Manifest);
+                return retVal;
             }
-            retVal.Meta.Hash = SHA256.Create().ComputeHash(retVal.Manifest);
-            return retVal;
+            else
+            {
+                return this.OriginalPackage;
+            }
         }
 
         /// <summary>
@@ -242,6 +249,12 @@ namespace SanteDB.Core.Applets.Model
         /// </summary>
         [XmlIgnore, JsonIgnore]
         public X509Certificate2 PublisherCertificate { get; internal set; }
+
+        /// <summary>
+        /// If this was originally loaded from a binary package, then the package it was loaded from - null otherwise
+        /// </summary>
+        [XmlIgnore, JsonIgnore]
+        public AppletPackage OriginalPackage { get; internal set; }
 
         /// <summary>
         /// Get or sets the care pathways
