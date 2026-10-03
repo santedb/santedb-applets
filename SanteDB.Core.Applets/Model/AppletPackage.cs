@@ -160,6 +160,7 @@ namespace SanteDB.Core.Applets.Model
                     if (this.PublicKey != null)
                     {
                         this.m_unpackedManifest.PublisherCertificate = new X509Certificate2(this.PublicKey);
+                       this.m_unpackedManifest.OriginalPackage = this;
                     }
                 }
             }

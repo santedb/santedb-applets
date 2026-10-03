@@ -211,6 +211,8 @@ namespace SanteDB.Core.Applets.Services.Impl
                         dp.Value = queryData[1];
                         dp.Resource = new Core.Configuration.ResourceTypeReferenceConfiguration(queryData[0]);
                     }
+                    dp.Select = o.Select;
+
                     return dp;
                 }).ToList()
 

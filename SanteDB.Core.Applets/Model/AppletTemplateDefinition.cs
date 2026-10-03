@@ -137,7 +137,7 @@ namespace SanteDB.Core.Applets.Model
         /// Gets or sets additional parameters for the data template definition which the server should populate
         /// </summary>
         [XmlArray("parameters"), XmlArrayItem("add"), JsonProperty("parameters")]
-        public List<AppletSettingEntry> Parameters { get; set; }
+        public List<AppletTemplateParameter> Parameters { get; set; }
 
         /// <summary>
         /// Load the specified template from the stream
